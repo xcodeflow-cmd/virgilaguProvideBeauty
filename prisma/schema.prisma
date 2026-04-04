@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SessionVisibility {
+  PUBLIC
+  SUBSCRIBERS
+  ONE_TIME
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  ONE_TIME
+}
+
+model User {
+  id             String         @id @default(cuid())
+  name           String?
+  email          String?        @unique
+  emailVerified  DateTime?
+  image          String?
+  role           UserRole       @default(USER)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  bookings       Booking[]
+  subscriptions  Subscription[]
+  purchases      Purchase[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  userId             String
+  stripeCustomerId   String?   @unique
+  stripePriceId      String?
+  stripeSubscriptionId String? @unique
+  status             String
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Purchase {
+  id                String      @id @default(cuid())
+  userId            String
+  liveSessionId     String?
+  stripePaymentId   String?     @unique
+  type              PaymentType
+  amount            Int
+  currency          String      @default("eur")
+  createdAt         DateTime    @default(now())
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  liveSession       LiveSession? @relation(fields: [liveSessionId], references: [id], onDelete: SetNull)
+}
+
+model LiveSession {
+  id              String            @id @default(cuid())
+  title           String
+  slug            String            @unique
+  description     String
+  scheduledFor    DateTime
+  durationMinutes Int               @default(90)
+  thumbnailUrl    String
+  streamUrl       String?
+  recordingUrl    String?
+  price           Int?
+  visibility      SessionVisibility @default(SUBSCRIBERS)
+  isLive          Boolean           @default(false)
+  isFeatured      Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  purchases       Purchase[]
+}
+
+model GalleryItem {
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  imageUrl    String
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  email       String
+  phone       String?
+  service     String
+  preferredAt DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  clientName  String
+  role        String?
+  quote       String
+  rating      Int      @default(5)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,10 @@
+.next
+node_modules
+.env
+.env.local
+dist
+coverage
+prisma/dev.db
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
