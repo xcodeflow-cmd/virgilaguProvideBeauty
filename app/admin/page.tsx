@@ -42,19 +42,19 @@ export default async function AdminPage() {
         <div className="glass-panel rounded-[1.75rem] p-6">
           <h2 className="text-2xl text-white">Gallery</h2>
           <div className="mt-5 space-y-3 text-sm text-white/62">
-            {data.gallery.map((item) => <p key={item.id}>{item.title}</p>)}
+            {data.gallery.map((item: (typeof data.gallery)[number]) => <p key={item.id}>{item.title}</p>)}
           </div>
         </div>
         <div className="glass-panel rounded-[1.75rem] p-6">
           <h2 className="text-2xl text-white">Live Sessions</h2>
           <div className="mt-5 space-y-3 text-sm text-white/62">
-            {data.sessions.map((item) => <p key={item.id}>{item.title}</p>)}
+            {data.sessions.map((item: (typeof data.sessions)[number]) => <p key={item.id}>{item.title}</p>)}
           </div>
         </div>
         <div className="glass-panel rounded-[1.75rem] p-6">
           <h2 className="text-2xl text-white">Users</h2>
           <div className="mt-5 space-y-3 text-sm text-white/62">
-            {data.users.map((item) => <p key={item.id}>{item.email}</p>)}
+            {data.users.map((item: (typeof data.users)[number]) => <p key={item.id}>{item.email}</p>)}
           </div>
         </div>
       </div>

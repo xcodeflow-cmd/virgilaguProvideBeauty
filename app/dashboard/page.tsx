@@ -29,7 +29,9 @@ export default async function DashboardPage() {
   }
 
   const data = await getDashboardData(session.user.id);
-  const activeSubscription = data.subscriptions.find((item) => ["active", "trialing"].includes(item.status));
+  const activeSubscription = data.subscriptions.find(
+    (item: (typeof data.subscriptions)[number]) => ["active", "trialing"].includes(item.status)
+  );
 
   return (
     <section className="section-shell py-16 sm:py-20">
@@ -68,7 +70,7 @@ export default async function DashboardPage() {
         <div className="glass-panel rounded-[1.75rem] p-6">
           <h3 className="text-2xl text-white">Session purchases</h3>
           <div className="mt-6 space-y-4">
-            {data.purchases.length ? data.purchases.map((purchase) => (
+            {data.purchases.length ? data.purchases.map((purchase: (typeof data.purchases)[number]) => (
               <div key={purchase.id} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-white/68">
                 <p className="text-white">{purchase.liveSession?.title || purchase.type}</p>
                 <p className="mt-1 text-sm">Purchased on {formatDate(purchase.createdAt)}</p>
@@ -79,7 +81,7 @@ export default async function DashboardPage() {
         <div className="glass-panel rounded-[1.75rem] p-6">
           <h3 className="text-2xl text-white">Recent bookings</h3>
           <div className="mt-6 space-y-4">
-            {data.bookings.length ? data.bookings.map((booking) => (
+            {data.bookings.length ? data.bookings.map((booking: (typeof data.bookings)[number]) => (
               <div key={booking.id} className="rounded-2xl border border-white/10 bg-black/20 p-4 text-white/68">
                 <p className="text-white">{booking.service}</p>
                 <p className="mt-1 text-sm">Preferred date {formatDate(booking.preferredAt)}</p>

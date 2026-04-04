@@ -1,4 +1,4 @@
-import { PrismaClient, SessionVisibility } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -38,7 +38,7 @@ async function main() {
         durationMinutes: 75,
         thumbnailUrl:
           "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&q=80",
-        visibility: SessionVisibility.SUBSCRIBERS,
+        visibility: "SUBSCRIBERS",
         isFeatured: true
       },
       {
@@ -50,7 +50,7 @@ async function main() {
         thumbnailUrl:
           "https://images.unsplash.com/photo-1519415943484-9fa1873496d4?auto=format&fit=crop&w=1200&q=80",
         recordingUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
-        visibility: SessionVisibility.ONE_TIME,
+        visibility: "ONE_TIME",
         price: 1900
       }
     ],

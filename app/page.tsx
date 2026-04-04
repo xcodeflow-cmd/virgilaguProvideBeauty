@@ -116,7 +116,7 @@ export default async function HomePage() {
           />
         </FadeIn>
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          {data.lives.map((item) => (
+          {data.lives.map((item: (typeof data.lives)[number]) => (
             <VideoCard key={item.id} item={item} />
           ))}
         </div>

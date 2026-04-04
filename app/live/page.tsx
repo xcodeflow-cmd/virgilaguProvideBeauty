@@ -59,8 +59,12 @@ async function getLiveData(userId?: string) {
 
     return {
       sessions: sessions.length ? sessions : fallbackSessions,
-      activeSubscription: subscriptions.some((item) => ["active", "trialing"].includes(item.status)),
-      purchasedSessionIds: purchases.map((item) => item.liveSessionId).filter(Boolean)
+      activeSubscription: subscriptions.some(
+        (item: (typeof subscriptions)[number]) => ["active", "trialing"].includes(item.status)
+      ),
+      purchasedSessionIds: purchases
+        .map((item: (typeof purchases)[number]) => item.liveSessionId)
+        .filter(Boolean)
     };
   } catch {
     return {
@@ -85,12 +89,17 @@ function canAccessSession(
 export default async function LivePage() {
   const session = await auth();
   const { sessions, activeSubscription, purchasedSessionIds } = await getLiveData(session?.user?.id);
-  const featured = sessions.find((item) => item.isFeatured) || sessions[0];
+  const featured = sessions.find((item: (typeof sessions)[number]) => item.isFeatured) || sessions[0];
+  const defaultOneTimeSession = sessions.find(
+    (item: (typeof sessions)[number]) => item.visibility === "ONE_TIME" && item.price
+  );
   const featuredAccess = featured
     ? canAccessSession(featured.visibility, activeSubscription, purchasedSessionIds, featured.id)
     : false;
-  const upcoming = sessions.filter((item) => new Date(item.scheduledFor) > new Date() && !item.isLive);
-  const archive = sessions.filter((item) => item.recordingUrl);
+  const upcoming = sessions.filter(
+    (item: (typeof sessions)[number]) => new Date(item.scheduledFor) > new Date() && !item.isLive
+  );
+  const archive = sessions.filter((item: (typeof sessions)[number]) => item.recordingUrl);
 
   return (
     <section className="section-shell py-16 sm:py-20">
@@ -119,7 +128,15 @@ export default async function LivePage() {
               <Link href="/api/stripe/checkout?mode=subscription">Start Subscription</Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link href="/api/stripe/checkout?mode=payment">Buy One Session</Link>
+              <Link
+                href={
+                  defaultOneTimeSession
+                    ? `/api/stripe/checkout?mode=payment&liveSessionId=${defaultOneTimeSession.id}`
+                    : "/live"
+                }
+              >
+                Buy One Session
+              </Link>
             </Button>
           </div>
         </div>
@@ -129,7 +146,7 @@ export default async function LivePage() {
         <div>
           <h3 className="text-3xl text-white">Upcoming lives</h3>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            {upcoming.map((item) => (
+            {upcoming.map((item: (typeof upcoming)[number]) => (
               <VideoCard
                 key={item.id}
                 item={item}
@@ -142,7 +159,7 @@ export default async function LivePage() {
         <div>
           <h3 className="text-3xl text-white">Past recordings</h3>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            {archive.map((item) => (
+            {archive.map((item: (typeof archive)[number]) => (
               <VideoCard
                 key={item.id}
                 item={item}

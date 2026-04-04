@@ -25,7 +25,7 @@ export function TestimonialsSection({
                 <Star key={index} className="h-4 w-4 fill-current" />
               ))}
             </div>
-            <p className="mt-6 text-xl leading-8 text-white/76">"{item.quote}"</p>
+            <p className="mt-6 text-xl leading-8 text-white/76">&ldquo;{item.quote}&rdquo;</p>
             <div className="mt-6">
               <p className="text-lg text-white">{item.clientName}</p>
               <p className="text-sm uppercase tracking-[0.32em] text-white/40">{item.role || "Client"}</p>

@@ -22,6 +22,12 @@ export function VideoCard({
   };
   canAccess?: boolean;
 }) {
+  const ctaHref = canAccess
+    ? `/live#${item.slug}`
+    : item.visibility === "ONE_TIME" && item.price
+      ? `/api/stripe/checkout?mode=payment&liveSessionId=${item.id}`
+      : "/api/stripe/checkout?mode=subscription";
+
   return (
     <article className="glass-panel overflow-hidden rounded-[1.75rem] border border-white/10">
       <div className="relative aspect-[16/10]">
@@ -42,7 +48,7 @@ export function VideoCard({
             {item.price ? formatCurrency(item.price) : "Included in subscription"}
           </p>
           <Button asChild variant={canAccess ? "primary" : "secondary"}>
-            <Link href={`/live#${item.slug}`}>
+            <Link href={ctaHref}>
               {canAccess ? "Watch" : item.price ? (
                 <>
                   <Lock className="h-4 w-4" />

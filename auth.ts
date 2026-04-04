@@ -1,44 +1,88 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Nodemailer from "next-auth/providers/nodemailer";
+import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth/next";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/lib/password";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8)
+});
+
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "database"
+    strategy: "jwt"
   },
   pages: {
-    signIn: "/auth/signin",
-    verifyRequest: "/auth/verify-request"
+    signIn: "/auth/signin"
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
-    }),
-    Nodemailer({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT || 587),
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD
+    Credentials({
+      name: "Email and Password",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email"
+        },
+        password: {
+          label: "Password",
+          type: "password"
         }
       },
-      from: process.env.EMAIL_FROM
+      async authorize(credentials) {
+        const parsed = credentialsSchema.safeParse(credentials);
+
+        if (!parsed.success) {
+          return null;
+        }
+
+        const email = parsed.data.email.toLowerCase();
+        const user = await prisma.user.findUnique({
+          where: { email }
+        });
+
+        if (!user?.passwordHash) {
+          return null;
+        }
+
+        const isValid = verifyPassword(parsed.data.password, user.passwordHash);
+
+        if (!isValid || !user.email) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        };
+      }
     })
   ],
   callbacks: {
-    session({ session, user }) {
+    jwt({ token, user }) {
+      if (user) {
+        token.role = (user as typeof user & { role?: "USER" | "ADMIN" }).role || "USER";
+      }
+
+      return token;
+    },
+    session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.role = (user as typeof user & { role?: "USER" | "ADMIN" }).role || "USER";
+        session.user.id = token.sub || "";
+        session.user.role = (token.role as "USER" | "ADMIN") || "USER";
       }
 
       return session;
     }
   }
-});
+};
+
+export function auth() {
+  return getServerSession(authOptions);
+}
