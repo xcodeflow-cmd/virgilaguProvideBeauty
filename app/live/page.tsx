@@ -67,18 +67,18 @@ export default async function LivePage() {
   const embedUrl = hasAccess ? await getYoutubeEmbedUrl() : null;
 
   return (
-    <section className="section-shell py-16 sm:py-20">
+    <section className="section-shell section-space">
       <FadeIn>
         <SectionHeading
           eyebrow="Live Studio"
           title="Live stream cu acces doar pe baza de abonament."
-          description="Pagina foloseste autentificare, verifica flag-ul `isSubscribed` din baza de date si preia embed-ul activ prin YouTube API."
+          description="Pagina de live ramane in prim-plan: acces controlat, status clar si sesiuni viitoare intr-un layout premium, fara aglomeratie."
         />
       </FadeIn>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <ProtectedVideoPlayer canAccess={hasAccess} embedUrl={embedUrl} />
-        <div className="glass-panel rounded-[2rem] p-8">
+        <div className="premium-card p-8">
           <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Access</p>
           <h2 className="mt-4 text-4xl text-white">
             {hasAccess ? "Abonament activ" : "Trebuie sa ai abonament pentru a vedea live-ul"}
@@ -116,7 +116,7 @@ export default async function LivePage() {
 
         <div>
           <h3 className="text-3xl text-white">Acces curent</h3>
-          <div className="mt-6 glass-panel rounded-[1.75rem] p-6">
+          <div className="mt-6 premium-card p-6">
             <p className="text-sm uppercase tracking-[0.35em] text-accent/80">Status</p>
             <p className="mt-3 text-xl text-white">{featured?.title || "LIVE Barber Experience"}</p>
             <p className="mt-3 text-base leading-7 text-white/60">

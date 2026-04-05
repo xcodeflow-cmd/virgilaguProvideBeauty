@@ -30,7 +30,7 @@ export function VideoCard({
       : "/api/stripe/checkout?mode=subscription";
 
   return (
-    <article className="glass-panel overflow-hidden rounded-[1.75rem] border border-white/10">
+    <article className="premium-card overflow-hidden hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
       <div className="relative aspect-[16/10]">
         <Image src={item.thumbnailUrl} alt={item.title} fill className="object-cover" />
         <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-xs uppercase tracking-[0.3em] text-white">

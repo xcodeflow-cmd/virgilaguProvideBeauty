@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/live", label: "Live" },
   { href: "/gallery", label: "Gallery" },
   { href: "/reviews", label: "Reviews" },
-  { href: "/contact", label: "Contact" }
+  { href: "/courses", label: "Courses" }
 ];
 
 export function Navbar({ session }: { session: Session | null }) {

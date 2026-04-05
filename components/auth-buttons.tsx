@@ -12,7 +12,7 @@ export function AuthButtons({ session }: { session: Session | null }) {
           <Link href="/auth/signin">Log In</Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link href="/contact#booking">Book Now</Link>
+          <Link href="/live">Explore Live</Link>
         </Button>
       </div>
     );

@@ -15,9 +15,10 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-5 text-sm text-white/60">
+          <Link href="/live" className="transition hover:text-white">Live</Link>
+          <Link href="/courses" className="transition hover:text-white">Courses</Link>
           <Link href="/gallery" className="transition hover:text-white">Gallery</Link>
           <Link href="/reviews" className="transition hover:text-white">Reviews</Link>
-          <Link href="/contact" className="transition hover:text-white">Booking</Link>
           <Link href={siteConfig.socials.instagram} className="transition hover:text-white">Instagram</Link>
           <Link href={siteConfig.socials.mero} className="transition hover:text-white">MERO</Link>
           <Link href={siteConfig.socials.whatsapp} className="transition hover:text-white">WhatsApp</Link>
