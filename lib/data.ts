@@ -1,6 +1,9 @@
 import type { StaticImageData } from "next/image";
 
 import heroImage from "@/assets/landing page.jpeg";
+import aboutImageAward01 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.35.jpeg";
+import aboutImageAward02 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (1).jpeg";
+import aboutImageAward03 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (2).jpeg";
 import aboutImageMain from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.12.jpeg";
 import aboutImageSecondary from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.21.jpeg";
 import salonImage from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg";
@@ -149,27 +152,22 @@ const exactMeroReviews = [
   }
 ];
 
-const supplementalReviewPatterns = [
-  "Experienta foarte buna si rezultat curat.",
-  "Programare rapida, atmosfera buna si tunsoare precisa.",
-  "Serviciu atent, look fresh si finisaj foarte bun.",
-  "Rezultat constant, exact ce trebuie pentru un fade curat.",
-  "Detalii bine lucrate si comunicare foarte buna.",
-  "Se vede experienta din fiecare pas al tunsorii."
-];
-
-export const reviews = [
-  ...exactMeroReviews,
-  ...Array.from({ length: 42 }, (_, index) => ({
-    id: `r${index + 5}`,
-    name: `Client MERO ${String(index + 5).padStart(2, "0")}`,
-    rating: 5,
-    text: supplementalReviewPatterns[index % supplementalReviewPatterns.length],
-    source: "MERO"
-  }))
-];
+export const reviews = exactMeroReviews;
 
 export const featuredReviews = reviews.slice(0, 3);
+export const compactReviews = reviews.slice(0, 2);
+export const homeGalleryPreview = galleryItems.slice(0, 3);
+export const aboutMeGallery = [
+  { id: "a1", title: "Award Moment", category: "Premii", imageUrl: aboutImageAward01 },
+  { id: "a2", title: "Stage Presence", category: "Scena", imageUrl: aboutImageAward02 },
+  { id: "a3", title: "Competition Energy", category: "Competition", imageUrl: aboutImageAward03 }
+];
+export const aboutMeAchievements = [
+  "Master Barber Romania, 2 ani la rand",
+  "Fast Fade Dublin",
+  "Peste 300 de studenti pregatiti",
+  "Peste 10 ani experienta"
+] as const;
 
 export const courses = {
   beginner: {

@@ -12,8 +12,8 @@ export default function ReviewsPage() {
       <FadeIn>
         <SectionHeading
           eyebrow="Reviews"
-          title="46 review-uri afisate intr-o pagina dedicata."
-          description="Pagina foloseste continut derivat din profilul MERO `provide-beauty` si ofera o cale directa spre sursa completa."
+          title="Cateva review-uri reale, plus acces direct la tot istoricul."
+          description="Pagina afiseaza doar o selectie scurta ca sa ramana curata, iar butonul de mai jos duce spre volumul mare de review-uri din MERO."
         />
       </FadeIn>
 
@@ -36,7 +36,7 @@ export default function ReviewsPage() {
 
       <div className="mt-10">
         <Button asChild>
-          <Link href={siteConfig.socials.mero}>Vezi mai multe review-uri</Link>
+          <Link href={siteConfig.socials.mero}>+3000 review-uri</Link>
         </Button>
       </div>
     </section>
