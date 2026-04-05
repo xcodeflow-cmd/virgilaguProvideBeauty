@@ -37,13 +37,13 @@ export default async function DashboardPage() {
     <section className="section-shell py-16 sm:py-20">
       <SectionHeading
         eyebrow="Dashboard"
-        title={`Welcome back, ${session.user.name || "member"}.`}
-        description="Your account area tracks subscription access, purchases, and recent booking activity."
+        title={`Bine ai revenit, ${session.user.name || "membru"}.`}
+        description="Zona de cont urmareste accesul la abonament, achizitiile si programarile recente."
       />
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">
-        <div className="glass-panel gold-ring rounded-[1.75rem] p-6">
-          <p className="text-xs uppercase tracking-[0.35em] text-gold-light/80">Subscription</p>
+        <div className="glass-panel rounded-[1.75rem] p-6">
+          <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Subscription</p>
           <h2 className="mt-3 text-3xl text-white">{activeSubscription ? activeSubscription.status : "Not active"}</h2>
           <p className="mt-3 text-sm leading-7 text-white/58">
             {activeSubscription?.currentPeriodEnd
@@ -55,12 +55,12 @@ export default async function DashboardPage() {
           </Button>
         </div>
         <div className="glass-panel rounded-[1.75rem] p-6">
-          <p className="text-xs uppercase tracking-[0.35em] text-gold-light/80">Purchases</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Purchases</p>
           <h2 className="mt-3 text-3xl text-white">{data.purchases.length}</h2>
           <p className="mt-3 text-sm leading-7 text-white/58">One-time session unlocks stored against your account.</p>
         </div>
         <div className="glass-panel rounded-[1.75rem] p-6">
-          <p className="text-xs uppercase tracking-[0.35em] text-gold-light/80">Bookings</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Bookings</p>
           <h2 className="mt-3 text-3xl text-white">{data.bookings.length}</h2>
           <p className="mt-3 text-sm leading-7 text-white/58">Recent appointment requests submitted through the website.</p>
         </div>

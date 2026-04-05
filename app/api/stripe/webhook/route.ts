@@ -16,6 +16,7 @@ function toDate(timestamp?: number | null) {
 async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
   const stripeCustomerId = getStripeId(subscription.customer);
   const userId = subscription.metadata.userId;
+  const isSubscribed = ["active", "trialing"].includes(subscription.status);
 
   if (!stripeCustomerId || !userId) {
     return;
@@ -37,6 +38,10 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
         currentPeriodEnd: toDate(subscription.current_period_end)
       }
     });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isSubscribed }
+    });
     return;
   }
 
@@ -56,6 +61,10 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
         currentPeriodEnd: toDate(subscription.current_period_end)
       }
     });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isSubscribed }
+    });
     return;
   }
 
@@ -68,6 +77,11 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
       status: subscription.status,
       currentPeriodEnd: toDate(subscription.current_period_end)
     }
+  });
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isSubscribed }
   });
 }
 
@@ -145,6 +159,11 @@ export async function POST(request: Request) {
             status: subscription.status,
             currentPeriodEnd: toDate(subscription.current_period_end)
           }
+        });
+
+        await prisma.user.update({
+          where: { id: existingSubscription.userId },
+          data: { isSubscribed: false }
         });
       }
     }

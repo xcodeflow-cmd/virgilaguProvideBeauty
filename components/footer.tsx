@@ -10,13 +10,14 @@ export function Footer() {
         <div className="space-y-4">
           <Logo />
           <p className="max-w-md text-sm leading-6 text-white/55">
-            Luxury grooming, members-only live education, and a digital experience
-            designed to feel cinematic.
+            Servicii premium de barbering, cursuri practice si sesiuni live pentru o
+            experienta moderna, coerenta si profesionala.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-5 text-sm text-white/60">
           <Link href={siteConfig.socials.instagram}>Instagram</Link>
           <Link href={siteConfig.socials.tiktok}>TikTok</Link>
+          <Link href={siteConfig.socials.mero}>MERO</Link>
           <Link href={siteConfig.socials.whatsapp}>WhatsApp</Link>
           <Link href="/dashboard">Dashboard</Link>
         </div>

@@ -8,16 +8,16 @@ export function ServicesSection() {
     <section id="services" className="section-shell py-16 sm:py-24">
       <FadeIn>
         <SectionHeading
-          eyebrow="Services"
-          title="Tailored grooming with luxury-level restraint."
-          description="A compact service menu built around precision, consistency, and elevated client experience."
+          eyebrow="Servicii"
+          title="Servicii construite pentru rezultat curat si experienta premium."
+          description="Meniu clar, executie precisa si prezentare moderna, fara imagini stock si fara elemente vizuale invechite."
         />
       </FadeIn>
       <Stagger className="mt-10 grid gap-6 lg:grid-cols-3">
         {services.map((service) => (
           <StaggerItem key={service.name}>
-            <article className="glass-panel gold-ring rounded-[1.75rem] p-7">
-              <p className="text-sm uppercase tracking-[0.35em] text-gold-light/75">{service.price}</p>
+            <article className="glass-panel rounded-[1.75rem] p-7">
+              <p className="text-sm uppercase tracking-[0.35em] text-accent/75">{service.price}</p>
               <h3 className="mt-4 text-3xl text-white">{service.name}</h3>
               <p className="mt-4 text-base leading-7 text-white/60">{service.description}</p>
             </article>

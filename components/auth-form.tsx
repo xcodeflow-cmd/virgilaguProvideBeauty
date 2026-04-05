@@ -15,23 +15,23 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const submitLabel = mode === "register" ? "Create account" : "Sign in";
+  const submitLabel = mode === "register" ? "Creeaza cont" : "Intra in cont";
   const alternateHref = mode === "register" ? "/auth/signin" : "/auth/register";
-  const alternateLabel = mode === "register" ? "Ai deja cont? Intră în cont" : "Nu ai cont? Creează unul";
+  const alternateLabel = mode === "register" ? "Ai deja cont? Intra in cont" : "Nu ai cont? Creeaza unul";
 
   return (
-    <div className="glass-panel gold-ring w-full max-w-lg rounded-[2rem] p-8">
+    <div className="glass-panel w-full max-w-lg rounded-[2rem] p-8">
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.35em] text-gold-light/80">
-          {mode === "register" ? "New Member" : "Welcome Back"}
+        <p className="text-xs uppercase tracking-[0.35em] text-accent/80">
+          {mode === "register" ? "Cont nou" : "Bine ai revenit"}
         </p>
         <h1 className="text-5xl text-white">
-          {mode === "register" ? "Join the studio." : "Sign in to premium access."}
+          {mode === "register" ? "Creeaza contul tau." : "Acceseaza contul tau."}
         </h1>
         <p className="text-base leading-7 text-white/60">
           {mode === "register"
-            ? "Create a classic account with email and password."
-            : "Enter your email and password to access your account."}
+            ? "Creeaza un cont clasic cu email si parola."
+            : "Introdu emailul si parola pentru a intra in platforma."}
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
               });
 
               if (result?.error) {
-                setError("Email sau parolă incorectă.");
+                setError("Email sau parola incorecta.");
                 return;
               }
 
@@ -88,14 +88,14 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
         >
           {mode === "register" ? (
             <label className="block space-y-2">
-              <span className="text-sm text-white/60">Name</span>
+              <span className="text-sm text-white/60">Nume</span>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-gold/45"
-                placeholder="Your name"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+                placeholder="Numele tau"
               />
             </label>
           ) : null}
@@ -106,49 +106,49 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-gold/45"
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
               placeholder="you@example.com"
             />
           </label>
           <label className="block space-y-2">
-            <span className="text-sm text-white/60">Password</span>
+            <span className="text-sm text-white/60">Parola</span>
             <input
               type="password"
               required
               minLength={8}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-gold/45"
-              placeholder="Minimum 8 characters"
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+              placeholder="Minimum 8 caractere"
             />
           </label>
           {mode === "register" ? (
             <label className="block space-y-2">
-              <span className="text-sm text-white/60">Confirm password</span>
+              <span className="text-sm text-white/60">Confirma parola</span>
               <input
                 type="password"
                 required
                 minLength={8}
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-gold/45"
-                placeholder="Repeat password"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+                placeholder="Repeta parola"
               />
             </label>
           ) : null}
           <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Please wait..." : submitLabel}
+            {pending ? "Se proceseaza..." : submitLabel}
           </Button>
         </form>
 
         <div className="flex items-center justify-between gap-3 text-sm">
-          <Link href={alternateHref} className="text-white/60 transition hover:text-gold-light">
+          <Link href={alternateHref} className="text-white/60 transition hover:text-white">
             {alternateLabel}
           </Link>
         </div>
 
         {error ? <p className="text-sm text-red-300">{error}</p> : null}
-        {message ? <p className="text-sm text-gold-light">{message}</p> : null}
+        {message ? <p className="text-sm text-accent">{message}</p> : null}
       </div>
     </div>
   );

@@ -6,22 +6,22 @@ import { SectionHeading } from "@/components/section-heading";
 export function TestimonialsSection({
   items
 }: {
-  items: { id: string; clientName: string; role: string | null; quote: string }[];
+  items: { id: string; clientName: string; role: string | null; quote: string; rating?: number }[];
 }) {
   return (
     <section className="section-shell py-16 sm:py-24">
       <FadeIn>
         <SectionHeading
-          eyebrow="Testimonials"
-          title="Trusted by clients who care about presentation."
-          description="The service is built for repeat clients, founders, creatives, and anyone who expects a sharper standard."
+          eyebrow="Review-uri"
+          title="Feedback real pentru un standard real."
+          description="Sectiunea de review-uri aduce social proof direct in homepage, fara layout incarcat si fara elemente false."
         />
       </FadeIn>
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
         {items.map((item) => (
           <FadeIn key={item.id} className="glass-panel rounded-[1.75rem] p-8">
-            <div className="flex gap-1 text-gold-light">
-              {Array.from({ length: 5 }).map((_, index) => (
+            <div className="flex gap-1 text-white">
+              {Array.from({ length: item.rating || 5 }).map((_, index) => (
                 <Star key={index} className="h-4 w-4 fill-current" />
               ))}
             </div>

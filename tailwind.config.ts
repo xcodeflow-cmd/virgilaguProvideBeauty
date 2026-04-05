@@ -9,15 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#080808",
-        foreground: "#f5f3ef",
-        card: "#121212",
-        muted: "#1c1c1c",
+        background: "#050505",
+        foreground: "#f3f4f6",
+        card: "#101214",
+        muted: "#15181c",
         border: "rgba(255,255,255,0.08)",
-        gold: {
-          DEFAULT: "#d4a85f",
-          light: "#f1d7a4",
-          dark: "#8d6530"
+        accent: {
+          DEFAULT: "#d7dbe2",
+          soft: "#aeb6c2",
+          dark: "#7e8794"
         }
       },
       fontFamily: {
@@ -26,12 +26,13 @@ const config: Config = {
       },
       backgroundImage: {
         "hero-glow":
-          "radial-gradient(circle at top, rgba(212,168,95,0.28), transparent 40%), linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0))",
+          "radial-gradient(circle at top, rgba(215,219,226,0.16), transparent 40%), linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0))",
         mesh:
-          "radial-gradient(circle at 20% 20%, rgba(212,168,95,0.18), transparent 24%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 28%), radial-gradient(circle at 50% 80%, rgba(212,168,95,0.12), transparent 22%)"
+          "radial-gradient(circle at 20% 20%, rgba(125,132,145,0.18), transparent 24%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.1), transparent 28%), radial-gradient(circle at 50% 80%, rgba(190,198,209,0.12), transparent 22%)"
       },
       boxShadow: {
-        glow: "0 20px 60px rgba(212,168,95,0.18)"
+        glow: "0 20px 60px rgba(160,171,186,0.18)",
+        panel: "0 24px 80px rgba(0,0,0,0.38)"
       },
       keyframes: {
         float: {

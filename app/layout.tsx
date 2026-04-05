@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Manrope, Syne } from "next/font/google";
 
 import { auth } from "@/auth";
 import { Footer } from "@/components/footer";
@@ -10,12 +10,12 @@ import { siteConfig } from "@/lib/data";
 
 import "./globals.css";
 
-const inter = Inter({
+const inter = Manrope({
   subsets: ["latin"],
   variable: "--font-inter"
 });
 
-const cormorant = Cormorant_Garamond({
+const cormorant = Syne({
   subsets: ["latin"],
   variable: "--font-cormorant",
   weight: ["400", "500", "600", "700"]
@@ -24,7 +24,7 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} | Premium Barber Experience`,
+    default: `${siteConfig.name} | Premium Barber & Education`,
     template: `%s | ${siteConfig.name}`
   },
   description: siteConfig.description,

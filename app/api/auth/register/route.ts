@@ -25,14 +25,22 @@ export async function POST(request: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Există deja un cont cu emailul acesta." }, { status: 409 });
+      return NextResponse.json({ error: "Exista deja un cont cu emailul acesta." }, { status: 409 });
     }
+
+    const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { id: true }
+    });
+    const role = !existingAdmin && adminEmail && email === adminEmail ? "ADMIN" : "USER";
 
     await prisma.user.create({
       data: {
         name: payload.data.name || null,
         email,
-        passwordHash: hashPassword(payload.data.password)
+        passwordHash: hashPassword(payload.data.password),
+        role
       }
     });
 

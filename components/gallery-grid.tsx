@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { StaticImageData } from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
@@ -8,7 +9,7 @@ export type GalleryImage = {
   id: string;
   title: string;
   category: string;
-  imageUrl: string;
+  imageUrl: string | StaticImageData;
 };
 
 export function GalleryGrid({ items }: { items: GalleryImage[] }) {
@@ -28,7 +29,7 @@ export function GalleryGrid({ items }: { items: GalleryImage[] }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
               </div>
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-xs uppercase tracking-[0.35em] text-gold-light/85">{item.category}</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-accent/85">{item.category}</p>
                 <h3 className="mt-2 text-2xl text-white">{item.title}</h3>
               </div>
             </button>
@@ -41,10 +42,10 @@ export function GalleryGrid({ items }: { items: GalleryImage[] }) {
               </div>
               <div className="flex items-center justify-between p-6">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-gold-light/80">{item.category}</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-accent/80">{item.category}</p>
                   <Dialog.Title className="mt-2 text-3xl text-white">{item.title}</Dialog.Title>
                 </div>
-                <Dialog.Close className="rounded-full border border-white/15 p-3 text-white/70 transition hover:border-gold/40 hover:text-white">
+                <Dialog.Close className="rounded-full border border-white/15 p-3 text-white/70 transition hover:border-white/30 hover:text-white">
                   <X className="h-5 w-5" />
                 </Dialog.Close>
               </div>

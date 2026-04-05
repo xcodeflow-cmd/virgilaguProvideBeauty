@@ -12,11 +12,14 @@ html {
 
 body {
   background-color: #080808;
+  background-image:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.05), transparent 30%),
+    linear-gradient(180deg, #050505 0%, #090a0d 45%, #050505 100%);
 }
 
 ::selection {
-  background: rgba(212, 168, 95, 0.35);
-  color: #f5f3ef;
+  background: rgba(200, 208, 220, 0.32);
+  color: #f5f7fa;
 }
 
 @layer base {
@@ -38,10 +41,14 @@ body {
   }
 
   .glass-panel {
-    @apply border border-white/10 bg-white/5 backdrop-blur-xl;
+    @apply border border-white/10 bg-white/[0.06] shadow-panel backdrop-blur-xl;
   }
 
-  .gold-ring {
-    @apply ring-1 ring-gold/30;
+  .soft-ring {
+    @apply ring-1 ring-white/10;
+  }
+
+  .accent-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs uppercase tracking-[0.35em] text-accent;
   }
 }

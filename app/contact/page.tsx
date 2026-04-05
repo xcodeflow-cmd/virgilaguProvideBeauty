@@ -8,8 +8,8 @@ import { siteConfig } from "@/lib/data";
 
 const contactItems = [
   { label: "WhatsApp", value: "+40 700 000 000", href: siteConfig.socials.whatsapp, icon: MessageCircle },
-  { label: "Instagram", value: "@tudornoirstudio", href: siteConfig.socials.instagram, icon: Instagram },
-  { label: "TikTok", value: "@tudornoirstudio", href: siteConfig.socials.tiktok, icon: Ticket },
+  { label: "Instagram", value: "@virgilagu", href: siteConfig.socials.instagram, icon: Instagram },
+  { label: "TikTok", value: "@virgilagu", href: siteConfig.socials.tiktok, icon: Ticket },
   { label: "Phone", value: "+40 700 000 000", href: siteConfig.socials.phone, icon: Phone }
 ];
 
@@ -19,15 +19,15 @@ export default function ContactPage() {
       <FadeIn>
         <SectionHeading
           eyebrow="Contact"
-          title="Reach the studio instantly."
-          description="Bookings, social touchpoints, and direct contact are styled as premium conversion paths instead of a basic contact block."
+          title="Programeaza-te sau intra direct in legatura."
+          description="Pagina de contact pastreaza acelasi limbaj vizual premium si prioritizeaza actiunile utile: booking, social si contact direct."
         />
       </FadeIn>
       <div className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="grid gap-4">
           {contactItems.map((item) => (
-            <Link key={item.label} href={item.href} className="glass-panel flex items-center gap-4 rounded-[1.5rem] p-5 transition hover:border-gold/30 hover:bg-white/8">
-              <item.icon className="h-5 w-5 text-gold-light" />
+            <Link key={item.label} href={item.href} className="glass-panel flex items-center gap-4 rounded-[1.5rem] p-5 transition hover:border-white/20 hover:bg-white/8">
+              <item.icon className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-white/40">{item.label}</p>
                 <p className="mt-1 text-xl text-white">{item.value}</p>
@@ -35,12 +35,12 @@ export default function ContactPage() {
             </Link>
           ))}
           <div className="glass-panel rounded-[1.5rem] p-6">
-            <div className="flex items-center gap-3 text-gold-light">
+            <div className="flex items-center gap-3 text-accent">
               <Video className="h-5 w-5" />
-              <p className="text-sm uppercase tracking-[0.35em]">Private live bookings</p>
+              <p className="text-sm uppercase tracking-[0.35em]">Live si colaborari</p>
             </div>
             <p className="mt-3 text-base leading-7 text-white/60">
-              Ready for collaboration, private education sessions, or branded content? Use the same premium booking flow.
+              Pentru cursuri, colaborari sau sesiuni private, foloseste acelasi formular si centralizezi totul intr-un singur flux.
             </p>
           </div>
         </div>

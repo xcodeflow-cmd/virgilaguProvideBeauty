@@ -20,6 +20,11 @@ export function AuthButtons({ session }: { session: Session | null }) {
 
   return (
     <div className="flex items-center gap-3">
+      {session.user.role === "ADMIN" ? (
+        <Button asChild variant="ghost" className="hidden sm:inline-flex">
+          <Link href="/admin">Admin</Link>
+        </Button>
+      ) : null}
       <Button asChild variant="ghost" className="hidden sm:inline-flex">
         <Link href="/dashboard">Dashboard</Link>
       </Button>

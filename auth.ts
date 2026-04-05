@@ -55,6 +55,23 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+
+        if (adminEmail && email === adminEmail && user.role !== "ADMIN") {
+          const existingAdmin = await prisma.user.findFirst({
+            where: { role: "ADMIN" },
+            select: { id: true }
+          });
+
+          if (!existingAdmin) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { role: "ADMIN" }
+            });
+            user.role = "ADMIN";
+          }
+        }
+
         return {
           id: user.id,
           email: user.email,

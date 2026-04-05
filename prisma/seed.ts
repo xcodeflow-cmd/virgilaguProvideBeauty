@@ -31,25 +31,23 @@ async function main() {
   await prisma.liveSession.createMany({
     data: [
       {
-        title: "Luxury Fade Workflow",
-        slug: "luxury-fade-workflow",
-        description: "A full breakdown of consultation, sectioning, clipper control, and finishing.",
+        title: "LIVE Barber Experience",
+        slug: "live-barber-experience",
+        description: "Sesiune live cu explicatii clare, ritm de lucru si eficienta in salon.",
         scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
         durationMinutes: 75,
-        thumbnailUrl:
-          "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&q=80",
+        thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
         visibility: "SUBSCRIBERS",
         isFeatured: true
       },
       {
-        title: "Textured Crop Masterclass",
-        slug: "textured-crop-masterclass",
-        description: "A precision-focused session for modern crop silhouettes and styling finish.",
+        title: "Fade Breakdown Session",
+        slug: "fade-breakdown-session",
+        description: "Structura unui fade curat si adaptarea executiei la tipologia clientului.",
         scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
         durationMinutes: 60,
-        thumbnailUrl:
-          "https://images.unsplash.com/photo-1519415943484-9fa1873496d4?auto=format&fit=crop&w=1200&q=80",
-        recordingUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+        thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg",
+        recordingUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         visibility: "ONE_TIME",
         price: 1900
       }
@@ -60,17 +58,101 @@ async function main() {
   await prisma.testimonial.createMany({
     data: [
       {
-        clientName: "Alex V.",
-        role: "Creative Director",
-        quote: "Sharpest fades in the city. The experience feels closer to private tailoring than a typical barbershop."
+        clientName: "Onisim B.",
+        role: "MERO",
+        quote: "Recomand cu incredere, top no comment."
       },
       {
-        clientName: "Matei P.",
-        role: "Founder",
-        quote: "Consistent, polished, and premium from the booking flow to the final finish."
+        clientName: "Alex C.",
+        role: "MERO",
+        quote: "Topul de pe lume!"
       }
     ],
     skipDuplicates: true
+  });
+
+  await prisma.siteSettings.upsert({
+    where: { id: "main" },
+    update: {},
+    create: {
+      id: "main",
+      subscriptionPlans: [
+        {
+          name: "Abonament Live",
+          price: "de la 19 EUR / luna",
+          description: "Acces la live-uri, replay-uri si sesiuni educative pentru profesionisti.",
+          features: [
+            "Acces la live stream",
+            "Acces la arhiva de sesiuni",
+            "Intrebari si raspunsuri in timpul sesiunilor",
+            "Continut educational actualizat"
+          ]
+        },
+        {
+          name: "Sesiune individuala",
+          price: "de la 15 EUR",
+          description: "Deblochezi o sesiune singulara fara abonament recurent.",
+          features: [
+            "Acces one-time",
+            "Ideal pentru sesiuni punctuale",
+            "Plata simpla",
+            "Perfect pentru testarea platformei"
+          ]
+        }
+      ],
+      courses: {
+        beginner: {
+          title: "Curs de frizerie pentru incepatori (de la 0)",
+          description: [
+            "Organizat cu Scoala Comerciala si de Servicii Bacau",
+            "Trainer: Virgil Agu",
+            "Peste 10 ani experienta",
+            "Peste 300 de studenti pregatiti"
+          ],
+          achievements: [
+            "Fast Fade Dublin",
+            "Master Barber Romania, 2 ani la rand",
+            "Alte clasari de top in industrie"
+          ],
+          details: ["Pret: 3650 RON", "Numar maxim de participanti: 6"]
+        },
+        advanced: {
+          title: "Curs de perfectionare 1 la 1",
+          description: "Experienta intensiva de o zi, personalizata in functie de nivelul, ritmul si obiectivele cursantului.",
+          includes: [
+            "1 zi completa de training",
+            "2 modele reale",
+            "Explicatie pas cu pas",
+            "Practica hands-on",
+            "Corectii in timp real",
+            "Tips & tricks din peste 10 ani experienta"
+          ],
+          outcomes: [
+            "Clean fades",
+            "Adaptare la forma fetei",
+            "Tehnici moderne de tuns",
+            "Controlul sculelor"
+          ]
+        },
+        liveExperience: {
+          title: "LIVE Barber Experience",
+          description: "Sesiuni lunare de tuns live, cu explicatii clare si context real de salon.",
+          includes: [
+            "Tunsori in timp real",
+            "Explicatii step-by-step",
+            "Q&A in timpul stream-ului",
+            "Trenduri din industrie",
+            "Tehnici de eficienta"
+          ],
+          outcomes: [
+            "Optimizarea vitezei",
+            "Tehnici de precizie",
+            "Mindset profesionist"
+          ],
+          details: ["Pret: 100 RON / sesiune", "Frecventa: lunar"]
+        }
+      }
+    }
   });
 }
 
