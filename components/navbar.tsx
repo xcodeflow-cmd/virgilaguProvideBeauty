@@ -13,7 +13,6 @@ const navLinks = [
   { href: "/", label: "Acasa" },
   { href: "/live", label: "LIVE" },
   { href: "/gallery", label: "Galerie" },
-  { href: "/admin", label: "Admin" },
   { href: "/reviews", label: "Review-uri" },
   { href: "/courses", label: "Cursuri" }
 ];
@@ -21,6 +20,9 @@ const navLinks = [
 export function Navbar({ session }: { session: Session | null }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const visibleLinks = session?.user?.role === "ADMIN"
+    ? [...navLinks, { href: "/admin", label: "Admin" }]
+    : navLinks;
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 10);
@@ -45,7 +47,7 @@ export function Navbar({ session }: { session: Session | null }) {
             <Logo />
           </Link>
           <nav className="hidden items-center gap-7 md:flex">
-            {navLinks.map((link) => (
+            {visibleLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -70,7 +72,7 @@ export function Navbar({ session }: { session: Session | null }) {
         {isOpen ? (
           <div className="mt-3 rounded-[1.5rem] border border-white/10 bg-black/85 p-4 shadow-panel backdrop-blur-2xl md:hidden">
             <nav className="grid gap-2">
-              {navLinks.map((link) => (
+              {visibleLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
