@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { AdminDashboard } from "@/components/site/admin-dashboard";
 import { SectionHeading } from "@/components/section-heading";
 import { Button } from "@/components/ui/button";
 import { courses as defaultCourses, subscriptionPlans as defaultSubscriptionPlans } from "@/lib/data";
@@ -23,7 +25,7 @@ function toTextarea(items: string[]) {
   return items.join("\n");
 }
 
-export default async function AdminPage() {
+async function LegacyAdminPageUnused() {
   const session = await auth();
 
   if (!session?.user) {
@@ -180,4 +182,8 @@ export default async function AdminPage() {
       </div>
     </section>
   );
+}
+
+export default function AdminPage() {
+  return <AdminDashboard />;
 }

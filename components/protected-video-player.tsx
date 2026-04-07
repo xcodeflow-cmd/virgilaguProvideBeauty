@@ -7,23 +7,25 @@ export function ProtectedVideoPlayer({
 }) {
   return (
     <div className="glass-panel overflow-hidden rounded-[2rem] border border-white/10">
-      {canAccess && embedUrl ? (
+      {embedUrl ? (
         <iframe
           src={embedUrl}
-          title="Virgil Agu live stream"
+          title="YouTube live stream"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
           className="aspect-video w-full bg-black"
         />
       ) : (
         <div className="flex aspect-video items-center justify-center bg-black px-6 text-center text-white/60">
-          Trebuie sa ai abonament pentru a vedea live-ul
+          No live stream available right now
         </div>
       )}
       <div className="p-6 text-sm leading-7 text-white/62">
-        {canAccess
-          ? "Zona live foloseste embed YouTube si poate prelua automat sesiunea curenta din YouTube API."
-          : "Accesul este permis doar utilizatorilor autentificati care au abonament activ."}
+        {embedUrl
+          ? "Playerul foloseste un iframe YouTube generat din URL-ul salvat in admin."
+          : canAccess
+            ? "Live-ul nu are momentan un URL valid salvat in admin."
+            : "Adauga un URL YouTube valid in admin pentru a afisa live-ul aici."}
       </div>
     </div>
   );

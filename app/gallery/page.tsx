@@ -1,7 +1,6 @@
-import { GalleryGrid } from "@/components/gallery-grid";
 import { FadeIn } from "@/components/motion-shell";
 import { SectionHeading } from "@/components/section-heading";
-import { galleryItems } from "@/lib/data";
+import { GalleryPageContent } from "@/components/site/gallery-page-content";
 
 export default function GalleryPage() {
   return (
@@ -15,7 +14,7 @@ export default function GalleryPage() {
         />
       </FadeIn>
       <div className="mx-auto mt-10 max-w-7xl">
-        <GalleryGrid items={galleryItems} />
+        <GalleryPageContent />
       </div>
     </section>
   );

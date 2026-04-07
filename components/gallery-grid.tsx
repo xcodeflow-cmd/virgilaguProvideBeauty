@@ -23,15 +23,15 @@ export function GalleryGrid({
     <div
       className={
         columns === "preview"
-          ? "grid gap-5 sm:grid-cols-2"
+          ? "grid gap-5 md:grid-cols-2"
           : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
       }
     >
       {items.map((item) => (
         <Dialog.Root key={item.id}>
           <Dialog.Trigger asChild>
-            <button className="group premium-card relative overflow-hidden text-left hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
-              <div className="relative aspect-[4/5] overflow-hidden">
+            <button className="group premium-card relative flex h-full flex-col overflow-hidden text-left hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
+              <div className="relative aspect-square overflow-hidden">
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
