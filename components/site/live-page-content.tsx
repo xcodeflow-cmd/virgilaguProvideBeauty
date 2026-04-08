@@ -623,7 +623,7 @@ export function LivePageContent({
               <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/60">
                 {currentSession?.scheduledFor
                   ? new Date(currentSession.scheduledFor).toLocaleString("ro-RO")
-                  : "Programarea apare aici"}
+                  : "Va fi disponibil cand se porneste o sesiune LIVE"}
               </div>
             </div>
 
@@ -646,7 +646,7 @@ export function LivePageContent({
               <p className="max-w-2xl text-sm leading-7 text-white/60">
                 {currentSession?.isLive
                   ? "Stream-ul este live. In dreapta ai chatul, iar sub el replay-urile care pot fi deblocate."
-                  : "Cand stream-ul porneste, aici intra direct video-ul live, fara introduceri inutile sau blocuri care incarca pagina."}
+                  : "Va fi disponibil cand se porneste o sesiune live, daca nu a fost programat nimic din contul de admin."}
               </p>
               {isAdmin ? (
                 <div className="flex flex-wrap gap-3">
@@ -679,10 +679,10 @@ export function LivePageContent({
         </div>
 
         <div className="space-y-6">
-          <div className="flex min-h-[540px] flex-col overflow-hidden rounded-[2.2rem] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.01))] shadow-panel">
+          <div className="flex min-h-[540px] flex-col overflow-hidden rounded-[2.2rem] bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.08),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.008))] shadow-[0_26px_80px_rgba(0,0,0,0.2)]">
             <div className="border-b border-white/10 px-5 py-5 sm:px-6">
               <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">Live Chat</p>
-              <h3 className="mt-3 text-3xl text-white">Conversația ramane aproape de stream.</h3>
+              <h3 className="mt-3 text-3xl text-white">Chat in timp real</h3>
             </div>
 
             <div className="flex-1 bg-[#070707] px-4 py-4 sm:px-5">

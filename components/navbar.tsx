@@ -64,10 +64,10 @@ export function Navbar({ session }: { session: Session | null }) {
       <div className="section-shell flex items-start justify-between gap-4 pt-5">
         <div
           className={cn(
-            "rounded-full border px-4 py-3 transition duration-500 backdrop-blur-2xl",
+            "rounded-full px-4 py-3 transition duration-500",
             isScrolled
-              ? "border-white/12 bg-black/74 shadow-panel"
-              : "border-white/8 bg-black/40 shadow-[0_18px_60px_rgba(0,0,0,0.28)]"
+              ? "bg-black/74 shadow-[0_18px_60px_rgba(0,0,0,0.24)]"
+              : "bg-black/38 shadow-[0_18px_60px_rgba(0,0,0,0.22)]"
           )}
         >
           <Link href="/" aria-label="Go to homepage" className="block">
@@ -78,8 +78,8 @@ export function Navbar({ session }: { session: Session | null }) {
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "hidden rounded-full border px-3 py-2.5 md:flex",
-              isScrolled ? "border-white/12 bg-black/74 shadow-panel backdrop-blur-2xl" : "border-white/8 bg-black/40 backdrop-blur-xl"
+              "hidden rounded-full px-3 py-2.5 md:flex",
+              isScrolled ? "bg-black/74 shadow-[0_18px_60px_rgba(0,0,0,0.22)]" : "bg-black/40 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
             )}
           >
             <AuthButtons session={session} />
@@ -89,10 +89,10 @@ export function Navbar({ session }: { session: Session | null }) {
             type="button"
             aria-label={isOpen ? "Close navigation" : "Open navigation"}
             className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-full border text-white transition duration-500 backdrop-blur-2xl",
+              "flex h-14 w-14 items-center justify-center rounded-full text-white transition duration-500",
               isScrolled
-                ? "border-[#d6b98c]/28 bg-black/78 shadow-panel"
-                : "border-[#d6b98c]/22 bg-black/46 shadow-[0_18px_60px_rgba(0,0,0,0.28)]"
+                ? "bg-black/78 shadow-[0_18px_60px_rgba(0,0,0,0.22)]"
+                : "bg-black/46 shadow-[0_18px_60px_rgba(0,0,0,0.22)]"
             )}
             onClick={() => setIsOpen((value) => !value)}
           >
@@ -104,7 +104,7 @@ export function Navbar({ session }: { session: Session | null }) {
       <div
         className={cn(
           "pointer-events-none fixed inset-0 z-40 transition duration-500",
-          isOpen ? "bg-black/72 backdrop-blur-xl" : "bg-black/0"
+          isOpen ? "bg-black/72" : "bg-black/0"
         )}
         onClick={() => setIsOpen(false)}
       />
@@ -116,7 +116,7 @@ export function Navbar({ session }: { session: Session | null }) {
         )}
       >
         <div className="section-shell">
-          <div className="pointer-events-auto overflow-hidden rounded-[2.5rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.14),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))] shadow-luxury backdrop-blur-2xl">
+          <div className="pointer-events-auto overflow-hidden rounded-[2.5rem] bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.14),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] shadow-[0_40px_120px_rgba(0,0,0,0.35)]">
             <div className="grid gap-0 xl:grid-cols-[0.88fr_1.12fr]">
               <div className="border-b border-white/8 p-8 xl:border-b-0 xl:border-r xl:p-10">
                 <p className="text-xs uppercase tracking-[0.42em] text-[#d6b98c]">Navigation</p>
@@ -141,9 +141,9 @@ export function Navbar({ session }: { session: Session | null }) {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className="group rounded-[1.9rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))] p-5 transition duration-500 hover:-translate-y-1.5 hover:border-[#d6b98c]/24 hover:shadow-panel"
+                      className="group rounded-[1.9rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-5 transition duration-500 hover:-translate-y-1.5 hover:shadow-[0_22px_55px_rgba(0,0,0,0.25)]"
                     >
-                      <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border border-white/10 text-white/88", link.tone)}>
+                      <div className={cn("flex h-12 w-12 items-center justify-center rounded-full text-white/88", link.tone)}>
                         <Icon className="h-5 w-5" />
                       </div>
                       <p className="mt-12 text-[11px] uppercase tracking-[0.36em] text-white/42">

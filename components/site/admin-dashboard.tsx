@@ -290,21 +290,21 @@ export function AdminDashboard({
               </div>
             </section>
 
-            <section id="live" className="premium-card p-6">
+            <section id="live" className="overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_26px_80px_rgba(0,0,0,0.2)]">
               <p className="dashboard-label">Live</p>
-              <h2 className="mt-3 text-2xl text-white">Sesiuni LIVE</h2>
-              <p className="mt-2 text-sm leading-6 text-white/60">Creeaza o sesiune LIVE si controleaza aparitia ei in pagina de live.</p>
+              <h2 className="mt-3 text-3xl text-white">Programeaza urmatoarea sesiune LIVE</h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/60">Formularul de programare trebuie sa arate la fel de premium ca pagina pe care o controleaza.</p>
               <form action={addLiveSession} className="mt-6 space-y-4">
                 <input name="title" required placeholder="Titlu live" className="premium-input" />
                 <input name="slug" placeholder="slug-live" className="premium-input" />
                 <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
                 <input name="thumbnailUrl" required placeholder="URL thumbnail" className="premium-input" />
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/75">
+                  <label className="flex items-center gap-3 rounded-[1.5rem] bg-white/[0.04] px-4 py-4 text-sm text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <input type="radio" name="startMode" value="NOW" checked={liveStartMode === "NOW"} onChange={() => setLiveStartMode("NOW")} />
                     Start Now
                   </label>
-                  <label className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/75">
+                  <label className="flex items-center gap-3 rounded-[1.5rem] bg-white/[0.04] px-4 py-4 text-sm text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <input type="radio" name="startMode" value="SCHEDULE" checked={liveStartMode === "SCHEDULE"} onChange={() => setLiveStartMode("SCHEDULE")} />
                     Schedule
                   </label>
@@ -316,7 +316,7 @@ export function AdminDashboard({
                   <option value="ONE_TIME">One time</option>
                 </select>
                 <input name="price" type="number" placeholder="Pret in bani, ex 1900" className="premium-input" />
-                <label className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+                <label className="flex items-center gap-3 rounded-[1.5rem] bg-white/[0.04] px-4 py-4 text-sm text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   <input type="checkbox" name="isFeatured" />
                   Featured
                 </label>
@@ -325,7 +325,7 @@ export function AdminDashboard({
 
               <div className="mt-6 space-y-3">
                 {liveSessions.map((session) => (
-                  <div key={session.id} className="flex flex-col gap-4 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div key={session.id} className="flex flex-col gap-4 rounded-[1.6rem] bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-white">{session.title}</p>
                       <p className="mt-1 text-sm text-white/50">

@@ -22,7 +22,7 @@ export function PastLiveList({
   return (
     <div className="premium-card p-6 sm:p-8">
       <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">Live-uri anterioare</p>
-      <h3 className="mt-3 text-3xl text-white">Replay-uri care raman disponibile si dupa LIVE.</h3>
+      <h3 className="mt-3 text-3xl text-white">Replay-uri disponibile</h3>
 
       <div className="mt-8 space-y-4">
         {sessions.length ? (
