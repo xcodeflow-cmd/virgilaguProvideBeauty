@@ -6,8 +6,8 @@ import { SessionVisibility } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { courses, subscriptionPlans } from "@/lib/data";
+import { normalizeOwncastUrl } from "@/lib/owncast";
 import { prisma } from "@/lib/prisma";
-import { getVimeoEmbedUrl } from "@/lib/vimeo";
 
 async function requireAdmin() {
   const session = await auth();
@@ -70,13 +70,14 @@ export async function addLiveSession(formData: FormData) {
   await requireAdmin();
 
   const title = String(formData.get("title") || "");
-  const streamUrl = String(formData.get("streamUrl") || "").trim();
+  const streamUrl = normalizeOwncastUrl(String(formData.get("streamUrl") || "").trim());
+  const recordingUrl = String(formData.get("recordingUrl") || "").trim() || null;
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? new Date(scheduledValue) : new Date();
 
-  if (!getVimeoEmbedUrl(streamUrl)) {
-    throw new Error("Invalid Vimeo stream or embed link.");
+  if (!streamUrl) {
+    throw new Error("Invalid Owncast server URL.");
   }
 
   if (Number.isNaN(scheduledFor.getTime())) {
@@ -94,6 +95,7 @@ export async function addLiveSession(formData: FormData) {
       scheduledFor,
       thumbnailUrl: String(formData.get("thumbnailUrl") || ""),
       streamUrl,
+      recordingUrl,
       visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
       isLive: startMode !== "SCHEDULE",
       isFeatured: formData.get("isFeatured") === "on",

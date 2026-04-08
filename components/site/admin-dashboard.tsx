@@ -16,7 +16,7 @@ import {
   getDefaultContentState,
   type ServiceItem
 } from "@/lib/cleaning-content";
-import { getVimeoEmbedUrl } from "@/lib/vimeo";
+import { getOwncastEmbedUrl } from "@/lib/owncast";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -40,6 +40,7 @@ type AdminLiveSession = {
   isLive: boolean;
   scheduledFor: string;
   streamUrl: string;
+  recordingUrl: string;
   isFeatured: boolean;
 };
 
@@ -55,7 +56,7 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
     [content.uploadedGallery]
   );
 
-  const currentEmbedUrl = getVimeoEmbedUrl(liveSessions[0]?.streamUrl);
+  const currentEmbedUrl = getOwncastEmbedUrl(liveSessions[0]?.streamUrl);
 
   const resetDraft = () => {
     setServiceDraft(emptyServiceDraft);
@@ -151,7 +152,7 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
       <SectionHeading
         eyebrow="Admin"
         title="Admin pentru cursuri, galerie si sesiuni LIVE."
-        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si sesiunile LIVE Vimeo."
+        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si sesiunile LIVE Owncast."
       />
 
       <div className="mt-10 space-y-6">
@@ -275,9 +276,9 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
           </div>
 
           <div className="glass-panel rounded-[1.75rem] p-6">
-            <h2 className="text-2xl text-white">Vimeo LIVE</h2>
+            <h2 className="text-2xl text-white">Owncast LIVE</h2>
             <p className="mt-2 text-sm leading-6 text-white/60">
-              Creeaza sesiuni LIVE cu ID Vimeo sau link embed. Sesiunea devine activa imediat sau automat la data programata.
+              Creeaza sesiuni LIVE folosind URL-ul serverului Owncast. Sesiunea devine activa imediat sau automat la data programata.
             </p>
             <form action={addLiveSession} className="mt-6 space-y-4">
               <input
@@ -307,7 +308,12 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
               <input
                 name="streamUrl"
                 required
-                placeholder="ID Vimeo sau https://player.vimeo.com/video/..."
+                placeholder="https://live.exemplu.ro"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <input
+                name="recordingUrl"
+                placeholder="URL VOD optional, completat automat de webhook sau recorder"
                 className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
               />
               <div className="grid gap-3 sm:grid-cols-2">
@@ -383,21 +389,24 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
                 const isActive = session.isLive || new Date(session.scheduledFor).getTime() <= Date.now();
 
                 return (
-                <div
-                  key={session.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-white">{session.title}</p>
-                    <p className="mt-1 text-sm text-white/50">
-                      {session.visibility} - {isActive ? "LIVE" : "scheduled"} - {new Date(session.scheduledFor).toLocaleString("ro-RO")}
-                    </p>
+                  <div
+                    key={session.id}
+                    className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="text-white">{session.title}</p>
+                      <p className="mt-1 text-sm text-white/50">
+                        {session.visibility} - {isActive ? "LIVE" : "scheduled"} - {new Date(session.scheduledFor).toLocaleString("ro-RO")}
+                      </p>
+                      {session.recordingUrl ? (
+                        <p className="mt-1 text-xs text-white/40">VOD salvat</p>
+                      ) : null}
+                    </div>
+                    <form action={deleteLiveSession}>
+                      <input type="hidden" name="id" value={session.id} />
+                      <Button type="submit" variant="secondary">Sterge</Button>
+                    </form>
                   </div>
-                  <form action={deleteLiveSession}>
-                    <input type="hidden" name="id" value={session.id} />
-                    <Button type="submit" variant="secondary">Sterge</Button>
-                  </form>
-                </div>
                 );
               })}
             </div>

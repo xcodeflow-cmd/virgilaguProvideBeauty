@@ -6,8 +6,8 @@ import { LivePageContent } from "@/components/site/live-page-content";
 import { FadeIn } from "@/components/motion-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { Button } from "@/components/ui/button";
-import { getPrimaryLiveSession, hasLiveAccess, isLiveSessionActive } from "@/lib/live";
-import { getVimeoEmbedUrl } from "@/lib/vimeo";
+import { getPastLiveSessions, getPrimaryLiveSession, hasLiveAccess, isLiveSessionActive } from "@/lib/live";
+import { getOwncastEmbedUrl } from "@/lib/owncast";
 
 export default async function LivePage() {
   const session = await auth();
@@ -16,8 +16,9 @@ export default async function LivePage() {
     hasLiveAccess(session?.user?.id),
     getPrimaryLiveSession()
   ]);
+  const pastSessions = await getPastLiveSessions(hasAccess);
   const isActive = liveSession ? isLiveSessionActive(liveSession) : false;
-  const embedUrl = isActive ? getVimeoEmbedUrl(liveSession?.streamUrl) : null;
+  const embedUrl = isActive ? getOwncastEmbedUrl(liveSession?.streamUrl) : null;
 
   return (
     <section className="section-shell section-space">
@@ -35,6 +36,13 @@ export default async function LivePage() {
           isActive={isActive}
           embedUrl={embedUrl}
           liveSessionId={liveSession?.id || null}
+          pastSessions={pastSessions.map((item) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            scheduledFor: item.scheduledFor.toISOString(),
+            recordingUrl: item.recordingUrl || ""
+          }))}
         />
         <div className="premium-card p-8">
           <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Acces LIVE</p>

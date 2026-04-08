@@ -137,32 +137,22 @@ export function normalizeContentState(raw: unknown): CleaningContentState {
   };
 }
 
-export function getVimeoVideoId(url: string) {
+export function getOwncastUrl(url: string) {
   if (!url) {
     return null;
   }
 
   const trimmed = url.trim();
 
-  const patterns = [
-    /^(\d+)$/,
-    /player\.vimeo\.com\/video\/(\d+)/,
-    /vimeo\.com\/(?:event\/\d+\/)?(\d+)/,
-    /vimeo\.com\/manage\/videos\/(\d+)/
-  ];
-
-  for (const pattern of patterns) {
-    const match = trimmed.match(pattern);
-
-    if (match?.[1]) {
-      return match[1];
-    }
+  try {
+    const parsed = new URL(trimmed.startsWith("http://") || trimmed.startsWith("https://") ? trimmed : `https://${trimmed}`);
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return null;
   }
-
-  return null;
 }
 
-export function getVimeoEmbedUrl(url: string) {
-  const videoId = getVimeoVideoId(url);
-  return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+export function getOwncastEmbedUrl(url: string) {
+  const normalizedUrl = getOwncastUrl(url);
+  return normalizedUrl ? `${normalizedUrl}/embed/video` : null;
 }

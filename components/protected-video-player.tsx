@@ -24,12 +24,12 @@ export function ProtectedVideoPlayer({
       )}
       <div className="p-6 text-sm leading-7 text-white/62">
         {embedUrl
-          ? "Playerul foloseste un iframe Vimeo generat din sesiunea salvata in admin."
+          ? "Playerul foloseste embed-ul video Owncast al sesiunii salvate in admin."
           : !canAccess
             ? "Ai nevoie de un abonament activ pentru a vedea sesiunea LIVE."
             : !isActive
               ? "LIVE-ul nu este activ inca. Daca este programat, playerul apare automat la ora setata."
-              : "LIVE-ul nu are momentan un ID sau link Vimeo valid salvat in admin."}
+              : "LIVE-ul nu are momentan un URL Owncast valid salvat in admin."}
       </div>
     </div>
   );

@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { getVimeoEmbedUrl, getVimeoVideoId } from "@/lib/vimeo";
+import { getOwncastEmbedUrl, normalizeOwncastUrl } from "@/lib/owncast";
 
 export async function GET() {
-  const forcedValue = process.env.VIMEO_LIVE_VIDEO_ID || process.env.VIMEO_LIVE_EMBED_URL;
-  const videoId = getVimeoVideoId(forcedValue);
-  const embedUrl = getVimeoEmbedUrl(forcedValue);
+  const serverUrl = normalizeOwncastUrl(process.env.OWNCAST_SERVER_URL);
+  const embedUrl = getOwncastEmbedUrl(serverUrl);
 
-  if (videoId && embedUrl) {
+  if (serverUrl && embedUrl) {
     return NextResponse.json({
-      videoId,
+      serverUrl,
       embedUrl,
       source: "env"
     });
   }
 
-  return NextResponse.json({ error: "Missing Vimeo live configuration." }, { status: 400 });
+  return NextResponse.json({ error: "Missing Owncast live configuration." }, { status: 400 });
 }

@@ -1,7 +1,7 @@
 import type { LiveSession } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { getVimeoEmbedUrl } from "@/lib/vimeo";
+import { getOwncastEmbedUrl } from "@/lib/owncast";
 
 export function isSubscriptionActive(status?: string | null) {
   return status === "active" || status === "trialing";
@@ -31,7 +31,7 @@ export async function hasLiveAccess(userId?: string) {
 }
 
 export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "scheduledFor" | "streamUrl">, now = new Date()) {
-  if (!getVimeoEmbedUrl(session.streamUrl)) {
+  if (!getOwncastEmbedUrl(session.streamUrl)) {
     return false;
   }
 
@@ -56,11 +56,32 @@ export async function getPrimaryLiveSession() {
     }
 
     const upcomingSession = sessions.find(
-      (session) => Boolean(getVimeoEmbedUrl(session.streamUrl)) && session.scheduledFor.getTime() > now.getTime()
+      (session) => Boolean(getOwncastEmbedUrl(session.streamUrl)) && session.scheduledFor.getTime() > now.getTime()
     );
 
     return upcomingSession || sessions[0];
   } catch {
     return null;
+  }
+}
+
+export async function getPastLiveSessions(canAccess: boolean) {
+  if (!canAccess) {
+    return [];
+  }
+
+  try {
+    const sessions = await prisma.liveSession.findMany({
+      where: {
+        recordingUrl: { not: null }
+      },
+      orderBy: { scheduledFor: "desc" }
+    });
+
+    const now = new Date();
+
+    return sessions.filter((session) => !isLiveSessionActive(session, now));
+  } catch {
+    return [];
   }
 }
