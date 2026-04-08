@@ -31,7 +31,7 @@ export default function ContactPage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="group rounded-[1.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-5 transition duration-500 hover:-translate-y-1.5 hover:shadow-[0_22px_55px_rgba(0,0,0,0.22)]"
+                className="group rounded-[1.6rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.2)]"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d6b98c]/10 text-accent">
                   <item.icon className="h-5 w-5" />

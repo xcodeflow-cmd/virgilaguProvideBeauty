@@ -27,13 +27,13 @@ export function PastLiveList({
       <div className="mt-8 space-y-4">
         {sessions.length ? (
           sessions.map((session) => (
-            <div key={session.id} className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-panel sm:p-6">
+            <div key={session.id} className="rounded-[1.7rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.18)] sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xl text-white">{session.title}</p>
                   <p className="mt-2 text-sm leading-6 text-white/60">{session.description}</p>
                 </div>
-                <div className="rounded-full border border-[#d6b98c]/18 bg-[#d6b98c]/[0.08] px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
+                <div className="rounded-full bg-[#d6b98c]/[0.08] px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
                   {session.price ? `${(session.price / 100).toFixed(0)} EUR` : "Abonament"}
                 </div>
               </div>
