@@ -36,6 +36,13 @@ type LiveRecording = {
   videoUrl: string;
 };
 
+const rtcConfiguration: RTCConfiguration = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }
+  ]
+};
+
 async function waitForIceGathering(pc: RTCPeerConnection) {
   if (pc.iceGatheringState === "complete") {
     return;
@@ -115,6 +122,10 @@ export function LivePageContent({
     }
 
     return data as T;
+  }
+
+  function createPeerConnection() {
+    return new RTCPeerConnection(rtcConfiguration);
   }
 
   async function loadCurrentLive() {
@@ -290,7 +301,13 @@ export function LivePageContent({
           continue;
         }
 
-        const peer = new RTCPeerConnection();
+        const peer = createPeerConnection();
+        peer.onconnectionstatechange = () => {
+          if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+            peer.close();
+            adminPeersRef.current.delete(viewerId);
+          }
+        };
 
         localStream.getTracks().forEach((track) => {
           peer.addTrack(track, localStream);
@@ -356,10 +373,20 @@ export function LivePageContent({
         return;
       }
 
-      const peer = new RTCPeerConnection();
+      const peer = createPeerConnection();
       peer.ontrack = (event) => {
         if (remoteVideoRef.current) {
           remoteVideoRef.current.srcObject = event.streams[0];
+        }
+      };
+      peer.onconnectionstatechange = () => {
+        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = null;
+          }
+          peer.close();
+          viewerPeerRef.current = null;
+          requestedOfferLiveIdRef.current = null;
         }
       };
 
