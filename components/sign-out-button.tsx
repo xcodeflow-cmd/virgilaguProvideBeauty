@@ -11,6 +11,7 @@ export function SignOutButton() {
   return (
     <Button
       variant="secondary"
+      className="border-[rgba(201,165,108,0.24)]"
       onClick={() =>
         startTransition(() => {
           void signOut({ callbackUrl: "/" });

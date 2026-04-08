@@ -112,8 +112,8 @@ export default async function CoursesPage() {
             </div>
             <div className="flex flex-col justify-center p-8 sm:p-10">
               <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Trainer</p>
-              <h2 className="mt-4 text-4xl text-white sm:text-5xl">Virgil Agu</h2>
-              <p className="mt-4 text-sm leading-7 text-white/64 sm:text-base">
+              <h2 className="mt-4 text-5xl leading-[0.92] text-white sm:text-6xl">Virgil Agu</h2>
+              <p className="mt-5 text-sm leading-8 text-white/64 sm:text-base">
                 Cu peste 10 ani experienta, zeci de seminarii si workshopuri, plus peste 300 de
                 cursanti formati, Virgil aduce context real de salon in fiecare curs.
               </p>

@@ -13,8 +13,8 @@ export function TestimonialsSection({
 }) {
   return (
     <section className="section-shell section-space">
-      <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-        <FadeIn className="premium-card p-8 sm:p-10">
+      <div className="grid gap-10 lg:grid-cols-[0.76fr_1.24fr] lg:items-start">
+        <FadeIn className="premium-card p-8 sm:p-10 lg:sticky lg:top-32">
           <SectionHeading
             eyebrow="Clienti"
             title="Review-uri reale care confirma executia, atentia la detalii si constanta."
@@ -36,15 +36,15 @@ export function TestimonialsSection({
           {items.map((item) => (
             <FadeIn
               key={item.id}
-              className="premium-card flex h-full flex-col p-8 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]"
+              className="premium-card flex h-full flex-col p-8 hover:-translate-y-1.5 hover:shadow-luxury"
             >
               <div className="flex gap-1 text-accent">
                 {Array.from({ length: item.rating || 5 }).map((_, index) => (
                   <Star key={index} className="h-4 w-4 fill-current" />
                 ))}
               </div>
-              <p className="mt-6 flex-1 text-xl leading-8 text-white/76">&ldquo;{item.quote}&rdquo;</p>
-              <div className="mt-6 border-t border-white/10 pt-5">
+              <p className="mt-8 flex-1 text-2xl leading-9 text-white/80">&ldquo;{item.quote}&rdquo;</p>
+              <div className="mt-8 border-t border-white/10 pt-5">
                 <p className="text-lg text-white">{item.clientName}</p>
                 <p className="text-sm uppercase tracking-[0.32em] text-white/40">
                   {item.role || "Client"}

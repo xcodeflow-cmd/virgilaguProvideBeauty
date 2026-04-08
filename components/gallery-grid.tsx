@@ -23,26 +23,28 @@ export function GalleryGrid({
     <div
       className={
         columns === "preview"
-          ? "grid gap-5 md:grid-cols-2"
-          : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          ? "grid gap-6 md:grid-cols-2"
+          : "grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
       }
     >
       {items.map((item) => (
         <Dialog.Root key={item.id}>
           <Dialog.Trigger asChild>
-            <button className="group premium-card relative flex h-full flex-col overflow-hidden text-left hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
+            <button className="group premium-card relative flex h-full flex-col overflow-hidden text-left hover:-translate-y-1.5 hover:shadow-luxury">
               <div className="relative aspect-square overflow-hidden">
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
                   fill
-                  className="object-cover transition duration-700 group-hover:scale-[1.03]"
+                  className="object-cover transition duration-700 group-hover:scale-[1.05]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
               </div>
-              <div className="absolute inset-x-0 bottom-0 p-5">
+              <div className="absolute inset-x-0 bottom-0 p-6">
                 <p className="text-[10px] uppercase tracking-[0.38em] text-accent/85">{item.category}</p>
-                <h3 className="mt-2 text-xl text-white sm:text-2xl">{item.title}</h3>
+                <h3 className="mt-2 max-w-[16rem] text-2xl leading-tight text-white sm:text-[1.9rem]">
+                  {item.title}
+                </h3>
               </div>
             </button>
           </Dialog.Trigger>

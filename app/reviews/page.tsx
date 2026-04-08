@@ -10,11 +10,11 @@ export default function ReviewsPage() {
         <SectionHeading
           eyebrow="Review-uri"
           title="Feedback real de la clienti care au vazut diferenta."
-          description="Pagina ramane curata si usor de scanat, cu review-uri care sustin increderea in executia si constanta lui Virgil Agu."
+          description="O selectie mai aerisita, mai credibila si mai usor de parcurs, construita in jurul increderii si al consistentei."
           align="center"
         />
       </FadeIn>
-      <div className="mx-auto mt-10 max-w-6xl">
+      <div className="mx-auto mt-14 max-w-5xl">
         <ReviewsList items={reviews} moreHref={siteConfig.socials.mero} />
       </div>
     </section>

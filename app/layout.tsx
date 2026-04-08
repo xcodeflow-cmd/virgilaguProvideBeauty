@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Inter, Poppins } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { auth } from "@/auth";
 import { Navbar } from "@/components/navbar";
@@ -10,14 +10,14 @@ import { siteConfig } from "@/lib/data";
 
 import "./globals.css";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-inter"
+  variable: "--font-manrope"
 });
 
-const poppins = Poppins({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-poppins",
+  variable: "--font-cormorant",
   weight: ["500", "600", "700"]
 });
 
@@ -51,12 +51,13 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${manrope.variable} ${cormorant.variable}`}>
       <body className="bg-background font-sans text-foreground antialiased">
-        <div className="fixed inset-0 -z-10 bg-mesh opacity-80" />
-        <div className="fixed inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(12,12,12,0.84),rgba(12,12,12,0.98))]" />
+        <div className="fixed inset-0 -z-10 bg-canvas" />
+        <div className="fixed inset-0 -z-10 bg-mesh opacity-90" />
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(194,154,92,0.1),transparent_24%),linear-gradient(180deg,rgba(7,7,7,0.18),rgba(7,7,7,0.88))]" />
         <Navbar session={session} />
-        <main className="min-h-screen pt-24">{children}</main>
+        <main className="min-h-screen pt-28 sm:pt-32">{children}</main>
         <SiteFooter />
         <ToasterShell />
       </body>

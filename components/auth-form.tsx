@@ -20,15 +20,15 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
   const alternateLabel = mode === "register" ? "Ai deja cont? Intra in cont" : "Nu ai cont? Creeaza unul";
 
   return (
-    <div className="glass-panel w-full max-w-lg rounded-[2rem] p-8">
-      <div className="space-y-2">
+    <div className="glass-panel w-full max-w-xl rounded-[2.2rem] p-8 sm:p-10">
+      <div className="space-y-3">
         <p className="text-xs uppercase tracking-[0.35em] text-accent/80">
           {mode === "register" ? "Cont nou" : "Bine ai revenit"}
         </p>
-        <h1 className="text-5xl text-white">
+        <h1 className="max-w-md text-5xl leading-[0.92] text-white sm:text-6xl">
           {mode === "register" ? "Creeaza contul tau." : "Acceseaza contul tau."}
         </h1>
-        <p className="text-base leading-7 text-white/60">
+        <p className="max-w-md text-base leading-8 text-white/60">
           {mode === "register"
             ? "Creeaza un cont clasic cu email si parola."
             : "Introdu emailul si parola pentru a intra in platforma."}
@@ -94,7 +94,7 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
                 required
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+                className="field-shell"
                 placeholder="Numele tau"
               />
             </label>
@@ -106,7 +106,7 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+              className="field-shell"
               placeholder="you@example.com"
             />
           </label>
@@ -118,7 +118,7 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
               minLength={8}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+              className="field-shell"
               placeholder="Minimum 8 caractere"
             />
           </label>
@@ -131,7 +131,7 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
                 minLength={8}
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"
+                className="field-shell"
                 placeholder="Repeta parola"
               />
             </label>

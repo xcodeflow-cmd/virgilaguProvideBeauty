@@ -27,12 +27,12 @@ export function ReviewsList({
 
   return (
     <>
-      <Stagger className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <Stagger className="grid gap-6 md:grid-cols-2">
         {visibleItems.map((review, index) => (
           <StaggerItem key={review.id}>
-            <FadeIn delay={index * 0.04} className="premium-card h-full p-6 sm:p-7">
+            <FadeIn delay={index * 0.04} className="premium-card h-full p-7 sm:p-8">
               <div className="flex items-center justify-between gap-4">
-                <p className="text-lg text-white">{review.name}</p>
+                <p className="text-xl text-white">{review.name}</p>
                 <span className="text-[10px] uppercase tracking-[0.38em] text-accent/80">
                   {review.source}
                 </span>
@@ -42,7 +42,7 @@ export function ReviewsList({
                   <Star key={starIndex} className="h-4 w-4 fill-current" />
                 ))}
               </div>
-              <p className="mt-5 text-sm leading-7 text-white/68 sm:text-base">{review.text}</p>
+              <p className="mt-6 max-w-2xl text-base leading-8 text-white/70 sm:text-lg">{review.text}</p>
             </FadeIn>
           </StaggerItem>
         ))}

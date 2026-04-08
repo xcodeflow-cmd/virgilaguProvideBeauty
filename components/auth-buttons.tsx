@@ -11,7 +11,7 @@ export function AuthButtons({ session }: { session: Session | null }) {
         <Button asChild variant="ghost" className="hidden sm:inline-flex">
           <Link href="/auth/signin">Autentificare</Link>
         </Button>
-        <Button asChild variant="secondary">
+        <Button asChild>
           <Link href="/live">Vezi LIVE</Link>
         </Button>
       </div>
@@ -25,7 +25,7 @@ export function AuthButtons({ session }: { session: Session | null }) {
           <Link href="/admin">Admin</Link>
         </Button>
       ) : null}
-      <Button asChild variant="ghost" className="hidden sm:inline-flex">
+      <Button asChild variant="secondary" className="hidden sm:inline-flex">
         <Link href="/dashboard">Contul meu</Link>
       </Button>
       <SignOutButton />
