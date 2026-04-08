@@ -36,6 +36,20 @@ type LiveRecording = {
   videoUrl: string;
 };
 
+type LiveDebugState = {
+  role: "admin" | "viewer";
+  lastEvent: string;
+  connectionState: string;
+  iceConnectionState: string;
+  signalingState: string;
+  pendingRequests: number;
+  answersReceived: number;
+  offerRequestsSent: number;
+  offersReceived: number;
+  answersSent: number;
+  remoteTracks: number;
+};
+
 const rtcConfiguration: RTCConfiguration = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
@@ -85,6 +99,19 @@ export function LivePageContent({
     }))
   );
   const [error, setError] = useState<string | null>(null);
+  const [debug, setDebug] = useState<LiveDebugState>({
+    role: isAdmin ? "admin" : "viewer",
+    lastEvent: "idle",
+    connectionState: "new",
+    iceConnectionState: "new",
+    signalingState: "stable",
+    pendingRequests: 0,
+    answersReceived: 0,
+    offerRequestsSent: 0,
+    offersReceived: 0,
+    answersSent: 0,
+    remoteTracks: 0
+  });
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -126,6 +153,13 @@ export function LivePageContent({
 
   function createPeerConnection() {
     return new RTCPeerConnection(rtcConfiguration);
+  }
+
+  function updateDebug(patch: Partial<LiveDebugState>) {
+    setDebug((current) => ({
+      ...current,
+      ...patch
+    }));
   }
 
   async function loadCurrentLive() {
@@ -190,6 +224,10 @@ export function LivePageContent({
     }
 
     setError(null);
+    updateDebug({
+      lastEvent: "getUserMedia ok",
+      role: "admin"
+    });
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     setLocalStream(stream);
 
@@ -208,6 +246,12 @@ export function LivePageContent({
       body: JSON.stringify({ liveId: currentSession.id })
     });
 
+    updateDebug({
+      lastEvent: "live started",
+      pendingRequests: 0,
+      answersReceived: 0,
+      remoteTracks: 0
+    });
     setCurrentSession({ ...currentSession, isLive: true });
   }
 
@@ -295,6 +339,12 @@ export function LivePageContent({
       const data = await api<{ pendingRequests: string[]; answers: Array<{ viewerId: string; sdp: RTCSessionDescriptionInit }> }>(
         `/api/signal/${currentSession.id}?role=admin`
       );
+      updateDebug({
+        role: "admin",
+        lastEvent: "admin poll ok",
+        pendingRequests: data.pendingRequests.length,
+        answersReceived: data.answers.length
+      });
 
       for (const viewerId of data.pendingRequests) {
         if (adminPeersRef.current.has(viewerId)) {
@@ -302,7 +352,33 @@ export function LivePageContent({
         }
 
         const peer = createPeerConnection();
+        updateDebug({
+          lastEvent: `creating offer for ${viewerId}`,
+          connectionState: peer.connectionState,
+          iceConnectionState: peer.iceConnectionState,
+          signalingState: peer.signalingState
+        });
+        peer.oniceconnectionstatechange = () => {
+          updateDebug({
+            iceConnectionState: peer.iceConnectionState,
+            signalingState: peer.signalingState,
+            connectionState: peer.connectionState,
+            lastEvent: `admin ice ${peer.iceConnectionState}`
+          });
+        };
+        peer.onsignalingstatechange = () => {
+          updateDebug({
+            signalingState: peer.signalingState,
+            lastEvent: `admin signaling ${peer.signalingState}`
+          });
+        };
         peer.onconnectionstatechange = () => {
+          updateDebug({
+            connectionState: peer.connectionState,
+            iceConnectionState: peer.iceConnectionState,
+            signalingState: peer.signalingState,
+            lastEvent: `admin peer ${peer.connectionState}`
+          });
           if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
             peer.close();
             adminPeersRef.current.delete(viewerId);
@@ -326,6 +402,12 @@ export function LivePageContent({
             sdp: peer.localDescription
           })
         });
+        updateDebug({
+          lastEvent: `offer sent to ${viewerId}`,
+          connectionState: peer.connectionState,
+          iceConnectionState: peer.iceConnectionState,
+          signalingState: peer.signalingState
+        });
 
         adminPeersRef.current.set(viewerId, peer);
       }
@@ -335,6 +417,12 @@ export function LivePageContent({
 
         if (peer && !peer.currentRemoteDescription) {
           await peer.setRemoteDescription(answer.sdp);
+          updateDebug({
+            lastEvent: `answer applied for ${answer.viewerId}`,
+            connectionState: peer.connectionState,
+            iceConnectionState: peer.iceConnectionState,
+            signalingState: peer.signalingState
+          });
         }
       }
     }, 2000);
@@ -359,6 +447,11 @@ export function LivePageContent({
         });
 
         requestedOfferLiveIdRef.current = currentSession.id;
+        updateDebug({
+          role: "viewer",
+          lastEvent: "offer request sent",
+          offerRequestsSent: debug.offerRequestsSent + 1
+        });
       }
 
       if (viewerPeerRef.current) {
@@ -370,16 +463,49 @@ export function LivePageContent({
       );
 
       if (!data.offer) {
+        updateDebug({
+          role: "viewer",
+          lastEvent: "waiting for offer"
+        });
         return;
       }
 
+      updateDebug({
+        role: "viewer",
+        offersReceived: debug.offersReceived + 1,
+        lastEvent: "offer received"
+      });
       const peer = createPeerConnection();
       peer.ontrack = (event) => {
         if (remoteVideoRef.current) {
           remoteVideoRef.current.srcObject = event.streams[0];
         }
+        updateDebug({
+          remoteTracks: event.streams[0]?.getTracks().length || 1,
+          lastEvent: "remote track received"
+        });
+      };
+      peer.oniceconnectionstatechange = () => {
+        updateDebug({
+          iceConnectionState: peer.iceConnectionState,
+          signalingState: peer.signalingState,
+          connectionState: peer.connectionState,
+          lastEvent: `viewer ice ${peer.iceConnectionState}`
+        });
+      };
+      peer.onsignalingstatechange = () => {
+        updateDebug({
+          signalingState: peer.signalingState,
+          lastEvent: `viewer signaling ${peer.signalingState}`
+        });
       };
       peer.onconnectionstatechange = () => {
+        updateDebug({
+          connectionState: peer.connectionState,
+          iceConnectionState: peer.iceConnectionState,
+          signalingState: peer.signalingState,
+          lastEvent: `viewer peer ${peer.connectionState}`
+        });
         if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
           if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = null;
@@ -402,6 +528,13 @@ export function LivePageContent({
           viewerId: viewerIdRef.current,
           sdp: peer.localDescription
         })
+      });
+      updateDebug({
+        answersSent: debug.answersSent + 1,
+        lastEvent: "answer sent",
+        connectionState: peer.connectionState,
+        iceConnectionState: peer.iceConnectionState,
+        signalingState: peer.signalingState
       });
 
       viewerPeerRef.current = peer;
@@ -506,6 +639,29 @@ export function LivePageContent({
             >
               Trimite
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {(canAccess || isAdmin) ? (
+        <div className="glass-panel rounded-[2rem] border border-white/10 p-6">
+          <p className="text-xs uppercase tracking-[0.35em] text-accent/80">Debug LIVE</p>
+          <div className="mt-4 grid gap-3 text-sm text-white/70 sm:grid-cols-2">
+            <div className="rounded-[1rem] border border-white/10 bg-black/20 p-4">
+              <p>Rol: {debug.role}</p>
+              <p>Ultimul eveniment: {debug.lastEvent}</p>
+              <p>Connection: {debug.connectionState}</p>
+              <p>ICE: {debug.iceConnectionState}</p>
+              <p>Signaling: {debug.signalingState}</p>
+            </div>
+            <div className="rounded-[1rem] border border-white/10 bg-black/20 p-4">
+              <p>Pending requests: {debug.pendingRequests}</p>
+              <p>Offer requests sent: {debug.offerRequestsSent}</p>
+              <p>Offers received: {debug.offersReceived}</p>
+              <p>Answers received: {debug.answersReceived}</p>
+              <p>Answers sent: {debug.answersSent}</p>
+              <p>Remote tracks: {debug.remoteTracks}</p>
+            </div>
           </div>
         </div>
       ) : null}
