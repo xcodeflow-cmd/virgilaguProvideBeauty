@@ -195,5 +195,21 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  return <AdminDashboard />;
+  const liveSessions = await prisma.liveSession.findMany({
+    orderBy: [{ isFeatured: "desc" }, { scheduledFor: "asc" }, { createdAt: "desc" }]
+  });
+
+  return (
+    <AdminDashboard
+      liveSessions={liveSessions.map((item) => ({
+        id: item.id,
+        title: item.title,
+        visibility: item.visibility,
+        isLive: item.isLive,
+        scheduledFor: item.scheduledFor.toISOString(),
+        streamUrl: item.streamUrl || "",
+        isFeatured: item.isFeatured
+      }))}
+    />
+  );
 }

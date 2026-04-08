@@ -3,6 +3,7 @@
 import { useMemo, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import { Pencil, Trash2, Upload, Video } from "lucide-react";
+import { addLiveSession, deleteLiveSession } from "@/app/admin/actions";
 
 import { Button } from "@/components/ui/button";
 import { GalleryGrid } from "@/components/gallery-grid";
@@ -13,9 +14,9 @@ import {
   defaultGalleryImages,
   getAssetImageById,
   getDefaultContentState,
-  getYoutubeEmbedUrl,
   type ServiceItem
 } from "@/lib/cleaning-content";
+import { getVimeoEmbedUrl } from "@/lib/vimeo";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -32,18 +33,29 @@ const emptyServiceDraft = {
   imageId: cleaningAssetImages[0].id
 };
 
-export function AdminDashboard() {
+type AdminLiveSession = {
+  id: string;
+  title: string;
+  visibility: string;
+  isLive: boolean;
+  scheduledFor: string;
+  streamUrl: string;
+  isFeatured: boolean;
+};
+
+export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSession[] }) {
   const { content, setContent } = useCleaningContent();
   const [serviceDraft, setServiceDraft] = useState(emptyServiceDraft);
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [galleryPreview, setGalleryPreview] = useState<{ title: string; imageUrl: string } | null>(null);
+  const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
 
   const allGalleryItems = useMemo(
     () => [...defaultGalleryImages, ...content.uploadedGallery],
     [content.uploadedGallery]
   );
 
-  const currentEmbedUrl = getYoutubeEmbedUrl(content.live.url);
+  const currentEmbedUrl = getVimeoEmbedUrl(liveSessions[0]?.streamUrl);
 
   const resetDraft = () => {
     setServiceDraft(emptyServiceDraft);
@@ -139,7 +151,7 @@ export function AdminDashboard() {
       <SectionHeading
         eyebrow="Admin"
         title="Admin pentru cursuri, galerie si sesiuni LIVE."
-        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si link-ul pentru YouTube LIVE."
+        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si sesiunile LIVE Vimeo."
       />
 
       <div className="mt-10 space-y-6">
@@ -263,21 +275,90 @@ export function AdminDashboard() {
           </div>
 
           <div className="glass-panel rounded-[1.75rem] p-6">
-            <h2 className="text-2xl text-white">YouTube LIVE</h2>
+            <h2 className="text-2xl text-white">Vimeo LIVE</h2>
             <p className="mt-2 text-sm leading-6 text-white/60">
-              Lipeste URL-ul sesiunei LIVE. Daca nu exista un link valid, pagina LIVE va afisa mesajul de indisponibilitate.
+              Creeaza sesiuni LIVE cu ID Vimeo sau link embed. Sesiunea devine activa imediat sau automat la data programata.
             </p>
-            <input
-              value={content.live.url}
-              onChange={(event) =>
-                setContent((current) => ({
-                  ...current,
-                  live: { url: event.target.value }
-                }))
-              }
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="mt-6 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
-            />
+            <form action={addLiveSession} className="mt-6 space-y-4">
+              <input
+                name="title"
+                required
+                placeholder="Titlu live"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <input
+                name="slug"
+                placeholder="slug-live"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <textarea
+                name="description"
+                required
+                rows={4}
+                placeholder="Descriere"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <input
+                name="thumbnailUrl"
+                required
+                placeholder="URL thumbnail"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <input
+                name="streamUrl"
+                required
+                placeholder="ID Vimeo sau https://player.vimeo.com/video/..."
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/75">
+                  <input
+                    type="radio"
+                    name="startMode"
+                    value="NOW"
+                    checked={liveStartMode === "NOW"}
+                    onChange={() => setLiveStartMode("NOW")}
+                  />
+                  Start Now
+                </label>
+                <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white/75">
+                  <input
+                    type="radio"
+                    name="startMode"
+                    value="SCHEDULE"
+                    checked={liveStartMode === "SCHEDULE"}
+                    onChange={() => setLiveStartMode("SCHEDULE")}
+                  />
+                  Schedule
+                </label>
+              </div>
+              <input
+                name="scheduledFor"
+                type="datetime-local"
+                disabled={liveStartMode !== "SCHEDULE"}
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <select
+                name="visibility"
+                defaultValue="SUBSCRIBERS"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              >
+                <option value="SUBSCRIBERS">Subscribers</option>
+                <option value="PUBLIC">Public</option>
+                <option value="ONE_TIME">One time</option>
+              </select>
+              <input
+                name="price"
+                type="number"
+                placeholder="Pret in bani, ex 1900"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+              />
+              <label className="flex items-center gap-3 text-sm text-white/70">
+                <input type="checkbox" name="isFeatured" />
+                Featured
+              </label>
+              <Button type="submit">Adauga live</Button>
+            </form>
             <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20">
               {currentEmbedUrl ? (
                 <iframe
@@ -296,6 +377,29 @@ export function AdminDashboard() {
                 <Video className="h-4 w-4 text-accent" />
                 Preview pentru pagina LIVE Barber Experience.
               </div>
+            </div>
+            <div className="mt-6 space-y-3">
+              {liveSessions.map((session) => {
+                const isActive = session.isLive || new Date(session.scheduledFor).getTime() <= Date.now();
+
+                return (
+                <div
+                  key={session.id}
+                  className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="text-white">{session.title}</p>
+                    <p className="mt-1 text-sm text-white/50">
+                      {session.visibility} - {isActive ? "LIVE" : "scheduled"} - {new Date(session.scheduledFor).toLocaleString("ro-RO")}
+                    </p>
+                  </div>
+                  <form action={deleteLiveSession}>
+                    <input type="hidden" name="id" value={session.id} />
+                    <Button type="submit" variant="secondary">Sterge</Button>
+                  </form>
+                </div>
+                );
+              })}
             </div>
           </div>
         </div>

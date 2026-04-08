@@ -1,12 +1,23 @@
 "use client";
 
+import { LiveChat } from "@/components/live-chat";
 import { ProtectedVideoPlayer } from "@/components/protected-video-player";
-import { useCleaningContent } from "@/components/site/use-cleaning-content";
-import { getYoutubeEmbedUrl } from "@/lib/cleaning-content";
 
-export function LivePageContent({ canAccess }: { canAccess: boolean }) {
-  const { content } = useCleaningContent();
-  const embedUrl = canAccess ? getYoutubeEmbedUrl(content.live.url) : null;
-
-  return <ProtectedVideoPlayer canAccess={canAccess} embedUrl={embedUrl} />;
+export function LivePageContent({
+  canAccess,
+  isActive,
+  embedUrl,
+  liveSessionId
+}: {
+  canAccess: boolean;
+  isActive: boolean;
+  embedUrl?: string | null;
+  liveSessionId?: string | null;
+}) {
+  return (
+    <div className="space-y-6">
+      <ProtectedVideoPlayer canAccess={canAccess} embedUrl={embedUrl} isActive={isActive} />
+      {canAccess && isActive && liveSessionId ? <LiveChat liveSessionId={liveSessionId} /> : null}
+    </div>
+  );
 }

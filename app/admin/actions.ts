@@ -7,6 +7,7 @@ import { SessionVisibility } from "@prisma/client";
 import { auth } from "@/auth";
 import { courses, subscriptionPlans } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
+import { getVimeoEmbedUrl } from "@/lib/vimeo";
 
 async function requireAdmin() {
   const session = await auth();
@@ -23,6 +24,15 @@ function parseLines(value: FormDataEntryValue | null) {
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 }
 
 export async function addGalleryItem(formData: FormData) {
@@ -60,6 +70,18 @@ export async function addLiveSession(formData: FormData) {
   await requireAdmin();
 
   const title = String(formData.get("title") || "");
+  const streamUrl = String(formData.get("streamUrl") || "").trim();
+  const startMode = String(formData.get("startMode") || "NOW");
+  const scheduledValue = String(formData.get("scheduledFor") || "").trim();
+  const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? new Date(scheduledValue) : new Date();
+
+  if (!getVimeoEmbedUrl(streamUrl)) {
+    throw new Error("Invalid Vimeo stream or embed link.");
+  }
+
+  if (Number.isNaN(scheduledFor.getTime())) {
+    throw new Error("Invalid scheduled date.");
+  }
 
   await prisma.liveSession.create({
     data: {
@@ -67,12 +89,13 @@ export async function addLiveSession(formData: FormData) {
       slug:
         String(formData.get("slug") || "")
           .trim()
-          .toLowerCase() || title.trim().toLowerCase().replace(/\s+/g, "-"),
+          .toLowerCase() || slugify(title),
       description: String(formData.get("description") || ""),
-      scheduledFor: new Date(String(formData.get("scheduledFor") || new Date().toISOString())),
+      scheduledFor,
       thumbnailUrl: String(formData.get("thumbnailUrl") || ""),
+      streamUrl,
       visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
-      isLive: formData.get("isLive") === "on",
+      isLive: startMode !== "SCHEDULE",
       isFeatured: formData.get("isFeatured") === "on",
       price: formData.get("price") ? Number(formData.get("price")) : null
     }

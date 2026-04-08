@@ -1,9 +1,11 @@
 export function ProtectedVideoPlayer({
   canAccess,
-  embedUrl
+  embedUrl,
+  isActive
 }: {
   canAccess: boolean;
   embedUrl?: string | null;
+  isActive: boolean;
 }) {
   return (
     <div className="glass-panel overflow-hidden rounded-[2rem] border border-white/10">
@@ -22,10 +24,12 @@ export function ProtectedVideoPlayer({
       )}
       <div className="p-6 text-sm leading-7 text-white/62">
         {embedUrl
-          ? "Playerul foloseste un iframe YouTube generat din linkul salvat in admin."
-          : canAccess
-            ? "LIVE-ul nu are momentan un link valid salvat in admin."
-            : "Adauga un URL YouTube valid in admin pentru a afisa sesiunea aici."}
+          ? "Playerul foloseste un iframe Vimeo generat din sesiunea salvata in admin."
+          : !canAccess
+            ? "Ai nevoie de un abonament activ pentru a vedea sesiunea LIVE."
+            : !isActive
+              ? "LIVE-ul nu este activ inca. Daca este programat, playerul apare automat la ora setata."
+              : "LIVE-ul nu are momentan un ID sau link Vimeo valid salvat in admin."}
       </div>
     </div>
   );

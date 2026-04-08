@@ -137,7 +137,7 @@ export function normalizeContentState(raw: unknown): CleaningContentState {
   };
 }
 
-export function getYoutubeVideoId(url: string) {
+export function getVimeoVideoId(url: string) {
   if (!url) {
     return null;
   }
@@ -145,10 +145,10 @@ export function getYoutubeVideoId(url: string) {
   const trimmed = url.trim();
 
   const patterns = [
-    /(?:youtube\.com\/watch\?v=)([^&]+)/,
-    /(?:youtube\.com\/live\/)([^?&/]+)/,
-    /(?:youtu\.be\/)([^?&/]+)/,
-    /(?:youtube\.com\/embed\/)([^?&/]+)/
+    /^(\d+)$/,
+    /player\.vimeo\.com\/video\/(\d+)/,
+    /vimeo\.com\/(?:event\/\d+\/)?(\d+)/,
+    /vimeo\.com\/manage\/videos\/(\d+)/
   ];
 
   for (const pattern of patterns) {
@@ -162,7 +162,7 @@ export function getYoutubeVideoId(url: string) {
   return null;
 }
 
-export function getYoutubeEmbedUrl(url: string) {
-  const videoId = getYoutubeVideoId(url);
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+export function getVimeoEmbedUrl(url: string) {
+  const videoId = getVimeoVideoId(url);
+  return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
 }
