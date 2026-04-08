@@ -1,41 +1,10 @@
 import type { LiveSession } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { getOwncastEmbedUrl } from "@/lib/owncast";
 
-export function isSubscriptionActive(status?: string | null) {
-  return status === "active" || status === "trialing";
-}
-
-export async function hasLiveAccess(userId?: string) {
-  if (!userId) {
-    return false;
-  }
-
-  try {
-    const [user, subscriptions] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: { isSubscribed: true }
-      }),
-      prisma.subscription.findMany({
-        where: { userId },
-        select: { status: true }
-      })
-    ]);
-
-    return Boolean(user?.isSubscribed || subscriptions.some((item) => isSubscriptionActive(item.status)));
-  } catch {
-    return false;
-  }
-}
-
-export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "scheduledFor" | "streamUrl">, now = new Date()) {
-  if (!getOwncastEmbedUrl(session.streamUrl)) {
-    return false;
-  }
-
-  return session.isLive || session.scheduledFor.getTime() <= now.getTime();
+export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "scheduledFor">, now = new Date()) {
+  void now;
+  return session.isLive;
 }
 
 export async function getPrimaryLiveSession() {
@@ -55,9 +24,7 @@ export async function getPrimaryLiveSession() {
       return activeSession;
     }
 
-    const upcomingSession = sessions.find(
-      (session) => Boolean(getOwncastEmbedUrl(session.streamUrl)) && session.scheduledFor.getTime() > now.getTime()
-    );
+    const upcomingSession = sessions.find((session) => session.scheduledFor.getTime() > now.getTime());
 
     return upcomingSession || sessions[0];
   } catch {
@@ -73,7 +40,8 @@ export async function getPastLiveSessions(canAccess: boolean) {
   try {
     const sessions = await prisma.liveSession.findMany({
       where: {
-        recordingUrl: { not: null }
+        recordingUrl: { not: null },
+        recordingData: { not: null }
       },
       orderBy: { scheduledFor: "desc" }
     });

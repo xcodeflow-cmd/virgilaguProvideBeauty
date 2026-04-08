@@ -23,6 +23,12 @@ enum PaymentType {
   ONE_TIME
 }
 
+enum LiveSignalType {
+  REQUEST
+  OFFER
+  ANSWER
+}
+
 model User {
   id             String         @id @default(cuid())
   name           String?
@@ -123,6 +129,8 @@ model LiveSession {
   thumbnailUrl    String
   streamUrl       String?
   recordingUrl    String?
+  recordingMimeType String?
+  recordingData   Bytes?
   price           Int?
   visibility      SessionVisibility @default(SUBSCRIBERS)
   isLive          Boolean           @default(false)
@@ -131,11 +139,12 @@ model LiveSession {
   updatedAt       DateTime          @updatedAt
   purchases       Purchase[]
   chatMessages    LiveChatMessage[]
+  signals         LiveSignal[]
 }
 
 model LiveChatMessage {
   id            String      @id @default(cuid())
-  liveSessionId  String
+  liveSessionId String
   userId        String
   content       String
   createdAt     DateTime    @default(now())
@@ -144,6 +153,19 @@ model LiveChatMessage {
 
   @@index([liveSessionId, createdAt])
   @@index([userId, createdAt])
+}
+
+model LiveSignal {
+  id            String         @id @default(cuid())
+  liveSessionId String
+  viewerId      String
+  type          LiveSignalType
+  sdp           Json?
+  createdAt     DateTime       @default(now())
+  liveSession   LiveSession    @relation(fields: [liveSessionId], references: [id], onDelete: Cascade)
+
+  @@index([liveSessionId, type, createdAt])
+  @@index([liveSessionId, viewerId, type, createdAt])
 }
 
 model GalleryItem {

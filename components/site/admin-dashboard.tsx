@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent } from "react";
 import Image from "next/image";
-import { Pencil, Trash2, Upload, Video } from "lucide-react";
+import { Pencil, Trash2, Upload } from "lucide-react";
 import { addLiveSession, deleteLiveSession } from "@/app/admin/actions";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
   getDefaultContentState,
   type ServiceItem
 } from "@/lib/cleaning-content";
-import { getOwncastEmbedUrl } from "@/lib/owncast";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -39,7 +38,6 @@ type AdminLiveSession = {
   visibility: string;
   isLive: boolean;
   scheduledFor: string;
-  streamUrl: string;
   recordingUrl: string;
   isFeatured: boolean;
 };
@@ -55,8 +53,6 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
     () => [...defaultGalleryImages, ...content.uploadedGallery],
     [content.uploadedGallery]
   );
-
-  const currentEmbedUrl = getOwncastEmbedUrl(liveSessions[0]?.streamUrl);
 
   const resetDraft = () => {
     setServiceDraft(emptyServiceDraft);
@@ -152,7 +148,7 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
       <SectionHeading
         eyebrow="Admin"
         title="Admin pentru cursuri, galerie si sesiuni LIVE."
-        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si sesiunile LIVE Owncast."
+        description="Continutul din site poate fi actualizat rapid: cursuri fizice, imagini de galerie si sesiunile LIVE programate."
       />
 
       <div className="mt-10 space-y-6">
@@ -276,9 +272,9 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
           </div>
 
           <div className="glass-panel rounded-[1.75rem] p-6">
-            <h2 className="text-2xl text-white">Owncast LIVE</h2>
+            <h2 className="text-2xl text-white">Sesiuni LIVE</h2>
             <p className="mt-2 text-sm leading-6 text-white/60">
-              Creeaza sesiuni LIVE folosind URL-ul serverului Owncast. Sesiunea devine activa imediat sau automat la data programata.
+              Creeaza o sesiune LIVE pentru browser streaming. Adminul intra apoi pe pagina LIVE si porneste camera direct din telefon sau laptop.
             </p>
             <form action={addLiveSession} className="mt-6 space-y-4">
               <input
@@ -303,17 +299,6 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
                 name="thumbnailUrl"
                 required
                 placeholder="URL thumbnail"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
-              />
-              <input
-                name="streamUrl"
-                required
-                placeholder="https://live.exemplu.ro"
-                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
-              />
-              <input
-                name="recordingUrl"
-                placeholder="URL VOD optional, completat automat de webhook sau recorder"
                 className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
               />
               <div className="grid gap-3 sm:grid-cols-2">
@@ -365,28 +350,9 @@ export function AdminDashboard({ liveSessions }: { liveSessions: AdminLiveSessio
               </label>
               <Button type="submit">Adauga live</Button>
             </form>
-            <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20">
-              {currentEmbedUrl ? (
-                <iframe
-                  src={currentEmbedUrl}
-                  title="Preview LIVE"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="aspect-video w-full bg-black"
-                />
-              ) : (
-                <div className="flex aspect-video items-center justify-center px-6 text-center text-white/55">
-                  Niciun LIVE disponibil momentan
-                </div>
-              )}
-              <div className="flex items-center gap-3 p-4 text-sm text-white/60">
-                <Video className="h-4 w-4 text-accent" />
-                Preview pentru pagina LIVE Barber Experience.
-              </div>
-            </div>
             <div className="mt-6 space-y-3">
               {liveSessions.map((session) => {
-                const isActive = session.isLive || new Date(session.scheduledFor).getTime() <= Date.now();
+                const isActive = session.isLive;
 
                 return (
                   <div

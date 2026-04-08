@@ -207,7 +207,6 @@ export default async function AdminPage() {
         visibility: item.visibility,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),
-        streamUrl: item.streamUrl || "",
         recordingUrl: item.recordingUrl || "",
         isFeatured: item.isFeatured
       }))}

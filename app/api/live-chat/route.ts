@@ -1,22 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/auth";
-import { hasLiveAccess, isLiveSessionActive } from "@/lib/live";
+import { requireSubscription } from "@/lib/live-access";
+import { isLiveSessionActive } from "@/lib/live";
 import { prisma } from "@/lib/prisma";
 
-async function getAuthorizedSession(liveSessionId: string, userId?: string) {
+async function getAuthorizedSession(liveSessionId: string) {
   if (!liveSessionId) {
     return { error: "Live session is required.", status: 400 as const };
   }
 
-  if (!userId) {
-    return { error: "Authentication required.", status: 401 as const };
-  }
+  const authResult = await requireSubscription();
 
-  const hasAccess = await hasLiveAccess(userId);
-
-  if (!hasAccess) {
-    return { error: "Active subscription required.", status: 403 as const };
+  if ("error" in authResult) {
+    return authResult;
   }
 
   const liveSession = await prisma.liveSession.findUnique({
@@ -27,14 +23,16 @@ async function getAuthorizedSession(liveSessionId: string, userId?: string) {
     return { error: "Live session is not active.", status: 403 as const };
   }
 
-  return { liveSession };
+  return {
+    ...authResult,
+    liveSession
+  };
 }
 
 export async function GET(request: Request) {
-  const session = await auth();
   const { searchParams } = new URL(request.url);
   const liveSessionId = searchParams.get("liveSessionId") || "";
-  const authorization = await getAuthorizedSession(liveSessionId, session?.user?.id);
+  const authorization = await getAuthorizedSession(liveSessionId);
 
   if ("error" in authorization) {
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
@@ -67,11 +65,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
   const body = (await request.json().catch(() => null)) as { liveSessionId?: string; content?: string } | null;
   const liveSessionId = body?.liveSessionId || "";
   const content = (body?.content || "").trim();
-  const authorization = await getAuthorizedSession(liveSessionId, session?.user?.id);
+  const authorization = await getAuthorizedSession(liveSessionId);
 
   if ("error" in authorization) {
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
@@ -88,7 +85,7 @@ export async function POST(request: Request) {
   await prisma.liveChatMessage.create({
     data: {
       liveSessionId,
-      userId: session?.user?.id || "",
+      userId: authorization.session.user.id,
       content
     }
   });

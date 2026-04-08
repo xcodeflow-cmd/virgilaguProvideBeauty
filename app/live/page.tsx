@@ -6,19 +6,19 @@ import { LivePageContent } from "@/components/site/live-page-content";
 import { FadeIn } from "@/components/motion-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { Button } from "@/components/ui/button";
-import { getPastLiveSessions, getPrimaryLiveSession, hasLiveAccess, isLiveSessionActive } from "@/lib/live";
-import { getOwncastEmbedUrl } from "@/lib/owncast";
+import { hasSubscriptionAccess } from "@/lib/live-access";
+import { getPastLiveSessions, getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 
 export default async function LivePage() {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user?.id);
+  const isAdmin = session?.user?.role === "ADMIN";
   const [hasAccess, liveSession] = await Promise.all([
-    hasLiveAccess(session?.user?.id),
+    hasSubscriptionAccess(session?.user?.id, session?.user?.role),
     getPrimaryLiveSession()
   ]);
   const pastSessions = await getPastLiveSessions(hasAccess);
   const isActive = liveSession ? isLiveSessionActive(liveSession) : false;
-  const embedUrl = isActive ? getOwncastEmbedUrl(liveSession?.streamUrl) : null;
 
   return (
     <section className="section-shell section-space">
@@ -33,9 +33,16 @@ export default async function LivePage() {
       <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <LivePageContent
           canAccess={hasAccess}
-          isActive={isActive}
-          embedUrl={embedUrl}
-          liveSessionId={liveSession?.id || null}
+          isAdmin={isAdmin}
+          initialSession={liveSession
+            ? {
+                id: liveSession.id,
+                title: liveSession.title,
+                description: liveSession.description,
+                scheduledFor: liveSession.scheduledFor.toISOString(),
+                isLive: isActive
+              }
+            : null}
           pastSessions={pastSessions.map((item) => ({
             id: item.id,
             title: item.title,
@@ -49,7 +56,7 @@ export default async function LivePage() {
           <h2 className="mt-4 text-4xl text-white">
             {!isLoggedIn
               ? "Trebuie sa fii autentificat pentru a vedea LIVE-ul"
-              : hasAccess
+              : hasAccess || isAdmin
                 ? isActive
                   ? "Invata in timp real, din confortul casei tale"
                   : "LIVE-ul este pregatit si devine activ la ora stabilita"
@@ -58,7 +65,7 @@ export default async function LivePage() {
           <p className="mt-4 text-base leading-7 text-white/60">
             {!isLoggedIn
               ? "Autentifica-te in contul tau, apoi sistemul verifica automat daca ai abonament activ."
-              : hasAccess
+              : hasAccess || isAdmin
                 ? isActive
                   ? "Fiecare sesiune arata exact cum se construieste o tunsoare corecta, cum se optimizeaza viteza si cum se mentine calitatea fara pasi inutili."
                   : "Abonamentul este valid. Playerul si chatul apar automat imediat ce sesiunea LIVE este pornita sau cand ora programata este atinsa."
@@ -66,8 +73,8 @@ export default async function LivePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Button asChild>
-              <Link href={!isLoggedIn ? "/auth/signin" : hasAccess ? "/live" : "/api/stripe/checkout?mode=subscription"}>
-                {!isLoggedIn ? "Autentificare" : hasAccess ? "Acces activ" : "Activeaza abonamentul"}
+              <Link href={!isLoggedIn ? "/auth/signin" : hasAccess || isAdmin ? "/live" : "/api/stripe/checkout?mode=subscription"}>
+                {!isLoggedIn ? "Autentificare" : hasAccess || isAdmin ? "Acces activ" : "Activeaza abonamentul"}
               </Link>
             </Button>
             <Button asChild variant="secondary">
@@ -77,7 +84,7 @@ export default async function LivePage() {
           <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 text-sm leading-7 text-white/60">
             {!isLoggedIn
               ? "Daca nu esti logat, pagina nu afiseaza LIVE-ul si iti cere mai intai autentificarea."
-              : hasAccess
+              : hasAccess || isAdmin
                 ? isActive
                   ? "In sesiune vezi tunsori pe modele reale, explicatii detaliate, intrebari si raspunsuri, tehnici actuale si sfaturi construite din peste 10 ani de experienta."
                   : "Daca sesiunea este doar programata, pagina mentine accesul valid dar ascunde playerul si chatul pana la activare."

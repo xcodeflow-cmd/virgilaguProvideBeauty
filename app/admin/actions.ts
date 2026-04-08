@@ -6,7 +6,6 @@ import { SessionVisibility } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { courses, subscriptionPlans } from "@/lib/data";
-import { normalizeOwncastUrl } from "@/lib/owncast";
 import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
@@ -70,15 +69,9 @@ export async function addLiveSession(formData: FormData) {
   await requireAdmin();
 
   const title = String(formData.get("title") || "");
-  const streamUrl = normalizeOwncastUrl(String(formData.get("streamUrl") || "").trim());
-  const recordingUrl = String(formData.get("recordingUrl") || "").trim() || null;
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? new Date(scheduledValue) : new Date();
-
-  if (!streamUrl) {
-    throw new Error("Invalid Owncast server URL.");
-  }
 
   if (Number.isNaN(scheduledFor.getTime())) {
     throw new Error("Invalid scheduled date.");
@@ -94,10 +87,10 @@ export async function addLiveSession(formData: FormData) {
       description: String(formData.get("description") || ""),
       scheduledFor,
       thumbnailUrl: String(formData.get("thumbnailUrl") || ""),
-      streamUrl,
-      recordingUrl,
+      streamUrl: null,
+      recordingUrl: null,
       visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
-      isLive: startMode !== "SCHEDULE",
+      isLive: false,
       isFeatured: formData.get("isFeatured") === "on",
       price: formData.get("price") ? Number(formData.get("price")) : null
     }

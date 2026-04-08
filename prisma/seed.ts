@@ -37,7 +37,6 @@ async function main() {
         scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
         durationMinutes: 75,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
-        streamUrl: "https://live.example.com",
         visibility: "SUBSCRIBERS",
         isFeatured: true
       },
@@ -48,7 +47,6 @@ async function main() {
         scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
         durationMinutes: 60,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg",
-        recordingUrl: "https://vod.example.com/fade-breakdown-session.mp4",
         visibility: "ONE_TIME",
         price: 1900
       }
