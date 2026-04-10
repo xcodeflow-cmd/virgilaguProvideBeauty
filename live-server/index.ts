@@ -1,7 +1,6 @@
 import { randomUUID } from "crypto";
 
 import { loadEnvConfig } from "@next/env";
-import * as mediasoup from "mediasoup";
 import { WebSocketServer, WebSocket } from "ws";
 
 import {
@@ -26,7 +25,8 @@ import type {
 
 loadEnvConfig(process.cwd());
 
-type MediaWorker = Awaited<ReturnType<typeof mediasoup.createWorker>>;
+type MediasoupModule = typeof import("mediasoup");
+type MediaWorker = Awaited<ReturnType<MediasoupModule["createWorker"]>>;
 type MediaRouter = Awaited<ReturnType<MediaWorker["createRouter"]>>;
 type MediaTransport = Awaited<ReturnType<MediaRouter["createWebRtcTransport"]>>;
 type MediaProducer = Awaited<ReturnType<MediaTransport["produce"]>>;
@@ -120,7 +120,21 @@ const mediaCodecs = [
 ];
 
 const rooms = new Map<string, LiveRoom>();
+let mediasoupModule: MediasoupModule | null = null;
 let worker: MediaWorker | null = null;
+
+async function getMediasoupModule() {
+  if (process.env.VERCEL === "1") {
+    throw new Error("mediasoup is disabled in Vercel build environments.");
+  }
+
+  if (mediasoupModule) {
+    return mediasoupModule;
+  }
+
+  mediasoupModule = await import("mediasoup");
+  return mediasoupModule;
+}
 
 function log(event: string, data?: Record<string, unknown>) {
   console.log(
@@ -363,6 +377,7 @@ async function ensureWorker() {
     return worker;
   }
 
+  const mediasoup = await getMediasoupModule();
   worker = await mediasoup.createWorker({
     rtcMinPort: LIVE_RTC_MIN_PORT,
     rtcMaxPort: LIVE_RTC_MAX_PORT,
@@ -1087,6 +1102,14 @@ function registerProcessSafety() {
 
 async function bootstrap() {
   registerProcessSafety();
+
+  if (process.env.VERCEL === "1") {
+    log("bootstrap_skipped", {
+      reason: "vercel_environment",
+    });
+    return;
+  }
+
   await ensureWorker();
 
   const server = new WebSocketServer({
