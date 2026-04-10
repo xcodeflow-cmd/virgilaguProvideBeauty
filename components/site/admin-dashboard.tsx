@@ -279,7 +279,6 @@ export function AdminDashboard({
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="dashboard-label">Sesiuni</p>
-                    <h3 className="mt-3 text-2xl text-white">Lista compacta, usor de administrat.</h3>
                   </div>
                 </div>
                 <div className="mt-6 grid gap-3">
