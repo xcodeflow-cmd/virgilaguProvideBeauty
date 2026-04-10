@@ -23,6 +23,7 @@ export type ServiceItem = {
 export type UploadedGalleryImage = {
   id: string;
   title: string;
+  subtitle?: string;
   category: string;
   imageUrl: string;
   isUploaded: true;
@@ -117,9 +118,12 @@ export function normalizeContentState(raw: unknown): CleaningContentState {
         }))
       : fallback.services,
     uploadedGallery: Array.isArray(value.uploadedGallery)
-      ? value.uploadedGallery.filter((item): item is UploadedGalleryImage =>
-          Boolean(item && item.id && item.title && item.imageUrl)
-        )
+      ? value.uploadedGallery
+          .filter((item): item is UploadedGalleryImage => Boolean(item && item.id && item.title && item.imageUrl))
+          .map((item) => ({
+            ...item,
+            subtitle: typeof item.subtitle === "string" ? item.subtitle : ""
+          }))
       : [],
     hiddenAssetGalleryIds: Array.isArray(value.hiddenAssetGalleryIds)
       ? value.hiddenAssetGalleryIds.filter((item): item is string => typeof item === "string" && item.length > 0)

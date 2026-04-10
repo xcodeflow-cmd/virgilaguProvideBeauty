@@ -44,7 +44,7 @@ export function AdminDashboard({
   users: AdminUser[];
 }) {
   const { content, setContent } = useCleaningContent();
-  const [galleryPreview, setGalleryPreview] = useState<{ title: string; imageUrl: string } | null>(null);
+  const [galleryPreview, setGalleryPreview] = useState<{ title: string; subtitle: string; imageUrl: string } | null>(null);
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
 
@@ -71,7 +71,7 @@ export function AdminDashboard({
     const imageUrl = await readFileAsDataUrl(file);
     const title = file.name.replace(/\.[^.]+$/, "");
 
-    setGalleryPreview({ title, imageUrl });
+    setGalleryPreview({ title, subtitle: "", imageUrl });
     event.target.value = "";
   };
 
@@ -86,6 +86,7 @@ export function AdminDashboard({
         {
           id: `upload-${Date.now()}`,
           title: galleryPreview.title.trim(),
+          subtitle: galleryPreview.subtitle.trim(),
           category: "Upload",
           imageUrl: galleryPreview.imageUrl,
           isUploaded: true
@@ -360,6 +361,17 @@ export function AdminDashboard({
                           className="premium-input"
                         />
                       </label>
+                      <label className="space-y-2">
+                        <span className="text-sm text-white/60">Subtitle imagine</span>
+                        <input
+                          value={galleryPreview.subtitle}
+                          onChange={(event) =>
+                            setGalleryPreview((current) => (current ? { ...current, subtitle: event.target.value } : current))
+                          }
+                          placeholder="Subtitle imagine"
+                          className="premium-input"
+                        />
+                      </label>
                       <p className="text-sm text-white/50">Preview inainte de salvare</p>
                       <div className="flex flex-col gap-2">
                         <Button
@@ -392,6 +404,7 @@ export function AdminDashboard({
                     <div className="space-y-3 p-4">
                       <div>
                         <p className="text-white">{item.title}</p>
+                        {"subtitle" in item && item.subtitle ? <p className="mt-1 text-sm text-white/65">{item.subtitle}</p> : null}
                         <p className="text-sm text-white/50">{item.category}</p>
                       </div>
                       <Button

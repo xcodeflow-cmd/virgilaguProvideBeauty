@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 export type GalleryImage = {
   id: string;
   title: string;
+  subtitle?: string;
   category: string;
   imageUrl: string | StaticImageData;
 };
@@ -54,6 +55,7 @@ export function GalleryGrid({
                   <h3 className="mt-2 max-w-[18rem] text-2xl leading-tight text-white sm:text-[2rem]">
                     {item.title}
                   </h3>
+                  {item.subtitle ? <p className="mt-2 max-w-[20rem] text-sm text-white/70">{item.subtitle}</p> : null}
                 </div>
               </button>
             </Dialog.Trigger>
@@ -67,6 +69,7 @@ export function GalleryGrid({
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.38em] text-accent/80">{item.category}</p>
                     <Dialog.Title className="mt-2 text-3xl text-white">{item.title}</Dialog.Title>
+                    {item.subtitle ? <p className="mt-2 text-sm text-white/70">{item.subtitle}</p> : null}
                   </div>
                   <Dialog.Close className="rounded-full bg-white/[0.05] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
                     <X className="h-5 w-5" />
