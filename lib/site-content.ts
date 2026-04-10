@@ -12,10 +12,8 @@ export type GalleryContentItem = {
 export type LiveSessionContent = {
   id: string;
   title: string;
-  slug: string;
   description: string;
   scheduledFor: Date;
-  thumbnailUrl: string;
   visibility: string;
   isLive: boolean;
   price: number | null;
@@ -70,7 +68,7 @@ export async function getManagedGalleryItems() {
 export async function getManagedLiveSessions() {
   try {
     const sessions = await prisma.liveSession.findMany({
-      orderBy: [{ isFeatured: "desc" }, { scheduledFor: "asc" }]
+      orderBy: [{ scheduledFor: "asc" }]
     });
 
     if (!sessions.length) {
@@ -80,10 +78,8 @@ export async function getManagedLiveSessions() {
     return sessions.map((item) => ({
       id: item.id,
       title: item.title,
-      slug: item.slug,
       description: item.description,
       scheduledFor: item.scheduledFor,
-      thumbnailUrl: item.thumbnailUrl,
       visibility: item.visibility,
       isLive: item.isLive,
       price: item.price

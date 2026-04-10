@@ -14,7 +14,7 @@ export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updat
 export async function getPrimaryLiveSession() {
   try {
     const sessions = await prisma.liveSession.findMany({
-      orderBy: [{ isFeatured: "desc" }, { scheduledFor: "asc" }, { createdAt: "desc" }]
+      orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
     });
 
     if (!sessions.length) {
@@ -50,17 +50,12 @@ export async function getPastLiveSessions(canAccess: boolean) {
       select: {
         id: true,
         title: true,
-        slug: true,
         description: true,
         scheduledFor: true,
-        durationMinutes: true,
-        thumbnailUrl: true,
-        streamUrl: true,
         recordingUrl: true,
         price: true,
         visibility: true,
         isLive: true,
-        isFeatured: true,
         createdAt: true,
         updatedAt: true
       }

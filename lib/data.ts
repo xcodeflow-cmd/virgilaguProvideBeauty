@@ -11,15 +11,6 @@ import salonImageWide from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40
 import galleryImage01 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.35 (1).jpeg";
 import galleryImage02 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36.jpeg";
 import galleryImage03 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (1).jpeg";
-import galleryImage04 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (2).jpeg";
-import galleryImage05 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (3).jpeg";
-import galleryImage06 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (4).jpeg";
-import galleryImage07 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.37 (1).jpeg";
-import galleryImage08 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.37 (2).jpeg";
-import galleryImage09 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.37 (3).jpeg";
-import galleryImage10 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.56.21 (1).jpeg";
-import galleryImage11 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.56.22.jpeg";
-import galleryImage12 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.56.22 (4).jpeg";
 
 export const siteConfig = {
   name: "Virgil Agu",
@@ -109,15 +100,9 @@ export const galleryItems: Array<{
   { id: "g1", title: "Fast Fade Dublin", category: "Premii", imageUrl: galleryImage01 },
   { id: "g2", title: "Master Barber Romania", category: "Premii", imageUrl: galleryImage02 },
   { id: "g3", title: "Fade curat", category: "Galerie", imageUrl: galleryImage03 },
-  { id: "g4", title: "Blend precis", category: "Galerie", imageUrl: galleryImage04 },
-  { id: "g5", title: "Rezultat premium", category: "Galerie", imageUrl: galleryImage05 },
-  { id: "g6", title: "Styling modern", category: "Galerie", imageUrl: galleryImage06 },
-  { id: "g7", title: "Executie de salon", category: "Galerie", imageUrl: galleryImage07 },
-  { id: "g8", title: "Detaliu de finish", category: "Galerie", imageUrl: galleryImage08 },
-  { id: "g9", title: "Context de lucru real", category: "Salon", imageUrl: galleryImage09 },
-  { id: "g10", title: "Fade si control", category: "Fade", imageUrl: galleryImage10 },
-  { id: "g11", title: "Barbering modern", category: "Editorial", imageUrl: galleryImage11 },
-  { id: "g12", title: "Rezultat final", category: "Salon", imageUrl: galleryImage12 }
+  { id: "g4", title: "Blend precis", category: "Galerie", imageUrl: galleryImage01 },
+  { id: "g5", title: "Rezultat premium", category: "Galerie", imageUrl: galleryImage02 },
+  { id: "g6", title: "Styling modern", category: "Galerie", imageUrl: galleryImage03 }
 ];
 
 const exactMeroReviews = [
@@ -234,7 +219,6 @@ export const liveSessions = [
     title: "LIVE Barber Experience",
     description: "Tuns live cu explicatii, eficienta de lucru si corectii de executie in timp real.",
     scheduledFor: new Date("2026-04-20T18:00:00+03:00"),
-    thumbnailUrl: salonImageWide,
     isLive: true,
     visibility: "SUBSCRIBERS",
     price: null,
@@ -245,7 +229,6 @@ export const liveSessions = [
     title: "Fade Breakdown Session",
     description: "Structura unui fade curat, adaptare pe cap si ritm de lucru pentru salon.",
     scheduledFor: new Date("2026-04-27T18:00:00+03:00"),
-    thumbnailUrl: salonImage,
     isLive: false,
     visibility: "SUBSCRIBERS",
     price: null,

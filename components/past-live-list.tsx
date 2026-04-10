@@ -38,7 +38,7 @@ export function PastLiveList({
                 </div>
               </div>
               <p className="mt-3 text-xs uppercase tracking-[0.25em] text-white/40">
-                {new Date(session.scheduledFor).toLocaleString("ro-RO")}
+                {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
               </p>
               <div className="mt-4">
                 {canAccess ? (

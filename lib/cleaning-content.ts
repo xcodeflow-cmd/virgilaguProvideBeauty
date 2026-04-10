@@ -6,11 +6,6 @@ import salonImageWide from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40
 import galleryImage01 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.35 (1).jpeg";
 import galleryImage02 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36.jpeg";
 import galleryImage03 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (1).jpeg";
-import galleryImage04 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (2).jpeg";
-import galleryImage05 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (3).jpeg";
-import galleryImage06 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.36 (4).jpeg";
-import galleryImage07 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.37 (1).jpeg";
-import galleryImage08 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.37 (2).jpeg";
 
 export type AssetImage = {
   id: string;
@@ -40,6 +35,7 @@ export type LiveContent = {
 export type CleaningContentState = {
   services: ServiceItem[];
   uploadedGallery: UploadedGalleryImage[];
+  hiddenAssetGalleryIds: string[];
   live: LiveContent;
 };
 
@@ -50,11 +46,9 @@ export const cleaningAssetImages: AssetImage[] = [
   { id: "service-deep", label: "Live Barber Experience", src: galleryImage01 },
   { id: "service-move", label: "Salon Session", src: galleryImage02 },
   { id: "gallery-01", label: "Fade Detail", src: galleryImage03 },
-  { id: "gallery-02", label: "Clean Blend", src: galleryImage04 },
-  { id: "gallery-03", label: "Sharp Finish", src: galleryImage05 },
-  { id: "gallery-04", label: "Modern Crop", src: galleryImage06 },
-  { id: "gallery-05", label: "Premium Session", src: galleryImage07 },
-  { id: "gallery-06", label: "Stage Result", src: galleryImage08 }
+  { id: "gallery-02", label: "Clean Blend", src: galleryImage01 },
+  { id: "gallery-03", label: "Sharp Finish", src: galleryImage02 },
+  { id: "gallery-04", label: "Modern Crop", src: galleryImage03 }
 ];
 
 export const defaultServices: ServiceItem[] = [
@@ -84,12 +78,7 @@ export const defaultServices: ServiceItem[] = [
 export const defaultGalleryImages = [
   { id: "asset-gallery-1", title: "Fast Fade Dublin", category: "Premii", imageUrl: galleryImage01, isUploaded: false },
   { id: "asset-gallery-2", title: "Master Barber Romania", category: "Premii", imageUrl: galleryImage02, isUploaded: false },
-  { id: "asset-gallery-3", title: "Fade curat", category: "Galerie", imageUrl: galleryImage03, isUploaded: false },
-  { id: "asset-gallery-4", title: "Blend precis", category: "Galerie", imageUrl: galleryImage04, isUploaded: false },
-  { id: "asset-gallery-5", title: "Rezultat premium", category: "Galerie", imageUrl: galleryImage05, isUploaded: false },
-  { id: "asset-gallery-6", title: "Styling modern", category: "Galerie", imageUrl: galleryImage06, isUploaded: false },
-  { id: "asset-gallery-7", title: "Detaliu de salon", category: "Galerie", imageUrl: galleryImage07, isUploaded: false },
-  { id: "asset-gallery-8", title: "Executie precisa", category: "Galerie", imageUrl: galleryImage08, isUploaded: false }
+  { id: "asset-gallery-3", title: "Fade curat", category: "Galerie", imageUrl: galleryImage03, isUploaded: false }
 ] as const;
 
 export const contentStorageKey = "cleaning-site-content";
@@ -102,6 +91,7 @@ export function getDefaultContentState(): CleaningContentState {
   return {
     services: defaultServices,
     uploadedGallery: [],
+    hiddenAssetGalleryIds: [],
     live: {
       url: ""
     }
@@ -130,6 +120,9 @@ export function normalizeContentState(raw: unknown): CleaningContentState {
       ? value.uploadedGallery.filter((item): item is UploadedGalleryImage =>
           Boolean(item && item.id && item.title && item.imageUrl)
         )
+      : [],
+    hiddenAssetGalleryIds: Array.isArray(value.hiddenAssetGalleryIds)
+      ? value.hiddenAssetGalleryIds.filter((item): item is string => typeof item === "string" && item.length > 0)
       : [],
     live: {
       url: value.live?.url || ""

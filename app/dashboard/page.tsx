@@ -41,10 +41,6 @@ export default async function DashboardPage() {
             <h1 className="mt-6 max-w-4xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
               Bine ai revenit, {session.user.name || "membru"}.
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-white/[0.64] sm:text-lg">
-              Contul tau este organizat ca un spatiu premium: accesul activ, achizitiile si
-              programarile apar clar, fara senzatie de dashboard generic.
-            </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Button asChild className="px-7">
                 <Link href="/live">Vezi LIVE</Link>

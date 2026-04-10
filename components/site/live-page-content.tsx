@@ -1450,6 +1450,7 @@ export function LivePageContent({
   const countdownParts = !currentSession?.isLive ? getCountdownParts(currentSession?.scheduledFor || null, countdownNow) : null;
   const sessionScheduleLabel = currentSession?.scheduledFor
     ? new Date(currentSession.scheduledFor).toLocaleString("ro-RO", {
+        timeZone: "Europe/Bucharest",
         weekday: "short",
         day: "2-digit",
         month: "short",
@@ -1514,6 +1515,7 @@ export function LivePageContent({
                         <p className="mt-1 text-sm leading-6">{item.text}</p>
                         <p className={`mt-2 text-[11px] ${isRight ? "text-black/[0.55]" : "text-white/[0.35]"}`}>
                           {new Date(item.timestamp).toLocaleTimeString("ro-RO", {
+                            timeZone: "Europe/Bucharest",
                             hour: "2-digit",
                             minute: "2-digit"
                           })}

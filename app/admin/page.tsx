@@ -14,7 +14,7 @@ async function getAdminData() {
   try {
     const [gallery, sessions, users, settings] = await Promise.all([
       prisma.galleryItem.findMany({ orderBy: { createdAt: "desc" } }),
-      prisma.liveSession.findMany({ orderBy: [{ isFeatured: "desc" }, { scheduledFor: "asc" }] }),
+      prisma.liveSession.findMany({ orderBy: [{ scheduledFor: "asc" }] }),
       prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
       getSiteSettings()
     ]);
@@ -92,9 +92,7 @@ async function LegacyAdminPageUnused() {
           <h2 className="text-2xl text-white">Adauga sesiune live</h2>
           <form action={addLiveSession} className="mt-6 space-y-4">
             <input name="title" required placeholder="Titlu live" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
-            <input name="slug" placeholder="slug-live" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <textarea name="description" required placeholder="Descriere" rows={4} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
-            <input name="thumbnailUrl" required placeholder="URL thumbnail" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <input name="scheduledFor" type="datetime-local" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <select name="visibility" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none">
               <option value="SUBSCRIBERS">Subscribers</option>
@@ -102,16 +100,6 @@ async function LegacyAdminPageUnused() {
               <option value="ONE_TIME">One time</option>
             </select>
             <input name="price" type="number" placeholder="Pret in bani, ex 1900" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
-            <div className="flex flex-wrap gap-6 text-sm text-white/70">
-              <label className="flex items-center gap-3">
-                <input type="checkbox" name="isLive" />
-                Este live acum
-              </label>
-              <label className="flex items-center gap-3">
-                <input type="checkbox" name="isFeatured" />
-                Featured
-              </label>
-            </div>
             <Button type="submit">Adauga live</Button>
           </form>
           <div className="mt-8 space-y-3">
@@ -212,7 +200,7 @@ export default async function AdminPage() {
   try {
     [liveSessions, users] = await Promise.all([
       prisma.liveSession.findMany({
-        orderBy: [{ isFeatured: "desc" }, { scheduledFor: "asc" }, { createdAt: "desc" }]
+        orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
       }),
       prisma.user.findMany({
         orderBy: { createdAt: "desc" },
@@ -233,8 +221,7 @@ export default async function AdminPage() {
         visibility: item.visibility,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),
-        recordingUrl: item.recordingUrl || "",
-        isFeatured: item.isFeatured
+        recordingUrl: item.recordingUrl || ""
       }))}
       users={users.map((item) => ({
         id: item.id,

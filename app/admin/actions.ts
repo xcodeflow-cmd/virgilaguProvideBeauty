@@ -7,6 +7,7 @@ import { SessionVisibility } from "@prisma/client";
 import { auth } from "@/auth";
 import { courses, subscriptionPlans } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
+import { parseRomaniaDateTimeLocal } from "@/lib/romania-time";
 
 async function requireAdmin() {
   const session = await auth();
@@ -32,6 +33,11 @@ function slugify(value: string) {
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
+}
+
+function buildLiveSlug(title: string) {
+  const base = slugify(title) || "live-session";
+  return `${base}-${Date.now().toString(36)}`;
 }
 
 export async function addGalleryItem(formData: FormData) {
@@ -71,7 +77,7 @@ export async function addLiveSession(formData: FormData) {
   const title = String(formData.get("title") || "");
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? new Date(scheduledValue) : new Date();
+  const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date();
 
   if (Number.isNaN(scheduledFor.getTime())) {
     throw new Error("Invalid scheduled date.");
@@ -80,18 +86,15 @@ export async function addLiveSession(formData: FormData) {
   await prisma.liveSession.create({
     data: {
       title,
-      slug:
-        String(formData.get("slug") || "")
-          .trim()
-          .toLowerCase() || slugify(title),
+      slug: buildLiveSlug(title),
       description: String(formData.get("description") || ""),
       scheduledFor,
-      thumbnailUrl: String(formData.get("thumbnailUrl") || ""),
+      thumbnailUrl: "",
       streamUrl: null,
       recordingUrl: null,
       visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
       isLive: false,
-      isFeatured: formData.get("isFeatured") === "on",
+      isFeatured: false,
       price: formData.get("price") ? Number(formData.get("price")) : null
     }
   });
@@ -123,7 +126,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const scheduledFor = mode === "RESET" ? new Date() : new Date(scheduledValue);
+  const scheduledFor = mode === "RESET" ? new Date() : parseRomaniaDateTimeLocal(scheduledValue);
 
   if (!id) {
     throw new Error("Missing live session id.");

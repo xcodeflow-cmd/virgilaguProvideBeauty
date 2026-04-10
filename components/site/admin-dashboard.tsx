@@ -14,6 +14,7 @@ import {
   getDefaultContentState,
   type ServiceItem
 } from "@/lib/cleaning-content";
+import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -38,7 +39,6 @@ type AdminLiveSession = {
   isLive: boolean;
   scheduledFor: string;
   recordingUrl: string;
-  isFeatured: boolean;
 };
 
 type AdminUser = {
@@ -63,8 +63,11 @@ export function AdminDashboard({
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
 
   const allGalleryItems = useMemo(
-    () => [...defaultGalleryImages, ...content.uploadedGallery],
-    [content.uploadedGallery]
+    () => [
+      ...defaultGalleryImages.filter((item) => !content.hiddenAssetGalleryIds.includes(item.id)),
+      ...content.uploadedGallery
+    ],
+    [content.hiddenAssetGalleryIds, content.uploadedGallery]
   );
 
   const selectedLiveSession = useMemo(
@@ -155,10 +158,14 @@ export function AdminDashboard({
     setGalleryPreview(null);
   };
 
-  const removeUploadedImage = (imageId: string) => {
+  const removeGalleryImage = (imageId: string, isUploaded: boolean) => {
     setContent((current) => ({
       ...current,
-      uploadedGallery: current.uploadedGallery.filter((item) => item.id !== imageId)
+      uploadedGallery: isUploaded ? current.uploadedGallery.filter((item) => item.id !== imageId) : current.uploadedGallery,
+      hiddenAssetGalleryIds:
+        isUploaded || current.hiddenAssetGalleryIds.includes(imageId)
+          ? current.hiddenAssetGalleryIds
+          : [...current.hiddenAssetGalleryIds, imageId]
     }));
   };
 
@@ -245,9 +252,7 @@ export function AdminDashboard({
 
               <form action={addLiveSession} className="mt-6 space-y-4">
                 <input name="title" required placeholder="Titlu live" className="premium-input" />
-                <input name="slug" placeholder="slug-live" className="premium-input" />
                 <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
-                <input name="thumbnailUrl" required placeholder="URL thumbnail" className="premium-input" />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="flex min-h-14 items-center gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-4 text-sm text-white/75">
                     <input type="radio" name="startMode" value="NOW" checked={liveStartMode === "NOW"} onChange={() => setLiveStartMode("NOW")} />
@@ -270,10 +275,6 @@ export function AdminDashboard({
                   <option value="ONE_TIME">One time</option>
                 </select>
                 <input name="price" type="number" placeholder="Pret in bani, ex 1900" className="premium-input" />
-                <label className="flex min-h-14 items-center gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-4 text-sm text-white/70">
-                  <input type="checkbox" name="isFeatured" />
-                  Featured
-                </label>
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
                 </Button>
@@ -307,7 +308,7 @@ export function AdminDashboard({
                         <input
                           name="scheduledFor"
                           type="datetime-local"
-                          defaultValue={selectedLiveSession.scheduledFor.slice(0, 16)}
+                          defaultValue={formatRomaniaDateTimeLocal(new Date(selectedLiveSession.scheduledFor))}
                           className="premium-input"
                         />
                       </label>
@@ -356,7 +357,7 @@ export function AdminDashboard({
                             <p className="text-base text-white">{session.title}</p>
                             <p className="mt-2 text-sm leading-6 text-white/[0.52]">
                               {session.visibility} • {session.isLive ? "LIVE" : "scheduled"} •{" "}
-                              {new Date(session.scheduledFor).toLocaleString("ro-RO")}
+                              {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
                             </p>
                             {session.recordingUrl ? <p className="mt-2 text-xs uppercase tracking-[0.26em] text-white/[0.35]">VOD salvat</p> : null}
                           </div>
@@ -490,7 +491,7 @@ export function AdminDashboard({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="dashboard-label">Gallery</p>
-                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload din device si management curat.</h2>
+                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload poze noua in galerie.</h2>
               </div>
               <div className="rounded-full bg-white/[0.04] px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/[0.48]">
                 Touch friendly
@@ -528,7 +529,7 @@ export function AdminDashboard({
                   </div>
                 ) : (
                   <div className="rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-6 text-sm leading-7 text-white/[0.55]">
-                    Alege o imagine pentru preview. Upload-ul este salvat local ca base64 in browserul curent.
+                    Alege o imagine pentru preview.
                   </div>
                 )}
               </div>
@@ -544,16 +545,15 @@ export function AdminDashboard({
                         <p className="text-white">{item.title}</p>
                         <p className="text-sm text-white/50">{item.category}</p>
                       </div>
-                      {"isUploaded" in item && item.isUploaded ? (
-                        <Button type="button" variant="secondary" className="min-h-11 w-full" onClick={() => removeUploadedImage(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                          Sterge
-                        </Button>
-                      ) : (
-                        <div className="inline-flex rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.38]">
-                          Asset
-                        </div>
-                      )}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        className="min-h-11 w-full"
+                        onClick={() => removeGalleryImage(item.id, "isUploaded" in item && item.isUploaded)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Sterge
+                      </Button>
                     </div>
                   </div>
                 ))}
