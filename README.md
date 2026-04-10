@@ -71,9 +71,10 @@ Copy `.env.example` to `.env` and fill in:
 - Optimized for Vercel deployment.
 - Add all environment variables in Vercel project settings.
 - Use a managed PostgreSQL database.
-- Install Command: `npm install --legacy-peer-deps`
+- Install Command: `npm install`
 - Build Command: `npm run build`
-- Node.js Version: `20.x`
+- Node.js Version: `22.x`
+- Keep `mediasoup` and `ws` isolated to `live-server/`; do not add them to the root app dependencies or Vercel will waste time compiling native modules during deploy.
 - Run `npm run prisma:migrate:deploy` against the production database before first production launch, or add it to the Vercel build command if you explicitly want automatic migrations on each deploy.
 
 ## Current MVP Boundaries
