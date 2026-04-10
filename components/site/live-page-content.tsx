@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from "react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
+import type {
+  LiveBootstrapResponse,
+  LiveConsumerProfile,
+  LiveRole,
+  LiveWsEvent,
+  LiveWsMessage,
+  LiveWsRequestMap,
+  LiveWsResponseMap
+} from "@/types/live-media";
 
 type LiveSessionSummary = {
   id: string;
@@ -40,54 +49,146 @@ type LiveRecording = {
   visibility?: string;
 };
 
+type StreamStatus = "offline" | "connecting" | "joining" | "live" | "reconnecting";
+
 type LiveDebugState = {
-  role: "admin" | "viewer";
+  role: LiveRole;
   lastEvent: string;
   connectionState: string;
-  iceConnectionState: string;
-  signalingState: string;
-  pendingRequests: number;
-  answersReceived: number;
-  offerRequestsSent: number;
-  offersReceived: number;
-  answersSent: number;
+  viewers: number;
+  reconnectAttempts: number;
   remoteTracks: number;
+  consumerProfile: LiveConsumerProfile;
 };
 
-const rtcConfiguration: RTCConfiguration = {
-  iceCandidatePoolSize: 10,
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" }
-  ]
+type SignalResolve = (value: unknown) => void;
+
+type RoomProducer = {
+  producerId: string;
+  kind: "audio" | "video";
 };
 
-const LIVE_POLL_INTERVAL = 1000;
-const SIGNAL_POLL_INTERVAL = 250;
+type MediasoupDeviceLike = {
+  loaded: boolean;
+  rtpCapabilities: unknown;
+  load(options: { routerRtpCapabilities: unknown }): Promise<void>;
+  createRecvTransport(options: Record<string, unknown>): MediasoupTransportLike;
+  createSendTransport(options: Record<string, unknown>): MediasoupTransportLike;
+};
+
+type MediasoupProducerLike = {
+  id: string;
+  close(): void;
+};
+
+type MediasoupCodecLike = {
+  mimeType?: string;
+};
+
+type MediasoupConsumerLike = {
+  id: string;
+  track: MediaStreamTrack;
+  close(): void;
+};
+
+type MediasoupTransportLike = {
+  id: string;
+  close(): void;
+  restartIce(options: { iceParameters: unknown }): Promise<void>;
+  on(
+    event: "connect",
+    listener: (
+      parameters: { dtlsParameters: unknown },
+      callback: () => void,
+      errback: (error: Error) => void
+    ) => void | Promise<void>
+  ): void;
+  on(
+    event: "produce",
+    listener: (
+      parameters: { kind: "audio" | "video"; rtpParameters: unknown },
+      callback: ({ id }: { id: string }) => void,
+      errback: (error: Error) => void
+    ) => void | Promise<void>
+  ): void;
+  on(event: "connectionstatechange", listener: (state: string) => void): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  produce(options: {
+    track: MediaStreamTrack;
+    stopTracks: boolean;
+    encodings?: Array<{ maxBitrate: number; scaleResolutionDownBy: number }>;
+    codecOptions?: Record<string, number>;
+    codec?: MediasoupCodecLike;
+  }): Promise<MediasoupProducerLike>;
+  consume(options: {
+    id: string;
+    producerId: string;
+    kind: "audio" | "video";
+    rtpParameters: unknown;
+  }): Promise<MediasoupConsumerLike>;
+};
+
+const LIVE_POLL_INTERVAL = 5000;
 const CHAT_POLL_INTERVAL = 2000;
-const ICE_GATHERING_TIMEOUT = 300;
+const MEDIA_RECORDER_MIME_CANDIDATES = [
+  "video/webm;codecs=vp9,opus",
+  "video/webm;codecs=vp8,opus",
+  "video/mp4;codecs=h264,aac",
+  "video/mp4"
+];
 
-async function waitForIceGathering(pc: RTCPeerConnection) {
-  if (pc.iceGatheringState === "complete") {
-    return;
+function wait(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function detectAppleWebKit() {
+  if (typeof navigator === "undefined") {
+    return { isIOS: false, isSafari: false };
   }
 
-  await new Promise<void>((resolve) => {
-    const timeout = window.setTimeout(() => {
-      pc.removeEventListener("icegatheringstatechange", onChange);
-      resolve();
-    }, ICE_GATHERING_TIMEOUT);
+  const userAgent = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && "ontouchend" in document);
+  const isSafari = /Safari/.test(userAgent) && !/Chrome|CriOS|Edg|OPR|Firefox|FxiOS/.test(userAgent);
 
-    const onChange = () => {
-      if (pc.iceGatheringState === "complete") {
-        window.clearTimeout(timeout);
-        pc.removeEventListener("icegatheringstatechange", onChange);
-        resolve();
-      }
-    };
+  return { isIOS, isSafari };
+}
 
-    pc.addEventListener("icegatheringstatechange", onChange);
-  });
+function getMediaRecorderMimeType() {
+  if (typeof MediaRecorder === "undefined") {
+    return "";
+  }
+
+  const supported = MEDIA_RECORDER_MIME_CANDIDATES.find((candidate) => MediaRecorder.isTypeSupported(candidate));
+  return supported || "";
+}
+
+function areMessagesEqual(current: ChatMessage[], next: ChatMessage[]) {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  return current.every(
+    (message, index) =>
+      message.id === next[index]?.id &&
+      message.timestamp === next[index]?.timestamp &&
+      message.text === next[index]?.text &&
+      message.user === next[index]?.user
+  );
+}
+
+function areRecordingsEqual(current: LiveRecording[], next: LiveRecording[]) {
+  if (current.length !== next.length) {
+    return false;
+  }
+
+  return current.every(
+    (recording, index) =>
+      recording.id === next[index]?.id &&
+      recording.createdAt === next[index]?.createdAt &&
+      recording.videoUrl === next[index]?.videoUrl
+  );
 }
 
 export function LivePageContent({
@@ -117,37 +218,81 @@ export function LivePageContent({
     }))
   );
   const [error, setError] = useState<string | null>(null);
+  const [streamStatus, setStreamStatus] = useState<StreamStatus>(initialSession?.isLive ? "connecting" : "offline");
   const [debug, setDebug] = useState<LiveDebugState>({
-    role: isAdmin ? "admin" : "viewer",
+    role: isAdmin ? "broadcaster" : "viewer",
     lastEvent: "idle",
-    connectionState: "new",
-    iceConnectionState: "new",
-    signalingState: "stable",
-    pendingRequests: 0,
-    answersReceived: 0,
-    offerRequestsSent: 0,
-    offersReceived: 0,
-    answersSent: 0,
-    remoteTracks: 0
+    connectionState: "idle",
+    viewers: 0,
+    reconnectAttempts: 0,
+    remoteTracks: 0,
+    consumerProfile: "medium"
   });
+
+  const currentSessionRef = useRef<LiveSessionSummary | null>(initialSession);
+  const localStreamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
-  const adminPeersRef = useRef<Map<string, RTCPeerConnection>>(new Map());
-  const viewerPeerRef = useRef<RTCPeerConnection | null>(null);
-  const viewerIdRef = useRef("");
-  const requestedOfferLiveIdRef = useRef<string | null>(null);
+  const deviceRef = useRef<MediasoupDeviceLike | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const sendTransportRef = useRef<MediasoupTransportLike | null>(null);
+  const recvTransportRef = useRef<MediasoupTransportLike | null>(null);
+  const producersRef = useRef<Map<string, MediasoupProducerLike>>(new Map());
+  const consumersRef = useRef<Map<string, { consumer: MediasoupConsumerLike; producerId: string }>>(new Map());
+  const pendingRequestsRef = useRef<Map<string, { resolve: SignalResolve; reject: (reason?: unknown) => void }>>(new Map());
+  const roomStateRef = useRef<{ producers: RoomProducer[]; viewerCount: number; broadcasterOnline: boolean }>({
+    producers: [],
+    viewerCount: 0,
+    broadcasterOnline: false
+  });
+  const connectionVersionRef = useRef(0);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const signalHeartbeatRef = useRef<number | null>(null);
+  const adminHeartbeatRef = useRef<number | null>(null);
+  const activeRoleRef = useRef<LiveRole | null>(null);
+  const connectInFlightRef = useRef<Promise<void> | null>(null);
+  const consumeChainRef = useRef<Promise<void>>(Promise.resolve());
+  const consumePendingRef = useRef<Set<string>>(new Set());
+  const restartInFlightRef = useRef<Set<string>>(new Set());
+  const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
+  const recordingMimeTypeRef = useRef("video/webm");
 
   useEffect(() => {
-    viewerIdRef.current = crypto.randomUUID();
-  }, []);
+    currentSessionRef.current = currentSession;
+  }, [currentSession]);
 
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
+    localStreamRef.current = localStream;
+
+    if (localVideoRef.current) {
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
+
+  function updateDebug(patch: Partial<LiveDebugState>) {
+    setDebug((current) => {
+      let changed = false;
+
+      for (const [key, value] of Object.entries(patch) as Array<[keyof LiveDebugState, LiveDebugState[keyof LiveDebugState]]>) {
+        if (current[key] !== value) {
+          changed = true;
+          break;
+        }
+      }
+
+      if (!changed) {
+        return current;
+      }
+
+      return {
+        ...current,
+        ...patch
+      };
+    });
+  }
 
   async function api<T>(input: RequestInfo, init?: RequestInit) {
     const response = await fetch(input, {
@@ -169,15 +314,696 @@ export function LivePageContent({
     return data as T;
   }
 
-  function createPeerConnection() {
-    return new RTCPeerConnection(rtcConfiguration);
+  function setRemoteVideoStream() {
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = remoteStreamRef.current;
+    }
   }
 
-  function updateDebug(patch: Partial<LiveDebugState>) {
+  function clearIntervals() {
+    if (reconnectTimeoutRef.current) {
+      window.clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
+    if (signalHeartbeatRef.current) {
+      window.clearInterval(signalHeartbeatRef.current);
+      signalHeartbeatRef.current = null;
+    }
+
+    if (adminHeartbeatRef.current) {
+      window.clearInterval(adminHeartbeatRef.current);
+      adminHeartbeatRef.current = null;
+    }
+
+    restartInFlightRef.current.clear();
+  }
+
+  function clearPendingRequests() {
+    for (const pending of pendingRequestsRef.current.values()) {
+      pending.reject(new Error("Live signaling connection closed."));
+    }
+
+    pendingRequestsRef.current.clear();
+  }
+
+  function removeConsumer(producerId: string) {
+    for (const [consumerId, entry] of consumersRef.current.entries()) {
+      if (entry.producerId !== producerId) {
+        continue;
+      }
+
+      const track = entry.consumer.track as MediaStreamTrack | undefined;
+
+      if (track) {
+        remoteStreamRef.current.removeTrack(track);
+      }
+
+      entry.consumer.close();
+      consumersRef.current.delete(consumerId);
+    }
+
+    updateDebug({ remoteTracks: remoteStreamRef.current.getTracks().length });
+    setRemoteVideoStream();
+  }
+
+  function syncRoomProducers(nextProducers: RoomProducer[], joinStaggerMs: number) {
+    const currentProducers = roomStateRef.current.producers;
+    const currentProducerIds = new Set(currentProducers.map((producer) => producer.producerId));
+    const nextProducerIds = new Set(nextProducers.map((producer) => producer.producerId));
+
+    for (const producer of currentProducers) {
+      if (!nextProducerIds.has(producer.producerId)) {
+        removeConsumer(producer.producerId);
+      }
+    }
+
+    roomStateRef.current = {
+      ...roomStateRef.current,
+      producers: nextProducers
+    };
+
+    if (activeRoleRef.current !== "viewer") {
+      return;
+    }
+
+    if (!nextProducers.length) {
+      setStreamStatus(roomStateRef.current.broadcasterOnline ? "joining" : "offline");
+      return;
+    }
+
+    for (const producer of nextProducers) {
+      if (!currentProducerIds.has(producer.producerId)) {
+        void queueConsumeProducer(producer.producerId, joinStaggerMs);
+      }
+    }
+  }
+
+  function teardownConnection(incrementVersion = true) {
+    if (incrementVersion) {
+      connectionVersionRef.current += 1;
+    }
+
+    clearIntervals();
+    clearPendingRequests();
+    consumePendingRef.current.clear();
+    consumeChainRef.current = Promise.resolve();
+    lastBootstrapRef.current = null;
+
+    activeRoleRef.current = null;
+    roomStateRef.current = {
+      producers: [],
+      viewerCount: 0,
+      broadcasterOnline: false
+    };
+
+    for (const producer of producersRef.current.values()) {
+      producer.close();
+    }
+
+    for (const { consumer } of consumersRef.current.values()) {
+      consumer.close();
+    }
+
+    producersRef.current.clear();
+    consumersRef.current.clear();
+
+    sendTransportRef.current?.close?.();
+    recvTransportRef.current?.close?.();
+    sendTransportRef.current = null;
+    recvTransportRef.current = null;
+
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    remoteStreamRef.current = new MediaStream();
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+
+    updateDebug({
+      connectionState: "disconnected",
+      remoteTracks: 0,
+      consumerProfile: "medium"
+    });
+  }
+
+  async function sendSignalRequest<K extends keyof LiveWsRequestMap>(
+    action: K,
+    data: LiveWsRequestMap[K]
+  ): Promise<LiveWsResponseMap[K]> {
+    const socket = wsRef.current;
+
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      throw new Error("Live signaling is not connected.");
+    }
+
+    const requestId = crypto.randomUUID();
+
+    return new Promise<LiveWsResponseMap[K]>((resolve, reject) => {
+      pendingRequestsRef.current.set(requestId, { resolve: resolve as SignalResolve, reject });
+
+      try {
+        socket.send(
+          JSON.stringify({
+            type: "request",
+            requestId,
+            action,
+            data
+          } satisfies LiveWsMessage)
+        );
+      } catch (error) {
+        pendingRequestsRef.current.delete(requestId);
+        reject(error instanceof Error ? error : new Error("Live signaling request failed."));
+      }
+    });
+  }
+
+  function scheduleReconnect(role: LiveRole, liveId: string, reconnectDelayMs: number) {
+    if (reconnectTimeoutRef.current) {
+      return;
+    }
+
+    setStreamStatus("reconnecting");
     setDebug((current) => ({
       ...current,
-      ...patch
+      reconnectAttempts: current.reconnectAttempts + 1,
+      lastEvent: `${role} reconnect scheduled`
     }));
+
+    reconnectTimeoutRef.current = window.setTimeout(() => {
+      reconnectTimeoutRef.current = null;
+      void connectToLive(role, liveId);
+    }, reconnectDelayMs);
+  }
+
+  async function ensureDevice(routerRtpCapabilities: unknown) {
+    if (!deviceRef.current) {
+      const mediasoupClient = await import("mediasoup-client");
+      deviceRef.current = new mediasoupClient.Device() as unknown as MediasoupDeviceLike;
+    }
+
+    const device = deviceRef.current as MediasoupDeviceLike;
+
+    if (!device.loaded) {
+      await device.load({ routerRtpCapabilities });
+    }
+
+    return device;
+  }
+
+  function getPreferredVideoCodec(device: MediasoupDeviceLike) {
+    const { isIOS, isSafari } = detectAppleWebKit();
+
+    if (!isIOS && !isSafari) {
+      return undefined;
+    }
+
+    const codecs = ((device?.rtpCapabilities as { codecs?: MediasoupCodecLike[] })?.codecs || []) as MediasoupCodecLike[];
+    return codecs.find((codec) => codec.mimeType?.toLowerCase() === "video/h264");
+  }
+
+  async function restartTransportIce(kind: "send" | "recv", liveId: string) {
+    const transport = kind === "send" ? sendTransportRef.current : recvTransportRef.current;
+
+    if (!transport || restartInFlightRef.current.has(kind)) {
+      return;
+    }
+
+    restartInFlightRef.current.add(kind);
+    updateDebug({ lastEvent: `${kind} transport ICE restart` });
+
+    try {
+      const { iceParameters } = await sendSignalRequest("restartIce", { transportId: transport.id });
+      await transport.restartIce({ iceParameters });
+
+      if (kind === "recv") {
+        setStreamStatus("joining");
+      }
+    } catch (error) {
+      const bootstrap = lastBootstrapRef.current;
+
+      updateDebug({
+        lastEvent: `${kind} ICE restart failed`,
+        connectionState: "failed"
+      });
+
+      if (bootstrap) {
+        scheduleReconnect(activeRoleRef.current || "viewer", liveId, bootstrap.reconnectDelayMs);
+      }
+
+      throw error;
+    } finally {
+      restartInFlightRef.current.delete(kind);
+    }
+  }
+
+  async function consumeProducer(producerId: string) {
+    const recvTransport = recvTransportRef.current;
+    const device = deviceRef.current;
+
+    if (!recvTransport || !device) {
+      return;
+    }
+
+    const alreadyConsumed = [...consumersRef.current.values()].some((entry) => entry.producerId === producerId);
+
+    if (alreadyConsumed || consumePendingRef.current.has(producerId)) {
+      return;
+    }
+
+    consumePendingRef.current.add(producerId);
+
+    try {
+      const payload = await sendSignalRequest("consume", {
+        transportId: recvTransport.id,
+        producerId,
+        rtpCapabilities: device.rtpCapabilities
+      });
+
+      const consumer = await recvTransport.consume({
+        id: payload.id,
+        producerId: payload.producerId,
+        kind: payload.kind,
+        rtpParameters: payload.rtpParameters
+      });
+
+      consumersRef.current.set(consumer.id, { consumer, producerId });
+      remoteStreamRef.current.addTrack(consumer.track);
+      setRemoteVideoStream();
+
+      await sendSignalRequest("resumeConsumer", { consumerId: consumer.id });
+
+      if (payload.kind === "video") {
+        setStreamStatus("live");
+      }
+
+      updateDebug({
+        lastEvent: `consuming ${payload.kind}`,
+        remoteTracks: remoteStreamRef.current.getTracks().length
+      });
+    } finally {
+      consumePendingRef.current.delete(producerId);
+    }
+  }
+
+  function queueConsumeProducer(producerId: string, joinStaggerMs: number) {
+    consumeChainRef.current = consumeChainRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        await consumeProducer(producerId);
+        if (joinStaggerMs > 0) {
+          await wait(joinStaggerMs);
+        }
+      });
+
+    return consumeChainRef.current;
+  }
+
+  async function consumeExistingProducers(joinStaggerMs: number) {
+    setStreamStatus(roomStateRef.current.producers.length ? "joining" : "connecting");
+
+    for (const producer of roomStateRef.current.producers) {
+      await queueConsumeProducer(producer.producerId, joinStaggerMs);
+    }
+  }
+
+  function handleLiveEvent(event: LiveWsEvent) {
+    switch (event.event) {
+      case "roomState": {
+        roomStateRef.current = {
+          ...roomStateRef.current,
+          viewerCount: event.data.viewerCount,
+          broadcasterOnline: event.data.broadcasterOnline
+        };
+
+        updateDebug({
+          viewers: event.data.viewerCount,
+          lastEvent: "room state updated"
+        });
+
+        syncRoomProducers(event.data.producers, lastBootstrapRef.current?.joinStaggerMs || 0);
+
+        break;
+      }
+
+      case "producerAdded": {
+        roomStateRef.current = {
+          ...roomStateRef.current,
+          producers: [...roomStateRef.current.producers.filter((item) => item.producerId !== event.data.producerId), event.data]
+        };
+
+        updateDebug({ lastEvent: `${event.data.kind} producer available` });
+
+        if (activeRoleRef.current === "viewer") {
+          void queueConsumeProducer(event.data.producerId, lastBootstrapRef.current?.joinStaggerMs || 0);
+        }
+
+        break;
+      }
+
+      case "producerRemoved": {
+        roomStateRef.current = {
+          ...roomStateRef.current,
+          producers: roomStateRef.current.producers.filter((item) => item.producerId !== event.data.producerId)
+        };
+
+        removeConsumer(event.data.producerId);
+        updateDebug({ lastEvent: `${event.data.kind} producer removed` });
+
+        if (!roomStateRef.current.producers.some((item) => item.kind === "video")) {
+          setStreamStatus("offline");
+        }
+
+        break;
+      }
+
+      case "streamOffline": {
+        setStreamStatus("offline");
+
+        for (const producer of roomStateRef.current.producers) {
+          removeConsumer(producer.producerId);
+        }
+
+        roomStateRef.current = {
+          ...roomStateRef.current,
+          producers: [],
+          broadcasterOnline: false
+        };
+
+        updateDebug({ lastEvent: "stream offline" });
+        break;
+      }
+
+      case "consumerProfileChanged": {
+        updateDebug({
+          consumerProfile: event.data.profile,
+          lastEvent: `quality ${event.data.profile} (${event.data.reason})`
+        });
+        break;
+      }
+
+      case "error": {
+        setError(event.data.message);
+        updateDebug({ lastEvent: event.data.message });
+        break;
+      }
+    }
+  }
+
+  async function attachViewerTransport(bootstrap: LiveBootstrapResponse, version: number) {
+    setStreamStatus("joining");
+    const { routerRtpCapabilities } = await sendSignalRequest("getRouterRtpCapabilities", undefined);
+    const device = await ensureDevice(routerRtpCapabilities);
+    const transportOptions = await sendSignalRequest("createTransport", { direction: "recv" });
+
+    if (version !== connectionVersionRef.current) {
+      return;
+    }
+
+    const transport = device.createRecvTransport({
+      ...transportOptions,
+      iceServers: bootstrap.iceServers
+    });
+
+    transport.on("connect", async ({ dtlsParameters }: { dtlsParameters: unknown }, callback: () => void, errback: (error: Error) => void) => {
+      try {
+        await sendSignalRequest("connectTransport", {
+          transportId: transport.id,
+          dtlsParameters
+        });
+        callback();
+      } catch (error) {
+        errback(error instanceof Error ? error : new Error("Transport connect failed."));
+      }
+    });
+
+    transport.on("connectionstatechange", (state: string) => {
+      updateDebug({
+        connectionState: state,
+        lastEvent: `viewer transport ${state}`
+      });
+
+      if (state === "connected" && roomStateRef.current.producers.length) {
+        setStreamStatus("live");
+        updateDebug({ reconnectAttempts: 0 });
+      } else if (state === "disconnected" || state === "failed") {
+        void restartTransportIce("recv", bootstrap.liveId).catch(() => undefined);
+        setStreamStatus("reconnecting");
+      }
+    });
+
+    recvTransportRef.current = transport;
+    await consumeExistingProducers(bootstrap.joinStaggerMs);
+  }
+
+  async function publishBroadcasterStream(bootstrap: LiveBootstrapResponse, version: number) {
+    setStreamStatus("joining");
+    const { routerRtpCapabilities } = await sendSignalRequest("getRouterRtpCapabilities", undefined);
+    const device = await ensureDevice(routerRtpCapabilities);
+    const transportOptions = await sendSignalRequest("createTransport", { direction: "send" });
+
+    if (version !== connectionVersionRef.current || !localStreamRef.current) {
+      return;
+    }
+
+    const transport = device.createSendTransport({
+      ...transportOptions,
+      iceServers: bootstrap.iceServers
+    });
+
+    transport.on("connect", async ({ dtlsParameters }: { dtlsParameters: unknown }, callback: () => void, errback: (error: Error) => void) => {
+      try {
+        await sendSignalRequest("connectTransport", {
+          transportId: transport.id,
+          dtlsParameters
+        });
+        callback();
+      } catch (error) {
+        errback(error instanceof Error ? error : new Error("Transport connect failed."));
+      }
+    });
+
+    transport.on(
+      "produce",
+      async (
+        {
+          kind,
+          rtpParameters
+        }: {
+          kind: "audio" | "video";
+          rtpParameters: unknown;
+        },
+        callback: ({ id }: { id: string }) => void,
+        errback: (error: Error) => void
+      ) => {
+        try {
+          const result = await sendSignalRequest("produce", {
+            transportId: transport.id,
+            kind,
+            rtpParameters
+          });
+          callback({ id: result.id });
+        } catch (error) {
+          errback(error instanceof Error ? error : new Error("Produce failed."));
+        }
+      }
+    );
+
+    transport.on("connectionstatechange", (state: string) => {
+      updateDebug({
+        connectionState: state,
+        lastEvent: `broadcaster transport ${state}`
+      });
+
+      if (state === "connected") {
+        setStreamStatus("live");
+        updateDebug({ reconnectAttempts: 0 });
+      } else if (state === "disconnected" || state === "failed") {
+        void restartTransportIce("send", bootstrap.liveId).catch(() => undefined);
+        setStreamStatus("reconnecting");
+      }
+    });
+
+    sendTransportRef.current = transport;
+    const preferredVideoCodec = getPreferredVideoCodec(device);
+
+    for (const track of localStreamRef.current.getTracks()) {
+      const producer = await transport.produce({
+        track,
+        stopTracks: false,
+        encodings:
+          track.kind === "video"
+            ? [
+                { maxBitrate: 350000, scaleResolutionDownBy: 2.25 },
+                { maxBitrate: 900000, scaleResolutionDownBy: 1.5 },
+                { maxBitrate: 1600000, scaleResolutionDownBy: 1 }
+              ]
+            : undefined,
+        codecOptions:
+          track.kind === "video"
+            ? {
+                videoGoogleStartBitrate: 700,
+                videoGoogleMaxBitrate: 1600
+              }
+            : undefined,
+        codec: track.kind === "video" ? preferredVideoCodec : undefined
+      });
+
+      producersRef.current.set(producer.id, producer);
+    }
+  }
+
+  async function connectToLive(role: LiveRole, liveId: string) {
+    if (connectInFlightRef.current) {
+      return connectInFlightRef.current;
+    }
+
+    const run = (async () => {
+      try {
+        teardownConnection(true);
+        setError(null);
+        setStreamStatus(debug.reconnectAttempts > 0 ? "reconnecting" : "connecting");
+        updateDebug({
+          role,
+          lastEvent: `${role} bootstrap requested`,
+          connectionState: "connecting"
+        });
+
+        const bootstrap = await api<LiveBootstrapResponse>("/api/live/connect", {
+          method: "POST",
+          body: JSON.stringify({ liveId, role })
+        });
+        lastBootstrapRef.current = bootstrap;
+
+        const version = connectionVersionRef.current;
+        const socket = new WebSocket(`${bootstrap.websocketUrl}?token=${encodeURIComponent(bootstrap.token)}`);
+        wsRef.current = socket;
+        activeRoleRef.current = role;
+
+        await new Promise<void>((resolve, reject) => {
+          socket.onopen = () => resolve();
+          socket.onerror = () => reject(new Error("Live signaling connection failed."));
+        });
+
+        socket.onmessage = (event) => {
+          if (version !== connectionVersionRef.current) {
+            return;
+          }
+
+          let message: LiveWsMessage;
+
+          try {
+            message = JSON.parse(event.data) as LiveWsMessage;
+          } catch {
+            updateDebug({ lastEvent: "invalid signaling payload" });
+            return;
+          }
+
+          if (message.type === "response") {
+            const pending = pendingRequestsRef.current.get(message.requestId);
+
+            if (!pending) {
+              return;
+            }
+
+            pendingRequestsRef.current.delete(message.requestId);
+
+            if (message.ok) {
+              pending.resolve(message.data);
+            } else {
+              pending.reject(new Error(message.error));
+            }
+
+            return;
+          }
+
+          if (message.type === "event") {
+            handleLiveEvent(message);
+          }
+        };
+
+        socket.onclose = () => {
+          if (version !== connectionVersionRef.current) {
+            return;
+          }
+
+          clearPendingRequests();
+          wsRef.current = null;
+          sendTransportRef.current = null;
+          recvTransportRef.current = null;
+          updateDebug({
+            connectionState: "closed",
+            lastEvent: `${role} signaling closed`
+          });
+
+          if (currentSessionRef.current?.isLive) {
+            scheduleReconnect(role, liveId, bootstrap.reconnectDelayMs);
+          } else {
+            setStreamStatus("offline");
+          }
+        };
+
+        socket.onerror = () => {
+          updateDebug({
+            connectionState: "failed",
+            lastEvent: `${role} signaling error`
+          });
+        };
+
+        signalHeartbeatRef.current = window.setInterval(() => {
+          if (version !== connectionVersionRef.current) {
+            return;
+          }
+
+          void sendSignalRequest("heartbeat", undefined).catch(() => {
+            socket.close();
+          });
+        }, bootstrap.heartbeatIntervalMs);
+
+        if (role === "viewer") {
+          await attachViewerTransport(bootstrap, version);
+        } else {
+          adminHeartbeatRef.current = window.setInterval(() => {
+            if (!currentSessionRef.current?.id) {
+              return;
+            }
+
+            void api("/api/live/heartbeat", {
+              method: "POST",
+              body: JSON.stringify({ liveId: currentSessionRef.current.id })
+            }).catch(() => {
+              updateDebug({ lastEvent: "admin heartbeat failed" });
+            });
+          }, bootstrap.heartbeatIntervalMs);
+
+          await publishBroadcasterStream(bootstrap, version);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Live connection failed.";
+        setError(message);
+        updateDebug({
+          connectionState: "failed",
+          lastEvent: message
+        });
+
+        if (role === "viewer" && currentSessionRef.current?.isLive) {
+          const reconnectDelayMs = lastBootstrapRef.current?.reconnectDelayMs || 3000;
+          scheduleReconnect(role, liveId, reconnectDelayMs);
+        } else {
+          setStreamStatus("offline");
+        }
+      }
+    })();
+
+    connectInFlightRef.current = run.finally(() => {
+      connectInFlightRef.current = null;
+    });
+
+    return connectInFlightRef.current;
   }
 
   async function loadCurrentLive() {
@@ -188,32 +1014,38 @@ export function LivePageContent({
     try {
       const data = await api<{ live: { id: string; title: string; description: string; createdAt: string } | null }>("/api/live/current");
 
+      if (!data.live) {
+        setCurrentSession((current) => (current ? { ...current, isLive: false } : current));
+        setStreamStatus("offline");
+        teardownConnection(true);
+        return;
+      }
+
+      const live = data.live;
+
       setCurrentSession((current) => {
-        if (!data.live) {
-          return current ? { ...current, isLive: false } : current;
-        }
-
-        if (current?.id === data.live.id) {
-          return { ...current, isLive: true };
-        }
-
-        requestedOfferLiveIdRef.current = null;
-
-        if (viewerPeerRef.current) {
-          viewerPeerRef.current.close();
-          viewerPeerRef.current = null;
+        if (
+          current &&
+          current.id === live.id &&
+          current.title === live.title &&
+          current.description === live.description &&
+          current.scheduledFor === live.createdAt &&
+          current.isLive
+        ) {
+          return current;
         }
 
         return {
-          id: data.live.id,
-          title: data.live.title,
-          description: data.live.description,
-          scheduledFor: data.live.createdAt,
+          id: live.id,
+          title: live.title,
+          description: live.description,
+          scheduledFor: live.createdAt,
           isLive: true
         };
       });
     } catch {
-      setCurrentSession((current) => (current ? { ...current, isLive: false } : null));
+      setCurrentSession((current) => (current ? { ...current, isLive: false } : current));
+      setStreamStatus("offline");
     }
   }
 
@@ -223,7 +1055,7 @@ export function LivePageContent({
     }
 
     const data = await api<{ messages: ChatMessage[] }>(`/api/chat/${currentSession.id}`);
-    setMessages(data.messages);
+    setMessages((current) => (areMessagesEqual(current, data.messages) ? current : data.messages));
   }
 
   async function loadRecordings() {
@@ -232,7 +1064,94 @@ export function LivePageContent({
     }
 
     const data = await api<{ recordings: LiveRecording[] }>("/api/live/recordings");
-    setRecordings(data.recordings);
+    setRecordings((current) => (areRecordingsEqual(current, data.recordings) ? current : data.recordings));
+  }
+
+  function buildCaptureProfiles() {
+    const { isIOS, isSafari } = detectAppleWebKit();
+
+    if (isIOS || isSafari) {
+      return [
+        {
+          video: {
+            width: { ideal: 1280, max: 1280 },
+            height: { ideal: 720, max: 720 },
+            frameRate: { ideal: 30, max: 30 }
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        },
+        {
+          video: {
+            width: { ideal: 960, max: 960 },
+            height: { ideal: 540, max: 540 },
+            frameRate: { ideal: 24, max: 24 }
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        }
+      ] satisfies MediaStreamConstraints[];
+    }
+
+    return [
+      {
+        video: {
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      },
+      {
+        video: {
+          width: { ideal: 1280, max: 1280 },
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 30, max: 30 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      },
+      {
+        video: {
+          width: { ideal: 854, max: 854 },
+          height: { ideal: 480, max: 480 },
+          frameRate: { ideal: 24, max: 24 }
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      }
+    ] satisfies MediaStreamConstraints[];
+  }
+
+  async function getSafeBroadcastStream() {
+    const profiles = buildCaptureProfiles();
+    let lastError: unknown;
+
+    for (const constraints of profiles) {
+      try {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error("Could not access camera or microphone.");
   }
 
   async function startLive() {
@@ -241,42 +1160,62 @@ export function LivePageContent({
       return;
     }
 
-    setError(null);
-    updateDebug({
-      lastEvent: "getUserMedia ok",
-      role: "admin"
-    });
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    setLocalStream(stream);
+    try {
+      setError(null);
+      setStreamStatus("connecting");
 
-    recordedChunksRef.current = [];
-    const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunksRef.current.push(event.data);
-      }
-    };
-    mediaRecorder.start(2000);
-    mediaRecorderRef.current = mediaRecorder;
+      const stream = await getSafeBroadcastStream();
 
-    await api("/api/live/start", {
-      method: "POST",
-      body: JSON.stringify({ liveId: currentSession.id })
-    });
+      setLocalStream(stream);
 
-    updateDebug({
-      lastEvent: "live started",
-      pendingRequests: 0,
-      answersReceived: 0,
-      remoteTracks: 0
-    });
-    setCurrentSession({ ...currentSession, isLive: true });
+      recordedChunksRef.current = [];
+      const recordingMimeType = getMediaRecorderMimeType();
+      recordingMimeTypeRef.current = recordingMimeType || "video/webm";
+      const mediaRecorder = recordingMimeType
+        ? new MediaRecorder(stream, { mimeType: recordingMimeType })
+        : new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+      mediaRecorder.start(2000);
+      mediaRecorderRef.current = mediaRecorder;
+
+      await api("/api/live/start", {
+        method: "POST",
+        body: JSON.stringify({ liveId: currentSession.id })
+      });
+
+      const nextSession = { ...currentSession, isLive: true };
+      setCurrentSession(nextSession);
+      currentSessionRef.current = nextSession;
+      updateDebug({
+        role: "broadcaster",
+        lastEvent: "live started"
+      });
+
+      await connectToLive("broadcaster", currentSession.id);
+    } catch (error) {
+      localStreamRef.current?.getTracks().forEach((track) => track.stop());
+      setLocalStream(null);
+      mediaRecorderRef.current = null;
+      recordedChunksRef.current = [];
+      setStreamStatus("offline");
+      setError(error instanceof Error ? error.message : "Nu s-a putut porni sesiunea live.");
+    }
   }
 
   async function stopLive() {
     if (!currentSession) {
       return;
     }
+
+    try {
+      await sendSignalRequest("stopBroadcast", undefined);
+    } catch {}
+
+    teardownConnection(true);
 
     await api("/api/live/stop", {
       method: "POST",
@@ -293,7 +1232,12 @@ export function LivePageContent({
     if (recordedChunksRef.current.length) {
       const formData = new FormData();
       formData.append("liveId", currentSession.id);
-      formData.append("video", new File(recordedChunksRef.current, `${currentSession.id}.webm`, { type: "video/webm" }));
+      const recordingMimeType = recordingMimeTypeRef.current || "video/webm";
+      const recordingExtension = recordingMimeType.includes("mp4") ? "mp4" : "webm";
+      formData.append(
+        "video",
+        new File(recordedChunksRef.current, `${currentSession.id}.${recordingExtension}`, { type: recordingMimeType })
+      );
 
       const uploadResponse = await fetch("/api/live/upload", {
         method: "POST",
@@ -306,16 +1250,14 @@ export function LivePageContent({
       }
     }
 
-    localStream?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
     setLocalStream(null);
     mediaRecorderRef.current = null;
     recordedChunksRef.current = [];
-    adminPeersRef.current.forEach((peer) => peer.close());
-    adminPeersRef.current.clear();
-    viewerPeerRef.current?.close();
-    viewerPeerRef.current = null;
+    recordingMimeTypeRef.current = "video/webm";
     setCurrentSession({ ...currentSession, isLive: false });
     setMessages([]);
+    setStreamStatus("offline");
     await loadRecordings();
   }
 
@@ -326,6 +1268,7 @@ export function LivePageContent({
 
     void loadRecordings();
     void loadCurrentLive();
+
     const interval = window.setInterval(() => {
       void loadCurrentLive();
     }, LIVE_POLL_INTERVAL);
@@ -340,6 +1283,7 @@ export function LivePageContent({
     }
 
     void loadMessages();
+
     const interval = window.setInterval(() => {
       void loadMessages();
     }, CHAT_POLL_INTERVAL);
@@ -349,230 +1293,65 @@ export function LivePageContent({
   }, [currentSession?.id, currentSession?.isLive, canAccess, isAdmin]);
 
   useEffect(() => {
-    if (!isAdmin || !currentSession?.isLive || !localStream) {
+    if (!currentSession?.isLive) {
+      teardownConnection(true);
       return;
     }
 
-    const runAdminSignalTick = async () => {
-      const data = await api<{ pendingRequests: string[]; answers: Array<{ viewerId: string; sdp: RTCSessionDescriptionInit }> }>(
-        `/api/signal/${currentSession.id}?role=admin`
-      );
-      updateDebug({
-        role: "admin",
-        lastEvent: "admin poll ok",
-        pendingRequests: data.pendingRequests.length,
-        answersReceived: data.answers.length
-      });
-
-      for (const viewerId of data.pendingRequests) {
-        if (adminPeersRef.current.has(viewerId)) {
-          continue;
-        }
-
-        const peer = createPeerConnection();
-        updateDebug({
-          lastEvent: `creating offer for ${viewerId}`,
-          connectionState: peer.connectionState,
-          iceConnectionState: peer.iceConnectionState,
-          signalingState: peer.signalingState
-        });
-        peer.oniceconnectionstatechange = () => {
-          updateDebug({
-            iceConnectionState: peer.iceConnectionState,
-            signalingState: peer.signalingState,
-            connectionState: peer.connectionState,
-            lastEvent: `admin ice ${peer.iceConnectionState}`
-          });
-        };
-        peer.onsignalingstatechange = () => {
-          updateDebug({
-            signalingState: peer.signalingState,
-            lastEvent: `admin signaling ${peer.signalingState}`
-          });
-        };
-        peer.onconnectionstatechange = () => {
-          updateDebug({
-            connectionState: peer.connectionState,
-            iceConnectionState: peer.iceConnectionState,
-            signalingState: peer.signalingState,
-            lastEvent: `admin peer ${peer.connectionState}`
-          });
-          if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
-            peer.close();
-            adminPeersRef.current.delete(viewerId);
-          }
-        };
-
-        localStream.getTracks().forEach((track) => {
-          peer.addTrack(track, localStream);
-        });
-
-        const offer = await peer.createOffer();
-        await peer.setLocalDescription(offer);
-        await waitForIceGathering(peer);
-
-        await api("/api/signal/offer", {
-          method: "POST",
-          body: JSON.stringify({
-            liveId: currentSession.id,
-            viewerId,
-            type: "offer",
-            sdp: peer.localDescription
-          })
-        });
-        updateDebug({
-          lastEvent: `offer sent to ${viewerId}`,
-          connectionState: peer.connectionState,
-          iceConnectionState: peer.iceConnectionState,
-          signalingState: peer.signalingState
-        });
-
-        adminPeersRef.current.set(viewerId, peer);
+    if (isAdmin) {
+      if (localStreamRef.current && activeRoleRef.current !== "broadcaster") {
+        void connectToLive("broadcaster", currentSession.id);
       }
 
-      for (const answer of data.answers) {
-        const peer = adminPeersRef.current.get(answer.viewerId);
+      return;
+    }
 
-        if (peer && !peer.currentRemoteDescription) {
-          await peer.setRemoteDescription(answer.sdp);
-          updateDebug({
-            lastEvent: `answer applied for ${answer.viewerId}`,
-            connectionState: peer.connectionState,
-            iceConnectionState: peer.iceConnectionState,
-            signalingState: peer.signalingState
-          });
-        }
-      }
-    };
+    if (!canAccess) {
+      return;
+    }
 
-    void runAdminSignalTick();
-    const interval = window.setInterval(() => {
-      void runAdminSignalTick();
-    }, SIGNAL_POLL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [isAdmin, currentSession?.id, currentSession?.isLive, localStream]);
+    if (activeRoleRef.current !== "viewer") {
+      void connectToLive("viewer", currentSession.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSession?.id, currentSession?.isLive, canAccess, isAdmin]);
 
   useEffect(() => {
-    if (isAdmin || !canAccess || !currentSession?.isLive) {
-      return;
+    return () => {
+      teardownConnection(true);
+      localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    function handleOnline() {
+      const session = currentSessionRef.current;
+      const role = activeRoleRef.current;
+      const bootstrap = lastBootstrapRef.current;
+
+      if (session?.isLive && role && bootstrap) {
+        scheduleReconnect(role, session.id, bootstrap.reconnectDelayMs);
+      }
     }
 
-    const runViewerSignalTick = async () => {
-      if (!requestedOfferLiveIdRef.current || requestedOfferLiveIdRef.current !== currentSession.id) {
-        await api("/api/signal/offer", {
-          method: "POST",
-          body: JSON.stringify({
-            liveId: currentSession.id,
-            viewerId: viewerIdRef.current,
-            type: "request"
-          })
-        });
-
-        requestedOfferLiveIdRef.current = currentSession.id;
-        setDebug((current) => ({
-          ...current,
-          role: "viewer",
-          lastEvent: "offer request sent",
-          offerRequestsSent: current.offerRequestsSent + 1
-        }));
-      }
-
-      if (viewerPeerRef.current) {
-        return;
-      }
-
-      const data = await api<{ offer: RTCSessionDescriptionInit | null }>(
-        `/api/signal/${currentSession.id}?viewerId=${encodeURIComponent(viewerIdRef.current)}`
-      );
-
-      if (!data.offer) {
-        updateDebug({
-          role: "viewer",
-          lastEvent: "waiting for offer"
-        });
-        return;
-      }
-
-      setDebug((current) => ({
-        ...current,
-        role: "viewer",
-        offersReceived: current.offersReceived + 1,
-        lastEvent: "offer received"
-      }));
-      const peer = createPeerConnection();
-      peer.ontrack = (event) => {
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = event.streams[0];
-        }
-        updateDebug({
-          remoteTracks: event.streams[0]?.getTracks().length || 1,
-          lastEvent: "remote track received"
-        });
-      };
-      peer.oniceconnectionstatechange = () => {
-        updateDebug({
-          iceConnectionState: peer.iceConnectionState,
-          signalingState: peer.signalingState,
-          connectionState: peer.connectionState,
-          lastEvent: `viewer ice ${peer.iceConnectionState}`
-        });
-      };
-      peer.onsignalingstatechange = () => {
-        updateDebug({
-          signalingState: peer.signalingState,
-          lastEvent: `viewer signaling ${peer.signalingState}`
-        });
-      };
-      peer.onconnectionstatechange = () => {
-        updateDebug({
-          connectionState: peer.connectionState,
-          iceConnectionState: peer.iceConnectionState,
-          signalingState: peer.signalingState,
-          lastEvent: `viewer peer ${peer.connectionState}`
-        });
-        if (peer.connectionState === "failed" || peer.connectionState === "disconnected" || peer.connectionState === "closed") {
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = null;
-          }
-          peer.close();
-          viewerPeerRef.current = null;
-          requestedOfferLiveIdRef.current = null;
-        }
-      };
-
-      await peer.setRemoteDescription(data.offer);
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-      await waitForIceGathering(peer);
-
-      await api("/api/signal/answer", {
-        method: "POST",
-        body: JSON.stringify({
-          liveId: currentSession.id,
-          viewerId: viewerIdRef.current,
-          sdp: peer.localDescription
-        })
+    function handleOffline() {
+      updateDebug({
+        connectionState: "offline",
+        lastEvent: "network offline"
       });
-      setDebug((current) => ({
-        ...current,
-        answersSent: current.answersSent + 1,
-        lastEvent: "answer sent",
-        connectionState: peer.connectionState,
-        iceConnectionState: peer.iceConnectionState,
-        signalingState: peer.signalingState
-      }));
+      setStreamStatus("reconnecting");
+    }
 
-      viewerPeerRef.current = peer;
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
-
-    void runViewerSignalTick();
-    const interval = window.setInterval(() => {
-      void runViewerSignalTick();
-    }, SIGNAL_POLL_INTERVAL);
-
-    return () => window.clearInterval(interval);
-  }, [isAdmin, canAccess, currentSession?.id, currentSession?.isLive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function sendMessage() {
     if (!chatText.trim() || !currentSession?.isLive) {
@@ -591,16 +1370,13 @@ export function LivePageContent({
   const canViewLive = canAccess || isAdmin;
   const diagnostics = [
     `Rol: ${debug.role}`,
+    `Status stream: ${streamStatus}`,
     `Ultimul eveniment: ${debug.lastEvent}`,
-    `Connection: ${debug.connectionState}`,
-    `ICE: ${debug.iceConnectionState}`,
-    `Signaling: ${debug.signalingState}`,
-    `Pending requests: ${debug.pendingRequests}`,
-    `Offer requests sent: ${debug.offerRequestsSent}`,
-    `Offers received: ${debug.offersReceived}`,
-    `Answers received: ${debug.answersReceived}`,
-    `Answers sent: ${debug.answersSent}`,
-    `Remote tracks: ${debug.remoteTracks}`
+    `Conexiune: ${debug.connectionState}`,
+    `Vieweri conectati: ${debug.viewers}`,
+    `Reconnect attempts: ${debug.reconnectAttempts}`,
+    `Remote tracks: ${debug.remoteTracks}`,
+    `Calitate curenta: ${debug.consumerProfile}`
   ];
 
   return (
@@ -613,7 +1389,13 @@ export function LivePageContent({
                 <div className="flex items-center gap-3">
                   <span className="live-dot" />
                   <p className="text-xs uppercase tracking-[0.35em] text-red-300">
-                    {currentSession?.isLive ? "LIVE" : "Offline"}
+                    {streamStatus === "live"
+                      ? "LIVE"
+                      : streamStatus === "joining"
+                        ? "Joining"
+                        : streamStatus === "connecting" || streamStatus === "reconnecting"
+                          ? "Connecting"
+                          : "Offline"}
                   </p>
                 </div>
                 <h3 className="mt-3 text-3xl text-white sm:text-4xl">
@@ -635,11 +1417,21 @@ export function LivePageContent({
                 <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video w-full bg-black object-cover" />
               ) : (
                 <div className="flex aspect-video items-center justify-center bg-black px-6 text-center text-white/60">
-                  {canViewLive
-                    ? "Niciun LIVE activ momentan"
-                    : "Ai nevoie de abonament activ pentru a accesa LIVE-ul"}
+                  {canViewLive ? "Niciun LIVE activ momentan" : "Ai nevoie de abonament activ pentru a accesa LIVE-ul"}
                 </div>
               )}
+
+              {currentSession?.isLive && !isAdmin && streamStatus !== "live" ? (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/55 px-6 text-center text-sm text-white/75 backdrop-blur-sm">
+                  {streamStatus === "reconnecting"
+                    ? "Conexiunea la live se reface automat."
+                    : streamStatus === "joining"
+                      ? "Se intra treptat in sesiunea live pentru o conexiune stabila."
+                    : streamStatus === "connecting"
+                      ? "Se conecteaza la fluxul live."
+                      : "Fluxul este offline momentan."}
+                </div>
+              ) : null}
             </div>
 
             <div className="grid gap-4 px-6 py-6 sm:px-7 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -649,7 +1441,7 @@ export function LivePageContent({
                 </p>
               ) : (
                 <p className="max-w-2xl text-sm leading-7 text-white/60">
-                  Stream activ, chat live si replay-uri intr-un singur flux, fara sa fragmenteze experienta.
+                  Broadcasterul publica o singura data catre server, iar spectatorii primesc fluxul prin distributie centralizata.
                 </p>
               )}
               {isAdmin ? (
@@ -702,7 +1494,7 @@ export function LivePageContent({
                             <div
                               className={`max-w-[88%] rounded-[1.5rem] px-4 py-3 ${
                                 isRight
-                                ? "rounded-br-md bg-[linear-gradient(180deg,#ecd4ac,#cfab72)] text-black shadow-[0_20px_36px_rgba(214,185,140,0.18)]"
+                                  ? "rounded-br-md bg-[linear-gradient(180deg,#ecd4ac,#cfab72)] text-black shadow-[0_20px_36px_rgba(214,185,140,0.18)]"
                                   : "rounded-bl-md bg-white/[0.05] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                               }`}
                             >
@@ -742,9 +1534,7 @@ export function LivePageContent({
                 </div>
               ) : (
                 <div className="flex h-full min-h-[280px] items-center justify-center rounded-[1.6rem] bg-white/[0.03] px-5 text-center text-sm text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                  {canViewLive
-                    ? "Chatul devine activ cand sesiunea este LIVE."
-                    : "Chatul este disponibil dupa autentificare si acces activ."}
+                  {canViewLive ? "Chatul devine activ cand sesiunea este LIVE." : "Chatul este disponibil dupa autentificare si acces activ."}
                 </div>
               )}
             </div>

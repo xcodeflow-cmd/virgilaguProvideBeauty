@@ -1,10 +1,14 @@
 import type { LiveSession } from "@prisma/client";
 
+import { getLiveSessionStaleAfterMs } from "@/lib/live-config";
 import { prisma } from "@/lib/prisma";
 
-export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "scheduledFor">, now = new Date()) {
-  void now;
-  return session.isLive;
+export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updatedAt">, now = new Date()) {
+  if (!session.isLive) {
+    return false;
+  }
+
+  return now.getTime() - session.updatedAt.getTime() <= getLiveSessionStaleAfterMs();
 }
 
 export async function getPrimaryLiveSession() {
