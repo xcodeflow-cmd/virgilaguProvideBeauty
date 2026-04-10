@@ -6,7 +6,6 @@ import { WebSocketServer, WebSocket } from "ws";
 
 import {
   getLiveConsumerMonitorIntervalMs,
-  getLiveHeartbeatIntervalMs,
   getLiveJoinStaggerMs,
   getLiveMaxViewers,
   getLiveRoomSignalRateLimitMax,
@@ -18,6 +17,7 @@ import { verifyLiveToken } from "../lib/live-token";
 import type {
   LiveConsumerProfile,
   LiveRole,
+  LiveWsClientControlMessage,
   LiveWsEvent,
   LiveWsMessage,
   LiveWsRequest,
@@ -86,7 +86,8 @@ const LIVE_INITIAL_OUTGOING_BITRATE = Number(process.env.LIVE_INITIAL_OUTGOING_B
 const LIVE_MAX_INCOMING_BITRATE = Number(process.env.LIVE_MAX_INCOMING_BITRATE || 1_500_000);
 const LIVE_PEER_TIMEOUT_MS = Number(process.env.LIVE_PEER_TIMEOUT_MS || 30_000);
 const LIVE_ROOM_IDLE_TIMEOUT_MS = Number(process.env.LIVE_ROOM_IDLE_TIMEOUT_MS || 60_000);
-const LIVE_HEARTBEAT_INTERVAL_MS = getLiveHeartbeatIntervalMs();
+const LIVE_SERVER_SECRET = process.env.LIVE_SERVER_SECRET?.trim() || "";
+const LIVE_WS_HEARTBEAT_INTERVAL_MS = 15_000;
 const LIVE_MAX_VIEWERS = getLiveMaxViewers();
 const LIVE_JOIN_STAGGER_MS = getLiveJoinStaggerMs();
 const LIVE_SIGNAL_RATE_LIMIT_WINDOW_MS = getLiveSignalRateLimitWindowMs();
@@ -156,6 +157,18 @@ function wait(ms: number) {
 
 function isOpen(ws: WebSocket) {
   return ws.readyState === WebSocket.OPEN;
+}
+
+function isLiveServerSecretConfigured() {
+  return LIVE_SERVER_SECRET.length > 0;
+}
+
+function isValidLiveServerSecret(secret: string | null | undefined) {
+  if (!isLiveServerSecretConfigured()) {
+    return true;
+  }
+
+  return typeof secret === "string" && secret.trim() === LIVE_SERVER_SECRET;
 }
 
 function resetRateLimitWindow(state: RateLimitState, now: number) {
@@ -749,7 +762,7 @@ async function closePeer(peer: LivePeer, reason: string) {
     } catch {}
   }
 
-  log("peer_disconnected", {
+  log("client disconnected", {
     liveId: peer.roomId,
     peerId: peer.id,
     role: peer.role,
@@ -1104,6 +1117,12 @@ function registerProcessSafety() {
 async function bootstrap() {
   registerProcessSafety();
 
+  if (!isLiveServerSecretConfigured()) {
+    log("live_server_secret_missing", {
+      message: "LIVE_SERVER_SECRET is not configured. WebSocket clients will fall back to token-only authentication.",
+    });
+  }
+
   if (process.env.VERCEL === "1") {
     log("bootstrap_skipped", {
       reason: "vercel_environment",
@@ -1151,114 +1170,219 @@ async function bootstrap() {
   server.on("connection", async (ws, request) => {
     const requestUrl = new URL(request.url || LIVE_WS_PATH, `http://${request.headers.host || "localhost"}`);
     const token = requestUrl.searchParams.get("token") || "";
+    const querySecret = requestUrl.searchParams.get("secret");
+    const remoteAddress = request.socket.remoteAddress || "unknown";
+    let peer: LivePeer | null = null;
+    let authTimeout: NodeJS.Timeout | null = null;
+
+    log("client connected", {
+      remoteAddress,
+      path: requestUrl.pathname,
+    });
+
+    const clearAuthTimeout = () => {
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+        authTimeout = null;
+      }
+    };
+
+    const rejectClient = (message: string) => {
+      clearAuthTimeout();
+      ws.close(4403, message);
+    };
 
     try {
       const claims = verifyLiveToken(token);
-      const room = await getOrCreateRoom(claims.liveId);
+      const requireSecret = isLiveServerSecretConfigured();
+      let authenticated = isValidLiveServerSecret(querySecret);
 
-      if (claims.role === "viewer" && getViewerCount(room) >= LIVE_MAX_VIEWERS) {
-        log("viewer_capacity_reached", {
-          liveId: claims.liveId,
+      const finalizeAuthentication = async () => {
+        if (peer) {
+          return;
+        }
+
+        const room = await getOrCreateRoom(claims.liveId);
+
+        if (claims.role === "viewer" && getViewerCount(room) >= LIVE_MAX_VIEWERS) {
+          log("viewer_capacity_reached", {
+            liveId: claims.liveId,
+            userId: claims.userId,
+            maxViewers: LIVE_MAX_VIEWERS,
+          });
+          ws.close(1013, "Viewer capacity reached.");
+          return;
+        }
+
+        const peerId = randomUUID();
+        peer = {
+          id: peerId,
           userId: claims.userId,
-          maxViewers: LIVE_MAX_VIEWERS,
-        });
-        ws.close(1013, "Viewer capacity reached.");
-        return;
-      }
+          role: claims.role,
+          ws,
+          roomId: claims.liveId,
+          lastSeenAt: Date.now(),
+          joinedAt: Date.now(),
+          closing: false,
+          transports: new Map(),
+          producers: new Map(),
+          consumers: new Map(),
+          consumerProfiles: new Map(),
+          consumerMonitors: new Map(),
+          rateLimit: {
+            windowStartedAt: Date.now(),
+            count: 0,
+            violations: 0,
+          },
+          lastBackpressureAt: 0,
+        };
 
-      const peerId = randomUUID();
-      const peer: LivePeer = {
-        id: peerId,
-        userId: claims.userId,
-        role: claims.role,
-        ws,
-        roomId: claims.liveId,
-        lastSeenAt: Date.now(),
-        joinedAt: Date.now(),
-        closing: false,
-        transports: new Map(),
-        producers: new Map(),
-        consumers: new Map(),
-        consumerProfiles: new Map(),
-        consumerMonitors: new Map(),
-        rateLimit: {
-          windowStartedAt: Date.now(),
-          count: 0,
-          violations: 0,
-        },
-        lastBackpressureAt: 0,
+        if (claims.role === "broadcaster" && room.broadcasterPeerId) {
+          const existingBroadcaster = room.peers.get(room.broadcasterPeerId);
+
+          if (existingBroadcaster) {
+            await closePeer(existingBroadcaster, "broadcaster replaced");
+          }
+        }
+
+        room.peers.set(peer.id, peer);
+        room.lastActiveAt = Date.now();
+        scheduleRoomState(room, true);
+
+        log("client authenticated", {
+          liveId: room.id,
+          peerId: peer.id,
+          role: peer.role,
+          viewers: getViewerCount(room),
+        });
       };
 
-      if (claims.role === "broadcaster" && room.broadcasterPeerId) {
-        const existingBroadcaster = room.peers.get(room.broadcasterPeerId);
-
-        if (existingBroadcaster) {
-          await closePeer(existingBroadcaster, "broadcaster replaced");
-        }
-      }
-
-      room.peers.set(peer.id, peer);
-      room.lastActiveAt = Date.now();
-
       ws.on("pong", () => {
-        peer.lastSeenAt = Date.now();
+        if (peer) {
+          peer.lastSeenAt = Date.now();
+        }
       });
 
       ws.on("message", (raw) => {
+        let message: LiveWsMessage | LiveWsClientControlMessage;
+
+        try {
+          message = JSON.parse(raw.toString()) as LiveWsMessage | LiveWsClientControlMessage;
+        } catch {
+          if (peer) {
+            sendPeerMessage(
+              peer,
+              {
+                type: "event",
+                event: "error",
+                data: { message: "Invalid live signaling payload." },
+              },
+              true
+            );
+          } else {
+            rejectClient("Invalid live signaling payload.");
+          }
+          return;
+        }
+
+        if (!peer) {
+          if (message.type === "auth" && isValidLiveServerSecret(message.secret)) {
+            authenticated = true;
+            clearAuthTimeout();
+            void finalizeAuthentication();
+            return;
+          }
+
+          log("client rejected: invalid secret", {
+            remoteAddress,
+            liveId: claims.liveId,
+          });
+          rejectClient("Invalid live server secret.");
+          return;
+        }
+
         if (peer.closing) {
           return;
         }
 
-        try {
-          const message = JSON.parse(raw.toString()) as LiveWsMessage;
-
-          if (message.type !== "request") {
-            return;
-          }
-
-          if (!withinRateLimit(peer, room, message)) {
-            return;
-          }
-
-          void handleRequest(peer, message);
-        } catch {
-          sendPeerMessage(
-            peer,
-            {
-              type: "event",
-              event: "error",
-              data: { message: "Invalid live signaling payload." },
-            },
-            true
-          );
+        if (message.type === "pong") {
+          peer.lastSeenAt = Date.now();
+          return;
         }
+
+        if (message.type === "auth") {
+          if (!isValidLiveServerSecret(message.secret)) {
+            log("client rejected: invalid secret", {
+              liveId: peer.roomId,
+              peerId: peer.id,
+            });
+            void closePeer(peer, "invalid secret");
+          }
+          return;
+        }
+
+        if (message.type !== "request") {
+          return;
+        }
+
+        if (!withinRateLimit(peer, rooms.get(peer.roomId)!, message)) {
+          return;
+        }
+
+        void handleRequest(peer, message);
       });
 
       ws.on("close", () => {
-        void closePeer(peer, "socket closed");
+        clearAuthTimeout();
+
+        if (peer) {
+          void closePeer(peer, "socket closed");
+          return;
+        }
+
+        log("client disconnected", {
+          remoteAddress,
+          reason: "socket closed before authentication",
+        });
       });
 
       ws.on("error", (error) => {
-        log("socket_error", {
-          liveId: peer.roomId,
-          peerId: peer.id,
-          message: error instanceof Error ? error.message : "socket error",
+        clearAuthTimeout();
+
+        if (peer) {
+          log("socket_error", {
+            liveId: peer.roomId,
+            peerId: peer.id,
+            message: error instanceof Error ? error.message : "socket error",
+          });
+          void closePeer(peer, "socket error");
+          return;
+        }
+
+        log("client disconnected", {
+          remoteAddress,
+          reason: error instanceof Error ? error.message : "socket error before authentication",
         });
-        void closePeer(peer, "socket error");
       });
 
-      scheduleRoomState(room, true);
+      if (authenticated) {
+        await finalizeAuthentication();
+        return;
+      }
 
-      log("peer_connected", {
-        liveId: room.id,
-        peerId: peer.id,
-        role: peer.role,
-        viewers: getViewerCount(room),
-      });
+      if (requireSecret) {
+        authTimeout = setTimeout(() => {
+          log("client rejected: invalid secret", {
+            remoteAddress,
+            liveId: claims.liveId,
+          });
+          rejectClient("Invalid live server secret.");
+        }, 5000);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unauthorized live connection.";
-      log("connection_rejected", { message });
-      ws.close(4403, message);
+      log("connection_rejected", { message, remoteAddress });
+      rejectClient(message);
     }
   });
 
@@ -1277,6 +1401,15 @@ async function bootstrap() {
         }
 
         try {
+          sendPeerMessage(
+            peer,
+            {
+              type: "event",
+              event: "ping",
+              data: { ts: now },
+            },
+            true
+          );
           peer.ws.ping();
         } catch {
           void closePeer(peer, "ping failed");
@@ -1295,7 +1428,7 @@ async function bootstrap() {
         log("room_cleaned", { liveId: room.id });
       }
     }
-  }, LIVE_HEARTBEAT_INTERVAL_MS);
+  }, LIVE_WS_HEARTBEAT_INTERVAL_MS);
 
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);

@@ -10,6 +10,7 @@ import type {
   LiveBootstrapResponse,
   LiveConsumerProfile,
   LiveRole,
+  LiveWsClientControlMessage,
   LiveWsEvent,
   LiveWsMessage,
   LiveWsRequestMap,
@@ -777,6 +778,22 @@ export function LivePageContent({
         updateDebug({ lastEvent: event.data.message });
         break;
       }
+
+      case "ping": {
+        const socket = wsRef.current;
+
+        if (socket?.readyState === WebSocket.OPEN) {
+          const pongMessage: LiveWsClientControlMessage = {
+            type: "pong",
+            ts: event.data.ts
+          };
+
+          socket.send(JSON.stringify(pongMessage));
+          updateDebug({ lastEvent: "signaling pong sent" });
+        }
+
+        break;
+      }
     }
   }
 
@@ -946,7 +963,14 @@ export function LivePageContent({
         lastBootstrapRef.current = bootstrap;
 
         const version = connectionVersionRef.current;
-        const socket = new WebSocket(`${bootstrap.websocketUrl}?token=${encodeURIComponent(bootstrap.token)}`);
+        const websocketUrl = new URL(bootstrap.websocketUrl);
+        websocketUrl.searchParams.set("token", bootstrap.token);
+
+        if (bootstrap.secret) {
+          websocketUrl.searchParams.set("secret", bootstrap.secret);
+        }
+
+        const socket = new WebSocket(websocketUrl.toString());
         wsRef.current = socket;
         activeRoleRef.current = role;
 
@@ -954,6 +978,15 @@ export function LivePageContent({
           socket.onopen = () => resolve();
           socket.onerror = () => reject(new Error("Live signaling connection failed."));
         });
+
+        if (bootstrap.secret && socket.readyState === WebSocket.OPEN) {
+          const authMessage: LiveWsClientControlMessage = {
+            type: "auth",
+            secret: bootstrap.secret
+          };
+
+          socket.send(JSON.stringify(authMessage));
+        }
 
         socket.onmessage = (event) => {
           if (version !== connectionVersionRef.current) {

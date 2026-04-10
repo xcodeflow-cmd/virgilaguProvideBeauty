@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       liveId,
       role
     }),
+    secret: process.env.LIVE_SERVER_SECRET?.trim() || null,
     iceServers: getLiveIceServers(),
     reconnectDelayMs: getLiveReconnectDelayMs(),
     heartbeatIntervalMs: getLiveHeartbeatIntervalMs(),

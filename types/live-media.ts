@@ -11,6 +11,7 @@ export type LiveBootstrapResponse = {
   role: LiveRole;
   websocketUrl: string;
   token: string;
+  secret: string | null;
   iceServers: LiveIceServer[];
   reconnectDelayMs: number;
   heartbeatIntervalMs: number;
@@ -143,6 +144,13 @@ export type LiveWsEvent =
       data: {
         message: string;
       };
+    }
+  | {
+      type: "event";
+      event: "ping";
+      data: {
+        ts: number;
+      };
     };
 
 export type LiveWsRequest<K extends keyof LiveWsRequestMap = keyof LiveWsRequestMap> = {
@@ -169,3 +177,13 @@ export type LiveWsResponse<K extends keyof LiveWsResponseMap = keyof LiveWsRespo
     };
 
 export type LiveWsMessage = LiveWsEvent | LiveWsRequest | LiveWsResponse;
+
+export type LiveWsClientControlMessage =
+  | {
+      type: "auth";
+      secret: string;
+    }
+  | {
+      type: "pong";
+      ts?: number;
+    };
