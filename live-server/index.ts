@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { createServer } from "http";
 
 import { loadEnvConfig } from "@next/env";
 import { WebSocketServer, WebSocket } from "ws";
@@ -1112,8 +1113,38 @@ async function bootstrap() {
 
   await ensureWorker();
 
+  const httpServer = createServer((request, response) => {
+    const requestUrl = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+
+    if (requestUrl.pathname === "/healthz") {
+      response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      response.end(
+        JSON.stringify({
+          ok: true,
+          service: "live-server",
+          wsPath: LIVE_WS_PATH,
+          wsPort: LIVE_WS_PORT,
+          rooms: rooms.size,
+          peers: [...rooms.values()].reduce((count, room) => count + room.peers.size, 0),
+          timestamp: new Date().toISOString(),
+        })
+      );
+      return;
+    }
+
+    response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    response.end(
+      JSON.stringify({
+        ok: true,
+        service: "live-server",
+        message: "Use /healthz for HTTP health and connect WebSocket clients to the configured live path.",
+        websocketUrlExample: `ws://localhost:${LIVE_WS_PORT}${LIVE_WS_PATH}`,
+      })
+    );
+  });
+
   const server = new WebSocketServer({
-    port: LIVE_WS_PORT,
+    server: httpServer,
     path: LIVE_WS_PATH,
   });
 
@@ -1266,9 +1297,19 @@ async function bootstrap() {
     }
   }, LIVE_HEARTBEAT_INTERVAL_MS);
 
+  await new Promise<void>((resolve, reject) => {
+    httpServer.once("error", reject);
+    httpServer.listen(LIVE_WS_PORT, LIVE_LISTEN_IP, () => {
+      httpServer.off("error", reject);
+      resolve();
+    });
+  });
+
   log("server_listening", {
     port: LIVE_WS_PORT,
+    listenIp: LIVE_LISTEN_IP,
     path: LIVE_WS_PATH,
+    healthPath: "/healthz",
     rtcMinPort: LIVE_RTC_MIN_PORT,
     rtcMaxPort: LIVE_RTC_MAX_PORT,
     maxViewers: LIVE_MAX_VIEWERS,

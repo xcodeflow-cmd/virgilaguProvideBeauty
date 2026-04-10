@@ -57,7 +57,25 @@ export function getLiveConsumerMonitorIntervalMs() {
 }
 
 export function getLiveWebSocketUrl() {
-  return process.env.LIVE_WS_URL || "ws://localhost:3001/live";
+  const rawUrl = process.env.LIVE_WS_URL?.trim();
+
+  if (!rawUrl) {
+    return "ws://localhost:3001/live";
+  }
+
+  try {
+    const url = new URL(rawUrl);
+    const configuredPath = process.env.LIVE_WS_PATH?.trim() || "/live";
+    const normalizedPath = configuredPath.startsWith("/") ? configuredPath : `/${configuredPath}`;
+
+    if (!url.pathname || url.pathname === "/") {
+      url.pathname = normalizedPath;
+    }
+
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return rawUrl;
+  }
 }
 
 export function getLiveIceServers(): LiveIceServer[] {
