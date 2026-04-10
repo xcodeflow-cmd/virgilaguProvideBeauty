@@ -2,18 +2,12 @@
 
 import { useMemo, useState, type ChangeEvent } from "react";
 import Image from "next/image";
-import { CalendarDays, ImagePlus, Pencil, Radio, Trash2, Upload, UserRound, WandSparkles } from "lucide-react";
+import { CalendarDays, ImagePlus, Radio, Trash2, Upload, UserRound } from "lucide-react";
 
 import { addLiveSession, deleteLiveSession, updateLiveSessionSchedule } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
-import {
-  cleaningAssetImages,
-  defaultGalleryImages,
-  getAssetImageById,
-  getDefaultContentState,
-  type ServiceItem
-} from "@/lib/cleaning-content";
+import { defaultGalleryImages, getDefaultContentState } from "@/lib/cleaning-content";
 import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
 
 function readFileAsDataUrl(file: File) {
@@ -24,12 +18,6 @@ function readFileAsDataUrl(file: File) {
     reader.readAsDataURL(file);
   });
 }
-
-const emptyServiceDraft = {
-  title: "",
-  description: "",
-  imageId: cleaningAssetImages[0].id
-};
 
 type AdminLiveSession = {
   id: string;
@@ -56,8 +44,6 @@ export function AdminDashboard({
   users: AdminUser[];
 }) {
   const { content, setContent } = useCleaningContent();
-  const [serviceDraft, setServiceDraft] = useState(emptyServiceDraft);
-  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [galleryPreview, setGalleryPreview] = useState<{ title: string; imageUrl: string } | null>(null);
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
@@ -75,53 +61,6 @@ export function AdminDashboard({
     [liveSessions, selectedLiveId]
   );
 
-  const resetDraft = () => {
-    setServiceDraft(emptyServiceDraft);
-    setEditingServiceId(null);
-  };
-
-  const handleServiceSave = () => {
-    if (!serviceDraft.title.trim() || !serviceDraft.description.trim()) {
-      return;
-    }
-
-    const nextService: ServiceItem = {
-      id: editingServiceId || `service-${Date.now()}`,
-      title: serviceDraft.title.trim(),
-      description: serviceDraft.description.trim(),
-      imageId: serviceDraft.imageId
-    };
-
-    setContent((current) => ({
-      ...current,
-      services: editingServiceId
-        ? current.services.map((service) => (service.id === editingServiceId ? nextService : service))
-        : [...current.services, nextService]
-    }));
-
-    resetDraft();
-  };
-
-  const handleEditService = (service: ServiceItem) => {
-    setEditingServiceId(service.id);
-    setServiceDraft({
-      title: service.title,
-      description: service.description,
-      imageId: service.imageId
-    });
-  };
-
-  const handleDeleteService = (serviceId: string) => {
-    setContent((current) => ({
-      ...current,
-      services: current.services.filter((service) => service.id !== serviceId)
-    }));
-
-    if (editingServiceId === serviceId) {
-      resetDraft();
-    }
-  };
-
   const handleGalleryUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -137,7 +76,7 @@ export function AdminDashboard({
   };
 
   const confirmGalleryUpload = () => {
-    if (!galleryPreview) {
+    if (!galleryPreview || !galleryPreview.title.trim()) {
       return;
     }
 
@@ -146,7 +85,7 @@ export function AdminDashboard({
       uploadedGallery: [
         {
           id: `upload-${Date.now()}`,
-          title: galleryPreview.title,
+          title: galleryPreview.title.trim(),
           category: "Upload",
           imageUrl: galleryPreview.imageUrl,
           isUploaded: true
@@ -186,7 +125,6 @@ export function AdminDashboard({
               {[
                 { href: "#overview", label: "Overview" },
                 { href: "#live", label: "Live timer" },
-                { href: "#courses", label: "Courses" },
                 { href: "#gallery", label: "Gallery" },
                 { href: "#users", label: "Users" }
               ].map((item) => (
@@ -205,7 +143,6 @@ export function AdminDashboard({
               className="mt-6 min-h-12 w-full"
               onClick={() => {
                 setContent(getDefaultContentState());
-                resetDraft();
                 setGalleryPreview(null);
               }}
             >
@@ -215,12 +152,11 @@ export function AdminDashboard({
         </aside>
 
         <div className="space-y-6">
-          <section id="overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section id="overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {[
               { label: "Users", value: users.length, icon: UserRound },
               { label: "Live Sessions", value: liveSessions.length, icon: Radio },
-              { label: "Gallery Items", value: allGalleryItems.length, icon: ImagePlus },
-              { label: "Cards", value: content.services.length, icon: WandSparkles }
+              { label: "Gallery Items", value: allGalleryItems.length, icon: ImagePlus }
             ].map((item) => {
               const Icon = item.icon;
 
@@ -387,106 +323,6 @@ export function AdminDashboard({
             </div>
           </section>
 
-          <section id="courses" className="premium-card p-5 sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="dashboard-label">Courses</p>
-                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Carduri editabile cu preview instant.</h2>
-              </div>
-              <div className="rounded-full bg-white/[0.04] px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/[0.48]">
-                Local content only
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-              <div className="space-y-4">
-                <input
-                  value={serviceDraft.title}
-                  onChange={(event) => setServiceDraft((current) => ({ ...current, title: event.target.value }))}
-                  placeholder="Titlu card"
-                  className="premium-input"
-                />
-                <textarea
-                  value={serviceDraft.description}
-                  onChange={(event) => setServiceDraft((current) => ({ ...current, description: event.target.value }))}
-                  placeholder="Descriere card"
-                  rows={4}
-                  className="premium-input"
-                />
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {cleaningAssetImages.map((image) => {
-                    const active = image.id === serviceDraft.imageId;
-
-                    return (
-                      <button
-                        key={image.id}
-                        type="button"
-                        onClick={() => setServiceDraft((current) => ({ ...current, imageId: image.id }))}
-                        className={`overflow-hidden rounded-[1.25rem] border text-left transition ${active ? "border-[#d6b98c]/[0.45] bg-[#d6b98c]/[0.08]" : "border-white/10 bg-white/[0.03] hover:border-white/20"}`}
-                      >
-                        <div className="relative aspect-[4/3]">
-                          <Image src={image.src} alt={image.label} fill className="object-cover" />
-                        </div>
-                        <div className="px-4 py-3 text-sm text-white/75">{image.label}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button type="button" className="min-h-12" onClick={handleServiceSave}>
-                    {editingServiceId ? "Salveaza modificarile" : "Adauga card"}
-                  </Button>
-                  {editingServiceId ? (
-                    <Button type="button" variant="secondary" className="min-h-12" onClick={resetDraft}>
-                      Anuleaza
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-4">
-                <p className="dashboard-label">Preview</p>
-                <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/30">
-                  <div className="relative aspect-[4/3]">
-                    <Image src={getAssetImageById(serviceDraft.imageId).src} alt={serviceDraft.title || "Card preview"} fill className="object-cover" />
-                  </div>
-                  <div className="space-y-3 p-5">
-                    <h3 className="text-2xl text-white">{serviceDraft.title || "Titlu card"}</h3>
-                    <p className="text-sm leading-7 text-white/[0.58]">{serviceDraft.description || "Descrierea cardului apare aici inainte sa salvezi."}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-4">
-              {content.services.map((service) => (
-                <div key={service.id} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-16 w-20 overflow-hidden rounded-xl">
-                        <Image src={getAssetImageById(service.imageId).src} alt={service.title} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-white">{service.title}</p>
-                        <p className="mt-1 text-sm text-white/50">{service.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <Button type="button" variant="secondary" className="min-h-11" onClick={() => handleEditService(service)}>
-                        <Pencil className="h-4 w-4" />
-                        Editeaza
-                      </Button>
-                      <Button type="button" variant="secondary" className="min-h-11" onClick={() => handleDeleteService(service.id)}>
-                        <Trash2 className="h-4 w-4" />
-                        Sterge
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
           <section id="gallery" className="premium-card p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -513,12 +349,25 @@ export function AdminDashboard({
                       <Image src={galleryPreview.imageUrl} alt={galleryPreview.title} fill className="object-cover" />
                     </div>
                     <div className="flex flex-col gap-4 p-5">
-                      <div>
-                        <p className="text-white">{galleryPreview.title}</p>
-                        <p className="text-sm text-white/50">Preview inainte de salvare</p>
-                      </div>
+                      <label className="space-y-2">
+                        <span className="text-sm text-white/60">Titlu imagine</span>
+                        <input
+                          value={galleryPreview.title}
+                          onChange={(event) =>
+                            setGalleryPreview((current) => (current ? { ...current, title: event.target.value } : current))
+                          }
+                          placeholder="Titlu imagine"
+                          className="premium-input"
+                        />
+                      </label>
+                      <p className="text-sm text-white/50">Preview inainte de salvare</p>
                       <div className="flex flex-col gap-2">
-                        <Button type="button" className="min-h-11" onClick={confirmGalleryUpload}>
+                        <Button
+                          type="button"
+                          className="min-h-11"
+                          onClick={confirmGalleryUpload}
+                          disabled={!galleryPreview.title.trim()}
+                        >
                           Adauga in galerie
                         </Button>
                         <Button type="button" variant="secondary" className="min-h-11" onClick={() => setGalleryPreview(null)}>
