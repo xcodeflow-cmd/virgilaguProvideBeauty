@@ -134,13 +134,7 @@ export function HomepageContent() {
           <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="section-kicker">About Me</span>
-              <p className="mt-5 max-w-2xl text-3xl leading-tight text-white sm:text-4xl">
-                Palmaresul si imaginea trebuie sa stea in acelasi cadru, nu in doua bucati fara legatura.
-              </p>
             </div>
-            <p className="text-[3.8rem] font-display leading-none tracking-[0.18em] text-white/[0.08] sm:text-[5.5rem] lg:text-[7rem]">
-              VA
-            </p>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-stretch">
