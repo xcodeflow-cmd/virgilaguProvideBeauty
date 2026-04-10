@@ -18,7 +18,7 @@ function PalmaresDialog() {
     <Dialog.Root>
       <Dialog.Trigger asChild>
         <button className="premium-card grid content-start gap-5 rounded-[2rem] p-6 text-left sm:p-7">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">Palmares</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]"></p>
           <p className="max-w-lg text-3xl leading-tight text-white sm:text-4xl">
             Rezultate reale din competitie, educatie si ani de executie constanta.
           </p>
