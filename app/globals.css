@@ -46,7 +46,7 @@ body {
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
   h1,
@@ -181,14 +181,16 @@ body {
   }
 
   .countdown-tile {
-    @apply rounded-[1.35rem] border border-white/10 px-3 py-4 text-center sm:px-4;
+    @apply rounded-[1.35rem] border px-3 py-4 text-center sm:px-4;
+    border-color: rgba(255, 255, 255, 0.1);
     background:
       radial-gradient(circle at top, rgba(214, 185, 140, 0.12), transparent 55%),
       rgba(255, 255, 255, 0.025);
   }
 
   .panel-edge {
-    @apply border border-white/10;
+    @apply border;
+    border-color: rgba(255, 255, 255, 0.1);
     background:
       radial-gradient(circle at top, rgba(214, 185, 140, 0.08), transparent 28%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.008));
