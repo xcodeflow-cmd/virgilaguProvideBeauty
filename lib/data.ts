@@ -4,7 +4,7 @@ import heroImage from "@/assets/landing page.jpeg";
 import aboutImageAward01 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.35.jpeg";
 import aboutImageAward02 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (1).jpeg";
 import aboutImageAward03 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (2).jpeg";
-import aboutImageMain from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.12.jpeg";
+import aboutImageMain from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.12 (1).jpeg";
 import aboutImageSecondary from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.21.jpeg";
 import salonImage from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg";
 import salonImageWide from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg";

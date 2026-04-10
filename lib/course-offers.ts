@@ -1,3 +1,9 @@
+import type { StaticImageData } from "next/image";
+
+import courseImage01 from "@/assets/about me/curs1.jpeg";
+import courseImage02 from "@/assets/about me/curs2.jpeg";
+import courseImage03 from "@/assets/about me/curs3.jpeg";
+
 export type CourseOffer = {
   id: string;
   label: string;
@@ -6,7 +12,7 @@ export type CourseOffer = {
   price: string;
   priceValue: number;
   note: string;
-  image: "hero" | "aboutMain" | "aboutSecondary";
+  image: StaticImageData;
   description: string;
   dialogBody: string;
   includeTitle?: string;
@@ -26,7 +32,7 @@ export const courseOffers: CourseOffer[] = [
     price: "3650 lei",
     priceValue: 365000,
     note: "max 6 cursanti",
-    image: "hero",
+    image: courseImage01,
     description:
       "Format dedicat celor care vor sa intre corect in industrie, fara structuri sterile si fara informatie livrata mecanic.",
     dialogBody:
@@ -55,7 +61,7 @@ export const courseOffers: CourseOffer[] = [
     price: "1000 lei / zi",
     priceValue: 100000,
     note: "1 zi intensiva",
-    image: "aboutMain",
+    image: courseImage02,
     description:
       "Experienta intensiva alaturi de Virgil Agu, cu 2 modele reale, practica impreuna si corectare in timp real.",
     dialogBody:
@@ -89,7 +95,7 @@ export const courseOffers: CourseOffer[] = [
     price: "100 lei / sesiune LIVE",
     priceValue: 10000,
     note: "sesiune lunara",
-    image: "aboutSecondary",
+    image: courseImage03,
     description:
       "Inveti in timp real alaturi de Virgil Agu, urmarind clienti reali, explicatii clare si ritm real de salon.",
     dialogBody:

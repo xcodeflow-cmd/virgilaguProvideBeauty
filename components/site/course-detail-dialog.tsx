@@ -6,18 +6,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, GraduationCap, Radio, Scissors, X } from "lucide-react";
 
 import type { CourseOffer } from "@/lib/course-offers";
-import { brandImages } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 function CourseImage({ image, title }: { image: CourseOffer["image"]; title: string }) {
-  const source = image === "hero"
-    ? brandImages.hero
-    : image === "aboutMain"
-      ? brandImages.aboutMain
-      : brandImages.aboutSecondary;
-
-  return <Image src={source} alt={title} fill className="object-cover transition duration-700 group-hover:scale-[1.05]" />;
+  return <Image src={image} alt={title} fill className="object-cover transition duration-700 group-hover:scale-[1.05]" />;
 }
 
 function CourseIcon({ label }: { label: string }) {
