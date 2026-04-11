@@ -1,5 +1,8 @@
 "use server";
 
+import { randomUUID } from "crypto";
+import { mkdir, unlink, writeFile } from "fs/promises";
+import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { SessionVisibility } from "@prisma/client";
@@ -40,6 +43,52 @@ function buildLiveSlug(title: string) {
   return `${base}-${Date.now().toString(36)}`;
 }
 
+function getImageExtension(file: File) {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+
+  if (fromName && /^[a-z0-9]+$/.test(fromName)) {
+    return fromName === "jpeg" ? "jpg" : fromName;
+  }
+
+  const fromMime = file.type.split("/")[1]?.toLowerCase();
+  return fromMime === "jpeg" ? "jpg" : fromMime || "jpg";
+}
+
+async function saveLiveThumbnail(fileEntry: FormDataEntryValue | null) {
+  if (!(fileEntry instanceof File) || !fileEntry.size) {
+    return null;
+  }
+
+  if (!fileEntry.type.startsWith("image/")) {
+    throw new Error("Thumbnail must be an image.");
+  }
+
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "live-thumbnails");
+  const extension = getImageExtension(fileEntry);
+  const fileName = `${Date.now()}-${randomUUID()}.${extension}`;
+  const filePath = path.join(uploadDir, fileName);
+  const bytes = Buffer.from(await fileEntry.arrayBuffer());
+
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(filePath, bytes);
+
+  return `/uploads/live-thumbnails/${fileName}`;
+}
+
+async function deleteManagedLiveThumbnail(thumbnailUrl: string | null | undefined) {
+  if (!thumbnailUrl || !thumbnailUrl.startsWith("/uploads/live-thumbnails/")) {
+    return;
+  }
+
+  const filePath = path.join(process.cwd(), "public", thumbnailUrl.replace(/^\//, "").replace(/\//g, path.sep));
+
+  try {
+    await unlink(filePath);
+  } catch {
+    // Ignore missing files during cleanup.
+  }
+}
+
 export async function addGalleryItem(formData: FormData) {
   await requireAdmin();
 
@@ -78,9 +127,14 @@ export async function addLiveSession(formData: FormData) {
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date();
+  const thumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"));
 
   if (Number.isNaN(scheduledFor.getTime())) {
     throw new Error("Invalid scheduled date.");
+  }
+
+  if (!thumbnailUrl) {
+    throw new Error("Live thumbnail is required.");
   }
 
   await prisma.liveSession.create({
@@ -89,7 +143,7 @@ export async function addLiveSession(formData: FormData) {
       slug: buildLiveSlug(title),
       description: String(formData.get("description") || ""),
       scheduledFor,
-      thumbnailUrl: "",
+      thumbnailUrl,
       streamUrl: null,
       recordingUrl: null,
       visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
@@ -107,11 +161,19 @@ export async function addLiveSession(formData: FormData) {
 export async function deleteLiveSession(formData: FormData) {
   await requireAdmin();
 
+  const id = String(formData.get("id") || "");
+  const liveSession = await prisma.liveSession.findUnique({
+    where: { id },
+    select: { thumbnailUrl: true }
+  });
+
   await prisma.liveSession.delete({
     where: {
-      id: String(formData.get("id") || "")
+      id
     }
   });
+
+  await deleteManagedLiveThumbnail(liveSession?.thumbnailUrl);
 
   revalidatePath("/");
   revalidatePath("/live");
@@ -126,11 +188,16 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const scheduledFor = mode === "RESET" ? new Date() : parseRomaniaDateTimeLocal(scheduledValue);
-
   if (!id) {
     throw new Error("Missing live session id.");
   }
+
+  const scheduledFor = mode === "RESET" ? new Date() : parseRomaniaDateTimeLocal(scheduledValue);
+  const existingLive = await prisma.liveSession.findUnique({
+    where: { id },
+    select: { thumbnailUrl: true }
+  });
+  const nextThumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"));
 
   if (!title) {
     throw new Error("Title is required.");
@@ -149,9 +216,14 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     data: {
       title,
       description,
-      scheduledFor
+      scheduledFor,
+      ...(nextThumbnailUrl ? { thumbnailUrl: nextThumbnailUrl } : {})
     }
   });
+
+  if (nextThumbnailUrl) {
+    await deleteManagedLiveThumbnail(existingLive?.thumbnailUrl);
+  }
 
   revalidatePath("/");
   revalidatePath("/live");

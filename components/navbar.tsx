@@ -86,7 +86,7 @@ export function Navbar({ session }: { session: Session | null }) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div className="section-shell flex items-start justify-between gap-3 pt-4 sm:pt-5">
+      <div className="section-shell flex items-start justify-between gap-2 pt-4 sm:gap-3 sm:pt-5">
         <div
           className={cn(
             "rounded-full bg-black/[0.42] px-4 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.18)] backdrop-blur-md transition duration-200 will-change-transform",
@@ -130,7 +130,7 @@ export function Navbar({ session }: { session: Session | null }) {
             <div className="min-w-0 flex-1">
               <Link
                 href={session?.user ? (session.user.role === "ADMIN" ? "/admin" : "/dashboard") : "/auth/signin"}
-                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full bg-white/[0.04] px-4 text-sm text-white transition hover:bg-white/[0.08]"
+                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full bg-white/[0.04] px-3 text-center text-sm text-white transition hover:bg-white/[0.08] sm:px-4"
               >
                 {session?.user ? (session.user.role === "ADMIN" ? "Admin" : "Contul meu") : "Autentificare"}
               </Link>
@@ -138,7 +138,7 @@ export function Navbar({ session }: { session: Session | null }) {
             <div className="min-w-0 flex-1">
               <Link
                 href="/live"
-                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full bg-[linear-gradient(180deg,#df3b3b,#8d1111)] px-4 text-sm font-medium text-white shadow-[0_18px_45px_rgba(176,24,24,0.28)] transition hover:-translate-y-0.5"
+                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-3 text-center text-sm font-medium text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)] sm:px-4"
               >
                 LIVE
               </Link>

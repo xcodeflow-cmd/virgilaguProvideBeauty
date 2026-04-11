@@ -218,6 +218,7 @@ export default async function AdminPage() {
         id: item.id,
         title: item.title,
         description: item.description,
+        thumbnailUrl: item.thumbnailUrl,
         visibility: item.visibility,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),

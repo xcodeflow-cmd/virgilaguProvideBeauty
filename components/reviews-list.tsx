@@ -61,7 +61,7 @@ export function ReviewsList({
       <div className="mt-12 flex justify-center">
         <Button asChild className="min-w-[17rem] px-8 py-4 text-base">
           <Link href={moreHref} target="_blank" rel="noreferrer">
-            Vezi toate pe MERO
+            Vezi 3000+ pe MERO
             <ArrowUpRight className="h-4.5 w-4.5" />
           </Link>
         </Button>

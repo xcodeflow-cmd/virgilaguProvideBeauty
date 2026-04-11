@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, X } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
@@ -222,6 +222,17 @@ export function HomepageContent() {
                 </div>
               </FadeIn>
             ))}
+          </div>
+
+          <div className="md:col-span-2 xl:col-span-3">
+            <FadeIn className="mt-8 flex justify-center md:mt-10">
+              <Button asChild className="min-w-[17rem] px-8 py-4 text-base">
+                <Link href="/reviews">
+                  Vezi 3000+ pe MERO
+                  <ArrowUpRight className="h-4.5 w-4.5" />
+                </Link>
+              </Button>
+            </FadeIn>
           </div>
         </div>
       </section>
