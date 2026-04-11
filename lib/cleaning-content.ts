@@ -1,6 +1,6 @@
 import type { StaticImageData } from "next/image";
 
-import heroImage from "@/assets/landing page.jpeg";
+import heroImage from "@/assets/landing page.jpg";
 import salonImage from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg";
 import salonImageWide from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg";
 import galleryImage01 from "@/assets/gallery/WhatsApp Image 2026-04-04 at 18.44.35 (1).jpeg";
