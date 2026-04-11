@@ -101,7 +101,11 @@ export function HomepageContent() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="secondary" className="px-7">
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                >
                   <Link href="/live">Vezi live</Link>
                 </Button>
               </div>
@@ -139,8 +143,8 @@ export function HomepageContent() {
 
       <section className="section-shell section-space pt-0">
         <FadeIn className="relative overflow-hidden rounded-[2.6rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.008))] px-6 py-8 shadow-[0_34px_110px_rgba(0,0,0,0.26)] sm:px-8 sm:py-10 lg:px-10">
-          <div className="pointer-events-none absolute right-4 top-4 h-12 w-12 opacity-90 sm:right-5 sm:top-5 sm:h-14 sm:w-14">
-            <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="56px" />
+          <div className="pointer-events-none absolute right-4 top-4 h-20 w-20 opacity-100 sm:right-6 sm:top-6 sm:h-24 sm:w-24 lg:h-28 lg:w-28">
+            <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="(min-width: 1024px) 112px, (min-width: 640px) 96px, 80px" />
           </div>
           <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
