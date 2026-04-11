@@ -210,7 +210,7 @@ export function AdminDashboard({
                 </div>
               </div>
 
-              <form action={addLiveSession} className="mt-6 space-y-4">
+              <form action={addLiveSession} encType="multipart/form-data" className="mt-6 space-y-4">
                 <input name="title" required placeholder="Titlu live" className="premium-input" />
                 <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
@@ -222,7 +222,6 @@ export function AdminDashboard({
                       type="file"
                       name="thumbnail"
                       accept="image/*"
-                      required
                       className="hidden"
                       onChange={(event) => void handleLiveThumbnailUpload(event, setNewLiveThumbnailPreview)}
                     />
@@ -282,7 +281,7 @@ export function AdminDashboard({
                 </div>
 
                 {selectedLiveSession ? (
-                  <form action={updateLiveSessionSchedule} className="mt-6 space-y-4">
+                  <form action={updateLiveSessionSchedule} encType="multipart/form-data" className="mt-6 space-y-4">
                     <input type="hidden" name="id" value={selectedLiveSession.id} />
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                       <label className="flex min-h-[11rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-white/[0.15] bg-white/[0.03] px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">

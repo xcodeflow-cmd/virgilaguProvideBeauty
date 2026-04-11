@@ -25,9 +25,6 @@ export function SiteFooter() {
         <div className="grid gap-10 border-t border-white/10 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-end">
           <div className="space-y-6">
             <Logo />
-            <p className="max-w-xl text-sm leading-7 text-white/[0.54] sm:text-base">
-              Educatie, executie si prezenta construita curat, fara zgomot vizual inutil.
-            </p>
             <div className="flex flex-wrap gap-3">
               {footerLinks.map((link) => (
                 <Link
