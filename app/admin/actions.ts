@@ -54,22 +54,44 @@ function getImageExtension(file: File) {
   return fromMime === "jpeg" ? "jpg" : fromMime || "jpg";
 }
 
-async function saveLiveThumbnail(fileEntry: FormDataEntryValue | null) {
-  if (!(fileEntry instanceof File) || !fileEntry.size) {
+function decodeDataUrlImage(dataUrl: string) {
+  const match = dataUrl.match(/^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/);
+
+  if (!match) {
+    throw new Error("Invalid thumbnail image.");
+  }
+
+  const extension = match[1].toLowerCase() === "jpeg" ? "jpg" : match[1].toLowerCase();
+  const bytes = Buffer.from(match[2], "base64");
+
+  return { extension, bytes };
+}
+
+async function saveLiveThumbnail(fileEntry: FormDataEntryValue | null, dataUrlEntry: FormDataEntryValue | null) {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "live-thumbnails");
+  let extension = "";
+  let bytes: Buffer | null = null;
+
+  if (typeof dataUrlEntry === "string" && dataUrlEntry.trim()) {
+    const decoded = decodeDataUrlImage(dataUrlEntry.trim());
+    extension = decoded.extension;
+    bytes = decoded.bytes;
+  } else if (fileEntry instanceof File && fileEntry.size) {
+    if (!fileEntry.type.startsWith("image/")) {
+      throw new Error("Thumbnail must be an image.");
+    }
+
+    extension = getImageExtension(fileEntry);
+    bytes = Buffer.from(await fileEntry.arrayBuffer());
+  }
+
+  if (!bytes) {
     return null;
   }
 
-  if (!fileEntry.type.startsWith("image/")) {
-    throw new Error("Thumbnail must be an image.");
-  }
-
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "live-thumbnails");
-  const extension = getImageExtension(fileEntry);
+  await mkdir(uploadDir, { recursive: true });
   const fileName = `${Date.now()}-${randomUUID()}.${extension}`;
   const filePath = path.join(uploadDir, fileName);
-  const bytes = Buffer.from(await fileEntry.arrayBuffer());
-
-  await mkdir(uploadDir, { recursive: true });
   await writeFile(filePath, bytes);
 
   return `/uploads/live-thumbnails/${fileName}`;
@@ -127,7 +149,7 @@ export async function addLiveSession(formData: FormData) {
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date();
-  const thumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"));
+  const thumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"), formData.get("thumbnailDataUrl"));
 
   if (Number.isNaN(scheduledFor.getTime())) {
     throw new Error("Invalid scheduled date.");
@@ -197,7 +219,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     where: { id },
     select: { thumbnailUrl: true }
   });
-  const nextThumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"));
+  const nextThumbnailUrl = await saveLiveThumbnail(formData.get("thumbnail"), formData.get("thumbnailDataUrl"));
 
   if (!title) {
     throw new Error("Title is required.");

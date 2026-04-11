@@ -220,12 +220,12 @@ export function AdminDashboard({
                     <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">PNG, JPG, WEBP</span>
                     <input
                       type="file"
-                      name="thumbnail"
                       accept="image/*"
                       className="hidden"
                       onChange={(event) => void handleLiveThumbnailUpload(event, setNewLiveThumbnailPreview)}
                     />
                   </label>
+                  <input type="hidden" name="thumbnailDataUrl" value={newLiveThumbnailPreview || ""} />
                   <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25">
                     <div className="relative aspect-[16/10]">
                       {newLiveThumbnailPreview ? (
@@ -290,12 +290,12 @@ export function AdminDashboard({
                         <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">Optional</span>
                         <input
                           type="file"
-                          name="thumbnail"
                           accept="image/*"
                           className="hidden"
                           onChange={(event) => void handleLiveThumbnailUpload(event, setEditLiveThumbnailPreview)}
                         />
                       </label>
+                      <input type="hidden" name="thumbnailDataUrl" value={editLiveThumbnailPreview || ""} />
                       <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25">
                         <div className="relative aspect-[16/10]">
                           <Image
