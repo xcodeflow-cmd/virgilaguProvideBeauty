@@ -5,7 +5,7 @@ import profileImage from "@/assets/about me/pozaProfil.png";
 export function Logo() {
   return (
     <div className="flex items-center gap-4">
-      <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-[0.9rem]">
+      <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-[1rem]">
         <Image src={profileImage} alt="Virgil Agu" fill className="object-cover" />
       </div>
       <div>
