@@ -78,7 +78,7 @@ export default async function DashboardPage() {
               </h2>
             </div>
             <Button asChild variant="secondary">
-              <Link href="/live">Manage Access</Link>
+              <Link href="/courses">Manage Access</Link>
             </Button>
           </div>
           <p className="mt-5 max-w-xl text-sm leading-7 text-white/[0.58]">

@@ -1723,7 +1723,7 @@ export function LivePageContent({
               </div>
               {!canViewLive && !isAdmin ? (
                 <Button asChild className="min-h-11">
-                  <a href="/auth/signin">Activeaza accesul</a>
+                  <a href="/courses">Activeaza accesul</a>
                 </Button>
               ) : null}
             </div>

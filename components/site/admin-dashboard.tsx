@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import { CalendarDays, ImagePlus, Radio, Trash2, Upload, UserRound } from "lucide-react";
 
@@ -48,8 +48,6 @@ export function AdminDashboard({
   const [galleryPreview, setGalleryPreview] = useState<{ title: string; subtitle: string; imageUrl: string } | null>(null);
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
-  const [newLiveThumbnailPreview, setNewLiveThumbnailPreview] = useState<string | null>(null);
-  const [editLiveThumbnailPreview, setEditLiveThumbnailPreview] = useState<string | null>(null);
 
   const allGalleryItems = useMemo(
     () => [
@@ -64,10 +62,6 @@ export function AdminDashboard({
     [liveSessions, selectedLiveId]
   );
 
-  useEffect(() => {
-    setEditLiveThumbnailPreview(null);
-  }, [selectedLiveId]);
-
   const handleGalleryUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -80,20 +74,6 @@ export function AdminDashboard({
 
     setGalleryPreview({ title, subtitle: "", imageUrl });
     event.target.value = "";
-  };
-
-  const handleLiveThumbnailUpload = async (
-    event: ChangeEvent<HTMLInputElement>,
-    setPreview: Dispatch<SetStateAction<string | null>>
-  ) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const imageUrl = await readFileAsDataUrl(file);
-    setPreview(imageUrl);
   };
 
   const confirmGalleryUpload = () => {
@@ -166,8 +146,6 @@ export function AdminDashboard({
               onClick={() => {
                 setContent(getDefaultContentState());
                 setGalleryPreview(null);
-                setNewLiveThumbnailPreview(null);
-                setEditLiveThumbnailPreview(null);
               }}
             >
               Reseteaza continutul local
@@ -210,34 +188,9 @@ export function AdminDashboard({
                 </div>
               </div>
 
-              <form action={addLiveSession} encType="multipart/form-data" className="mt-6 space-y-4">
+              <form action={addLiveSession} className="mt-6 space-y-4">
                 <input name="title" required placeholder="Titlu live" className="premium-input" />
                 <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                  <label className="flex min-h-[11rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-white/[0.15] bg-white/[0.03] px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
-                    <Upload className="h-5 w-5" />
-                    Upload thumbnail LIVE
-                    <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">PNG, JPG, WEBP</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => void handleLiveThumbnailUpload(event, setNewLiveThumbnailPreview)}
-                    />
-                  </label>
-                  <input type="hidden" name="thumbnailDataUrl" value={newLiveThumbnailPreview || ""} />
-                  <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25">
-                    <div className="relative aspect-[16/10]">
-                      {newLiveThumbnailPreview ? (
-                        <Image src={newLiveThumbnailPreview} alt="Thumbnail preview" fill className="object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center px-4 text-center text-sm text-white/45">
-                          Thumbnail-ul LIVE apare aici dupa upload.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="flex min-h-14 items-center gap-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-4 text-sm text-white/75">
                     <input type="radio" name="startMode" value="NOW" checked={liveStartMode === "NOW"} onChange={() => setLiveStartMode("NOW")} />
@@ -281,32 +234,8 @@ export function AdminDashboard({
                 </div>
 
                 {selectedLiveSession ? (
-                  <form action={updateLiveSessionSchedule} encType="multipart/form-data" className="mt-6 space-y-4">
+                  <form action={updateLiveSessionSchedule} className="mt-6 space-y-4">
                     <input type="hidden" name="id" value={selectedLiveSession.id} />
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                      <label className="flex min-h-[11rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-dashed border-white/[0.15] bg-white/[0.03] px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
-                        <Upload className="h-5 w-5" />
-                        Schimba thumbnail-ul
-                        <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">Optional</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => void handleLiveThumbnailUpload(event, setEditLiveThumbnailPreview)}
-                        />
-                      </label>
-                      <input type="hidden" name="thumbnailDataUrl" value={editLiveThumbnailPreview || ""} />
-                      <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25">
-                        <div className="relative aspect-[16/10]">
-                          <Image
-                            src={editLiveThumbnailPreview || selectedLiveSession.thumbnailUrl}
-                            alt={selectedLiveSession.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
-                    </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Titlu</span>
