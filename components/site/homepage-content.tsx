@@ -228,7 +228,7 @@ export function HomepageContent() {
             <FadeIn className="mt-8 flex justify-center md:mt-10">
               <Button asChild className="min-w-[17rem] px-8 py-4 text-base">
                 <Link href="/reviews">
-                  Vezi 3000+ pe MERO
+                  Vezi mai multe review-uri
                   <ArrowUpRight className="h-4.5 w-4.5" />
                 </Link>
               </Button>
