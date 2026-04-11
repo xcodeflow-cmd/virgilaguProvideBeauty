@@ -1,6 +1,13 @@
+import Image from "next/image";
+
+import profileImage from "@/assets/about me/pozaProfil.png";
+
 export function Logo() {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-4">
+      <div className="relative h-12 w-12 shrink-0">
+        <Image src={profileImage} alt="Virgil Agu" fill className="object-cover" />
+      </div>
       <div>
         <p className="font-display text-xl font-semibold tracking-[0.12em] text-white sm:text-[1.65rem]">
           Virgil Agu

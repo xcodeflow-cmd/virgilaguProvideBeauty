@@ -138,7 +138,7 @@ export function Navbar({ session }: { session: Session | null }) {
             <div className="min-w-0 flex-1">
               <Link
                 href="/live"
-                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full bg-[linear-gradient(180deg,#ecd4ac,#cfab72)] px-4 text-sm font-medium text-black shadow-[0_18px_45px_rgba(214,185,140,0.22)] transition hover:-translate-y-0.5"
+                className="pointer-events-auto flex min-h-11 items-center justify-center rounded-full bg-[linear-gradient(180deg,#df3b3b,#8d1111)] px-4 text-sm font-medium text-white shadow-[0_18px_45px_rgba(176,24,24,0.28)] transition hover:-translate-y-0.5"
               >
                 LIVE
               </Link>

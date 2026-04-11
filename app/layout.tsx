@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import { auth } from "@/auth";
-import { DecorativeLogos } from "@/components/decorative-logos";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 import { ToasterShell } from "@/components/toaster-shell";
@@ -57,7 +56,6 @@ export default async function RootLayout({
         <div className="fixed inset-0 -z-10 bg-canvas" />
         <div className="fixed inset-0 -z-10 bg-mesh opacity-90" />
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(194,154,92,0.12),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.04),transparent_32%),linear-gradient(180deg,rgba(7,7,7,0.12),rgba(7,7,7,0.9))]" />
-        <DecorativeLogos />
         <Navbar session={session} />
         <main className="relative z-10 min-h-screen overflow-x-hidden pb-24 pt-24 sm:pb-0 sm:pt-32">{children}</main>
         <SiteFooter />

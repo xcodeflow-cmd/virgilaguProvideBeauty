@@ -18,10 +18,7 @@ function PalmaresDialog() {
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <button className="premium-card relative grid content-start gap-5 overflow-hidden rounded-[2rem] p-6 pr-24 text-left sm:p-7 sm:pr-28">
-          <div className="pointer-events-none absolute right-5 top-5 h-14 w-14 opacity-90 sm:h-16 sm:w-16">
-            <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="64px" />
-          </div>
+        <button className="premium-card grid content-start gap-5 rounded-[2rem] p-6 text-left sm:p-7">
           <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]"></p>
           <p className="max-w-lg text-3xl leading-tight text-white sm:text-4xl">
             Rezultate reale din competitie, educatie si ani de executie constanta.
@@ -125,8 +122,15 @@ export function HomepageContent() {
               </div>
             </div>
 
-            <div className="relative mt-10 min-h-[22rem] overflow-hidden rounded-[2.2rem] lg:hidden">
-              <Image src={brandImages.hero} alt="Virgil Agu" fill priority className="object-cover" />
+            <div className="relative mt-10 min-h-[24rem] overflow-hidden rounded-[2.2rem] bg-[#0a0a0a] lg:hidden">
+              <Image
+                src={brandImages.hero}
+                alt="Virgil Agu"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-[60%_center]"
+              />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
             </div>
           </div>
@@ -145,6 +149,9 @@ export function HomepageContent() {
             <div className="relative min-h-[27rem] overflow-hidden rounded-[2rem]">
               <Image src={brandImages.aboutMain} alt="Virgil Agu trainer" fill className="object-cover object-center" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.68))]" />
+              <div className="absolute right-5 top-5 h-14 w-14 opacity-90 sm:h-16 sm:w-16">
+                <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="64px" />
+              </div>
               <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">Virgil Agu</p>
                 <p className="mt-3 max-w-sm text-2xl leading-tight text-white sm:text-3xl">
