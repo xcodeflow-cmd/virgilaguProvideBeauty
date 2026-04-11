@@ -138,7 +138,10 @@ export function HomepageContent() {
       </section>
 
       <section className="section-shell section-space pt-0">
-        <FadeIn className="overflow-hidden rounded-[2.6rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.008))] px-6 py-8 shadow-[0_34px_110px_rgba(0,0,0,0.26)] sm:px-8 sm:py-10 lg:px-10">
+        <FadeIn className="relative overflow-hidden rounded-[2.6rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.008))] px-6 py-8 shadow-[0_34px_110px_rgba(0,0,0,0.26)] sm:px-8 sm:py-10 lg:px-10">
+          <div className="pointer-events-none absolute right-4 top-4 h-12 w-12 opacity-90 sm:right-5 sm:top-5 sm:h-14 sm:w-14">
+            <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="56px" />
+          </div>
           <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="section-kicker">About Me</span>
@@ -149,9 +152,6 @@ export function HomepageContent() {
             <div className="relative min-h-[27rem] overflow-hidden rounded-[2rem]">
               <Image src={brandImages.aboutMain} alt="Virgil Agu trainer" fill className="object-cover object-center" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.68))]" />
-              <div className="absolute right-5 top-5 h-14 w-14 opacity-90 sm:h-16 sm:w-16">
-                <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="64px" />
-              </div>
               <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">Virgil Agu</p>
                 <p className="mt-3 max-w-sm text-2xl leading-tight text-white sm:text-3xl">
