@@ -9,6 +9,7 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
 import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
+import siteLogo from "@/assets/logo.png";
 import { defaultServices } from "@/lib/cleaning-content";
 import { courseOffers, getCourseCheckoutHref, palmaresDetails, palmaresHighlights } from "@/lib/course-offers";
 import { brandImages, compactReviews } from "@/lib/data";
@@ -17,7 +18,10 @@ function PalmaresDialog() {
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <button className="premium-card grid content-start gap-5 rounded-[2rem] p-6 text-left sm:p-7">
+        <button className="premium-card relative grid content-start gap-5 overflow-hidden rounded-[2rem] p-6 pr-24 text-left sm:p-7 sm:pr-28">
+          <div className="pointer-events-none absolute right-5 top-5 h-14 w-14 opacity-90 sm:h-16 sm:w-16">
+            <Image src={siteLogo} alt="Virgil Agu logo" fill className="object-contain" sizes="64px" />
+          </div>
           <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]"></p>
           <p className="max-w-lg text-3xl leading-tight text-white sm:text-4xl">
             Rezultate reale din competitie, educatie si ani de executie constanta.
