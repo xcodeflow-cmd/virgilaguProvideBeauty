@@ -40,6 +40,20 @@ function buildLiveSlug(title: string) {
   return `${base}-${Date.now().toString(36)}`;
 }
 
+function getSafeLiveSchedule(startMode: string, scheduledValue: string, fallbackDate: Date) {
+  if (startMode !== "SCHEDULE") {
+    return new Date();
+  }
+
+  const parsedDate = scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date(Number.NaN);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return fallbackDate;
+  }
+
+  return parsedDate;
+}
+
 export async function addGalleryItem(formData: FormData) {
   await requireAdmin();
 
@@ -74,25 +88,30 @@ export async function deleteGalleryItem(formData: FormData) {
 export async function addLiveSession(formData: FormData) {
   await requireAdmin();
 
-  const title = String(formData.get("title") || "");
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date();
-  const price = Number(formData.get("price") || 0);
-
-  if (Number.isNaN(scheduledFor.getTime())) {
-    throw new Error("Invalid scheduled date.");
-  }
+  const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
+  const price = Math.round(Number(formData.get("price") || 0));
 
   if (!price || price < 1) {
     throw new Error("Live price is required.");
+  }
+
+  if (!title) {
+    throw new Error("Live title is required.");
+  }
+
+  if (!description) {
+    throw new Error("Live description is required.");
   }
 
   await prisma.liveSession.create({
     data: {
       title,
       slug: buildLiveSlug(title),
-      description: String(formData.get("description") || ""),
+      description,
       scheduledFor,
       thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
       streamUrl: null,
@@ -134,13 +153,16 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const price = Number(formData.get("price") || 0);
+  const price = Math.round(Number(formData.get("price") || 0));
   const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);
   if (!id) {
     throw new Error("Missing live session id.");
   }
 
-  const scheduledFor = mode === "RESET" ? new Date() : parseRomaniaDateTimeLocal(scheduledValue);
+  const scheduledFor =
+    mode === "RESET"
+      ? new Date()
+      : getSafeLiveSchedule("SCHEDULE", scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
 
   if (!title) {
     throw new Error("Title is required.");
@@ -148,10 +170,6 @@ export async function updateLiveSessionSchedule(formData: FormData) {
 
   if (!description) {
     throw new Error("Description is required.");
-  }
-
-  if (Number.isNaN(scheduledFor.getTime())) {
-    throw new Error("Invalid scheduled date.");
   }
 
   if (!price || price < 1) {
