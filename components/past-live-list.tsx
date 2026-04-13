@@ -49,57 +49,57 @@ export function PastLiveList({
                 key={session.id}
                 className="rounded-[1.35rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(214,185,140,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-0.5 sm:rounded-[1.55rem] sm:p-5"
               >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-lg text-white sm:text-xl">{session.title}</p>
-                  {session.description ? (
-                    <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-white/60 sm:block">{session.description}</p>
-                  ) : null}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-lg text-white sm:text-xl">{session.title}</p>
+                    {session.description ? (
+                      <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-white/60 sm:block">{session.description}</p>
+                    ) : null}
+                  </div>
+                  <div className="rounded-full bg-[#d6b98c]/[0.08] px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
+                    {hasDiscount ? `Reducere ${discountPercent}%` : session.price ? formatLei(session.price) : "Fara pret"}
+                  </div>
                 </div>
-                <div className="rounded-full bg-[#d6b98c]/[0.08] px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
-                  {hasDiscount ? `Reducere ${discountPercent}%` : session.price ? formatLei(session.price) : "Fara pret"}
+                {hasDiscount ? (
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <span className="text-white/35 line-through">{formatLei(session.compareAtPrice || 0)}</span>
+                    <span className="text-white">{formatLei(session.price || 0)}</span>
+                    <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
+                      Reducere
+                    </span>
+                  </div>
+                ) : null}
+                <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/40">
+                  {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  {hasAccess ? (
+                    <Button asChild className="min-h-11">
+                      <Link href={session.recordingUrl} target="_blank" rel="noreferrer">
+                        Vezi replay
+                      </Link>
+                    </Button>
+                  ) : (
+                    <>
+                      {session.visibility === "ONE_TIME" && session.price ? (
+                        <Button asChild className="min-h-11">
+                          <Link href={`/checkout?mode=payment&liveSessionId=${session.id}`}>
+                            Deblocheaza replay
+                          </Link>
+                        </Button>
+                      ) : (
+                        <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
+                          Replay indisponibil
+                        </div>
+                      )}
+                      <p className="text-sm text-white/50">
+                        {session.visibility === "ONE_TIME" && session.price
+                          ? `Deblocare la ${formatLei(session.price)}.`
+                          : "Pretul live-ului se seteaza din admin."}
+                      </p>
+                    </>
+                  )}
                 </div>
-              </div>
-              {hasDiscount ? (
-                <div className="mt-3 flex items-center gap-2 text-sm">
-                  <span className="text-white/35 line-through">{formatLei(session.compareAtPrice || 0)}</span>
-                  <span className="text-white">{formatLei(session.price || 0)}</span>
-                  <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
-                    Reducere
-                  </span>
-                </div>
-              ) : null}
-              <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/40">
-                {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                {hasAccess ? (
-                  <Button asChild className="min-h-11">
-                    <Link href={session.recordingUrl} target="_blank" rel="noreferrer">
-                      Vezi replay
-                    </Link>
-                  </Button>
-                ) : (
-                  <>
-                    {session.visibility === "ONE_TIME" && session.price ? (
-                      <Button asChild className="min-h-11">
-                        <Link href={`/checkout?mode=payment&liveSessionId=${session.id}`}>
-                          Deblocheaza replay
-                        </Link>
-                      </Button>
-                    ) : (
-                      <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
-                        Replay indisponibil
-                      </div>
-                    )}
-                    <p className="text-sm text-white/50">
-                      {session.visibility === "ONE_TIME" && session.price
-                        ? `Deblocare la ${formatLei(session.price)}.`
-                        : "Pretul live-ului se seteaza din admin."}
-                    </p>
-                  </>
-                )}
-              </div>
               </div>
             );
           })

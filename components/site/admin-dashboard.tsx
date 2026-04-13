@@ -272,7 +272,7 @@ export function AdminDashboard({
                     </label>
                     {selectedLiveSession.compareAtPrice && selectedLiveSession.price && selectedLiveSession.compareAtPrice > selectedLiveSession.price ? (
                       <div className="rounded-[1.35rem] border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-4 text-sm text-[#f3dfbf]">
-                        Reducere activa: {formatLei(selectedLiveSession.compareAtPrice || 0)} -> {formatLei(selectedLiveSession.price || 0)}
+                        Reducere activa: {formatLei(selectedLiveSession.compareAtPrice || 0)} {"->"} {formatLei(selectedLiveSession.price || 0)}
                       </div>
                     ) : null}
                     <label className="space-y-2">
@@ -317,7 +317,7 @@ export function AdminDashboard({
                         : 0;
 
                       return (
-                      <div
+                        <div
                         key={session.id}
                         className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4"
                       >
@@ -360,7 +360,7 @@ export function AdminDashboard({
                             </form>
                           </div>
                         </div>
-                      </div>
+                        </div>
                       );
                     })
                   ) : (
