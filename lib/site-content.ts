@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { courses, galleryItems, liveSessions, subscriptionPlans } from "@/lib/data";
+import { courses, liveSessions, subscriptionPlans } from "@/lib/data";
 
 export type SubscriptionPlan = (typeof subscriptionPlans)[number];
 export type CoursesContent = typeof courses;
@@ -50,10 +50,6 @@ export async function getManagedGalleryItems() {
       orderBy: { createdAt: "desc" }
     });
 
-    if (!items.length) {
-      return galleryItems;
-    }
-
     return items.map((item) => ({
       id: item.id,
       title: item.title,
@@ -61,7 +57,7 @@ export async function getManagedGalleryItems() {
       imageUrl: item.imageUrl
     }));
   } catch {
-    return galleryItems;
+    return [];
   }
 }
 

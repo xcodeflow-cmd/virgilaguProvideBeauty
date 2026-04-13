@@ -24,7 +24,7 @@ const navLinks = [
   { href: "/", label: "Acasa", icon: Home, tone: "bg-white/[0.06]" },
   { href: "/live", label: "LIVE", icon: Radio, tone: "bg-red-500/[0.12]" },
   { href: "/courses", label: "Cursuri", icon: GraduationCap, tone: "bg-[#d6b98c]/[0.12]" },
-  { href: "/reviews", label: "Review-uri", icon: Star, tone: "bg-white/[0.05]" },
+  { href: "/reviews", label: "Feedback", icon: Star, tone: "bg-white/[0.05]" },
   { href: "/gallery", label: "Galerie", icon: Images, tone: "bg-white/[0.05]" },
   { href: "/contact", label: "Contact", icon: MessageCircleMore, tone: "bg-[#d6b98c]/10" }
 ] as const;

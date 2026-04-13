@@ -40,22 +40,22 @@ export function GalleryGrid({
         return (
           <Dialog.Root key={item.id}>
             <Dialog.Trigger asChild>
-              <button className={`group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black text-left shadow-panel transition duration-500 hover:-translate-y-1.5 hover:shadow-luxury ${spanClass}`}>
+              <button
+                className={`group flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-[#080808] text-left shadow-panel transition duration-500 hover:-translate-y-1 hover:shadow-luxury ${spanClass}`}
+              >
                 <div className="relative h-full min-h-[18rem] overflow-hidden">
                   <Image
                     src={item.imageUrl}
                     alt={item.title}
                     fill
+                    unoptimized
                     className="object-cover transition duration-700 group-hover:scale-[1.05]"
                   />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.72))]" />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-7">
-                  <p className="text-[10px] uppercase tracking-[0.38em] text-accent/[0.85]">{item.category}</p>
-                  <h3 className="mt-2 max-w-[18rem] text-2xl leading-tight text-white sm:text-[2rem]">
-                    {item.title}
-                  </h3>
-                  {item.subtitle ? <p className="mt-2 max-w-[20rem] text-sm text-white/70">{item.subtitle}</p> : null}
+                <div className="space-y-3 p-6">
+                  <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{item.category}</p>
+                  <h3 className="text-2xl leading-tight text-white sm:text-[2rem]">{item.title}</h3>
+                  {item.subtitle ? <p className="text-sm text-white/65">{item.subtitle}</p> : null}
                 </div>
               </button>
             </Dialog.Trigger>
@@ -63,7 +63,7 @@ export function GalleryGrid({
               <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/[0.92] backdrop-blur-[12px]" />
               <Dialog.Content className="fixed inset-4 z-[70] overflow-hidden rounded-[2.2rem] bg-[#060606] shadow-[0_40px_120px_rgba(0,0,0,0.45)] lg:inset-8">
                 <div className="relative h-[78vh] w-full bg-black">
-                  <Image src={item.imageUrl} alt={item.title} fill className="object-contain" />
+                  <Image src={item.imageUrl} alt={item.title} fill unoptimized className="object-contain" />
                 </div>
                 <div className="flex items-center justify-between p-6">
                   <div>

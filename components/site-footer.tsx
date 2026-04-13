@@ -8,7 +8,7 @@ const footerLinks = [
   { href: "/courses", label: "Cursuri" },
   { href: "/live", label: "Live" },
   { href: "/gallery", label: "Galerie" },
-  { href: "/reviews", label: "Review-uri" },
+  { href: "/reviews", label: "Feedback" },
   { href: "/contact", label: "Contact" }
 ];
 

@@ -57,17 +57,30 @@ function getSafeLiveSchedule(startMode: string, scheduledValue: string, fallback
 export async function addGalleryItem(formData: FormData) {
   await requireAdmin();
 
+  const file = formData.get("imageFile");
+  let imageUrl = String(formData.get("imageUrl") || "").trim();
+
+  if (!imageUrl && file instanceof File && file.size > 0) {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    imageUrl = `data:${file.type || "image/jpeg"};base64,${bytes.toString("base64")}`;
+  }
+
+  if (!imageUrl) {
+    throw new Error("Gallery image is required.");
+  }
+ 
   await prisma.galleryItem.create({
     data: {
-      title: String(formData.get("title") || ""),
-      category: String(formData.get("category") || ""),
-      imageUrl: String(formData.get("imageUrl") || ""),
+      title: String(formData.get("title") || "").trim() || "Galerie upload",
+      category: String(formData.get("category") || "").trim() || "Galerie",
+      imageUrl,
       featured: formData.get("featured") === "on"
     }
   });
 
   revalidatePath("/");
   revalidatePath("/gallery");
+  revalidatePath("/reviews");
   revalidatePath("/admin");
 }
 
@@ -82,6 +95,7 @@ export async function deleteGalleryItem(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/gallery");
+  revalidatePath("/reviews");
   revalidatePath("/admin");
 }
 

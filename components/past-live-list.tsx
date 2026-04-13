@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatLei } from "@/lib/utils";
@@ -47,8 +48,14 @@ export function PastLiveList({
             return (
               <div
                 key={session.id}
-                className="rounded-[1.35rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(214,185,140,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-0.5 sm:rounded-[1.55rem] sm:p-5"
+                className="relative rounded-[1.35rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(214,185,140,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-0.5 sm:rounded-[1.55rem] sm:p-5"
               >
+                {!hasAccess ? (
+                  <div className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-[#d6b98c]/20 bg-black/60 px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f3dfbf] backdrop-blur-md">
+                    <Lock className="h-3.5 w-3.5" />
+                    Blocat
+                  </div>
+                ) : null}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-lg text-white sm:text-xl">{session.title}</p>
@@ -94,7 +101,9 @@ export function PastLiveList({
                       )}
                       <p className="text-sm text-white/50">
                         {session.visibility === "ONE_TIME" && session.price
-                          ? `Deblocare la ${formatLei(session.price)}.`
+                          ? hasDiscount
+                            ? `Pret vechi ${formatLei(session.compareAtPrice || 0)}, acum ${formatLei(session.price)}.`
+                            : `Deblocare la ${formatLei(session.price)}.`
                           : "Pretul live-ului se seteaza din admin."}
                       </p>
                     </>

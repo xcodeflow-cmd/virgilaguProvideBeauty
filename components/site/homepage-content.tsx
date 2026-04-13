@@ -8,9 +8,7 @@ import { ArrowRight, ArrowUpRight, X } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
 import { Button } from "@/components/ui/button";
-import { useCleaningContent } from "@/components/site/use-cleaning-content";
 import siteLogo from "@/assets/logo.png";
-import { defaultServices } from "@/lib/cleaning-content";
 import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref, palmaresDetails, palmaresHighlights } from "@/lib/course-offers";
 import { brandImages, compactReviews } from "@/lib/data";
@@ -73,9 +71,6 @@ function PalmaresDialog() {
 }
 
 export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffer[] }) {
-  const { content } = useCleaningContent();
-  const services = content.services.length ? content.services : defaultServices;
-
   return (
     <>
       <section className="section-shell section-space pt-8 sm:pt-14 lg:pt-16">
@@ -180,13 +175,13 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
         </FadeIn>
 
         <Stagger className="mt-14 grid gap-5 xl:grid-cols-3">
-          {offers.map((course, index) => (
+          {offers.map((course) => (
             <StaggerItem key={course.id}>
               <CourseDetailDialog
                 course={course}
                 ctaHref={getCourseCheckoutHref(course.id)}
                 compact
-                className={services[index] ? "" : "min-h-full"}
+                className="min-h-full"
               />
             </StaggerItem>
           ))}

@@ -1,24 +1,13 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { CalendarDays, ImagePlus, Radio, Trash2, Upload, UserRound } from "lucide-react";
 
-import { addLiveSession, deleteLiveSession, updateCoursePricing, updateLiveSessionSchedule } from "@/app/admin/actions";
+import { addGalleryItem, addLiveSession, deleteGalleryItem, deleteLiveSession, updateCoursePricing, updateLiveSessionSchedule } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
-import { useCleaningContent } from "@/components/site/use-cleaning-content";
-import { defaultGalleryImages, getDefaultContentState } from "@/lib/cleaning-content";
 import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
 import { formatLei } from "@/lib/utils";
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 type AdminLiveSession = {
   id: string;
@@ -64,80 +53,32 @@ type AdminCourseSettings = {
   };
 };
 
+type AdminGalleryItem = {
+  id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  createdAt: string;
+};
+
 export function AdminDashboard({
+  galleryItems,
   liveSessions,
   users,
   courseSettings
 }: {
+  galleryItems: AdminGalleryItem[];
   liveSessions: AdminLiveSession[];
   users: AdminUser[];
   courseSettings: AdminCourseSettings;
 }) {
-  const { content, setContent } = useCleaningContent();
-  const [galleryPreview, setGalleryPreview] = useState<{ title: string; subtitle: string; imageUrl: string } | null>(null);
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
-
-  const allGalleryItems = useMemo(
-    () => [
-      ...defaultGalleryImages.filter((item) => !content.hiddenAssetGalleryIds.includes(item.id)),
-      ...content.uploadedGallery
-    ],
-    [content.hiddenAssetGalleryIds, content.uploadedGallery]
-  );
 
   const selectedLiveSession = useMemo(
     () => liveSessions.find((session) => session.id === selectedLiveId) || liveSessions[0] || null,
     [liveSessions, selectedLiveId]
   );
-
-  const handleGalleryUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const imageUrl = await readFileAsDataUrl(file);
-    const title = file.name.replace(/\.[^.]+$/, "");
-
-    setGalleryPreview({ title, subtitle: "", imageUrl });
-    event.target.value = "";
-  };
-
-  const confirmGalleryUpload = () => {
-    if (!galleryPreview || !galleryPreview.title.trim()) {
-      return;
-    }
-
-    setContent((current) => ({
-      ...current,
-      uploadedGallery: [
-        {
-          id: `upload-${Date.now()}`,
-          title: galleryPreview.title.trim(),
-          subtitle: galleryPreview.subtitle.trim(),
-          category: "Upload",
-          imageUrl: galleryPreview.imageUrl,
-          isUploaded: true
-        },
-        ...current.uploadedGallery
-      ]
-    }));
-
-    setGalleryPreview(null);
-  };
-
-  const removeGalleryImage = (imageId: string, isUploaded: boolean) => {
-    setContent((current) => ({
-      ...current,
-      uploadedGallery: isUploaded ? current.uploadedGallery.filter((item) => item.id !== imageId) : current.uploadedGallery,
-      hiddenAssetGalleryIds:
-        isUploaded || current.hiddenAssetGalleryIds.includes(imageId)
-          ? current.hiddenAssetGalleryIds
-          : [...current.hiddenAssetGalleryIds, imageId]
-    }));
-  };
 
   return (
     <section className="section-shell py-8 sm:py-12">
@@ -149,7 +90,7 @@ export function AdminDashboard({
               viteză si vizibilitate.
             </p>
             <nav className="grid gap-2.5">
-              {[
+              {[ 
                 { href: "#overview", label: "Overview" },
                 { href: "#live", label: "Live timer" },
                 { href: "#gallery", label: "Gallery" },
@@ -164,27 +105,16 @@ export function AdminDashboard({
                 </a>
               ))}
             </nav>
-            <Button
-              type="button"
-              variant="secondary"
-              className="mt-6 min-h-12 w-full"
-              onClick={() => {
-                setContent(getDefaultContentState());
-                setGalleryPreview(null);
-              }}
-            >
-              Reseteaza continutul local
-            </Button>
           </div>
         </aside>
 
         <div className="space-y-6">
           <section id="overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {[
-              { label: "Users", value: users.length, icon: UserRound },
-              { label: "Live Sessions", value: liveSessions.length, icon: Radio },
-              { label: "Gallery Items", value: allGalleryItems.length, icon: ImagePlus }
-            ].map((item) => {
+              {[
+                { label: "Users", value: users.length, icon: UserRound },
+                { label: "Live Sessions", value: liveSessions.length, icon: Radio },
+                { label: "Gallery Items", value: galleryItems.length, icon: ImagePlus }
+              ].map((item) => {
               const Icon = item.icon;
 
               return (
@@ -255,7 +185,7 @@ export function AdminDashboard({
                 </div>
 
                 {selectedLiveSession ? (
-                  <form action={updateLiveSessionSchedule} className="mt-6 space-y-4">
+                  <form key={selectedLiveSession.id} action={updateLiveSessionSchedule} className="mt-6 space-y-4">
                     <input type="hidden" name="id" value={selectedLiveSession.id} />
                     <div className="grid gap-4 sm:grid-cols-2">
                       <label className="space-y-2">
@@ -314,7 +244,7 @@ export function AdminDashboard({
                     </label>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button type="submit" name="mode" value="UPDATE" className="min-h-12">
-                        Salveaza timerul
+                        Salveaza
                       </Button>
                       <Button type="submit" name="mode" value="RESET" variant="secondary" className="min-h-12">
                         Reseteaza countdown-ul
@@ -465,97 +395,67 @@ export function AdminDashboard({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="dashboard-label">Gallery</p>
-                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload poze noua in galerie.</h2>
+                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload global in galerie, sincronizat pentru tot site-ul.</h2>
               </div>
               <div className="rounded-full bg-white/[0.04] px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/[0.48]">
-                Touch friendly
+                Global sync
               </div>
             </div>
 
-            <div className="mt-6 grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
-              <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
-                <label className="flex min-h-[8rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
+            <div className="mt-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+              <form action={addGalleryItem} className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Titlu imagine</span>
+                  <input name="title" placeholder="Titlu imagine" className="premium-input" />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Categorie</span>
+                  <input name="category" defaultValue="Galerie" className="premium-input" />
+                </label>
+                <label className="flex min-h-[9rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
                   <Upload className="h-5 w-5" />
                   Adauga imagine din device
                   <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">PNG, JPG, WEBP</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleGalleryUpload} />
+                  <input type="file" name="imageFile" accept="image/*" className="hidden" required />
                 </label>
-
-                {galleryPreview ? (
-                  <div className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/30">
-                    <div className="relative aspect-[4/3]">
-                      <Image src={galleryPreview.imageUrl} alt={galleryPreview.title} fill className="object-cover" />
-                    </div>
-                    <div className="flex flex-col gap-4 p-5">
-                      <label className="space-y-2">
-                        <span className="text-sm text-white/60">Titlu imagine</span>
-                        <input
-                          value={galleryPreview.title}
-                          onChange={(event) =>
-                            setGalleryPreview((current) => (current ? { ...current, title: event.target.value } : current))
-                          }
-                          placeholder="Titlu imagine"
-                          className="premium-input"
-                        />
-                      </label>
-                      <label className="space-y-2">
-                        <span className="text-sm text-white/60">Subtitle imagine</span>
-                        <input
-                          value={galleryPreview.subtitle}
-                          onChange={(event) =>
-                            setGalleryPreview((current) => (current ? { ...current, subtitle: event.target.value } : current))
-                          }
-                          placeholder="Subtitle imagine"
-                          className="premium-input"
-                        />
-                      </label>
-                      <p className="text-sm text-white/50">Preview inainte de salvare</p>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          type="button"
-                          className="min-h-11"
-                          onClick={confirmGalleryUpload}
-                          disabled={!galleryPreview.title.trim()}
-                        >
-                          Adauga in galerie
-                        </Button>
-                        <Button type="button" variant="secondary" className="min-h-11" onClick={() => setGalleryPreview(null)}>
-                          Anuleaza
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-6 text-sm leading-7 text-white/[0.55]">
-                    Alege o imagine pentru preview.
-                  </div>
-                )}
-              </div>
+                <p className="text-sm leading-7 text-white/[0.55]">
+                  Upload-ul se salveaza in baza de date si devine vizibil pe tot site-ul, nu doar local in browserul adminului.
+                </p>
+                <Button type="submit" className="min-h-12 w-full">
+                  Adauga in galerie
+                </Button>
+              </form>
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {allGalleryItems.map((item) => (
-                  <div key={item.id} className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-white/[0.03]">
-                    <div className="relative aspect-square">
-                      <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
-                    </div>
-                    <div className="space-y-3 p-4">
-                      <div>
-                        <p className="text-white">{item.title}</p>
-                        {"subtitle" in item && item.subtitle ? <p className="mt-1 text-sm text-white/65">{item.subtitle}</p> : null}
-                        <p className="text-sm text-white/50">{item.category}</p>
+                {galleryItems.length ? (
+                  galleryItems.map((item) => (
+                    <div key={item.id} className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-white/[0.03]">
+                      <div className="relative aspect-square">
+                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" unoptimized />
                       </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="min-h-11 w-full"
-                        onClick={() => removeGalleryImage(item.id, "isUploaded" in item && item.isUploaded)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Sterge
-                      </Button>
+                      <div className="space-y-3 p-4">
+                        <div>
+                          <p className="text-white">{item.title}</p>
+                          <p className="mt-1 text-sm text-white/65">{item.category}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.24em] text-white/35">
+                            {new Date(item.createdAt).toLocaleString("ro-RO")}
+                          </p>
+                        </div>
+                        <form action={deleteGalleryItem}>
+                          <input type="hidden" name="id" value={item.id} />
+                          <Button type="submit" variant="secondary" className="min-h-11 w-full">
+                            <Trash2 className="h-4 w-4" />
+                            Sterge
+                          </Button>
+                        </form>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 px-4 py-6 text-sm leading-7 text-white/[0.55] sm:col-span-2 xl:col-span-3">
+                    Nu exista imagini incarcate din admin.
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </section>

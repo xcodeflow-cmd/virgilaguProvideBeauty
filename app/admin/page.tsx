@@ -190,12 +190,16 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
+  let galleryItems: Awaited<ReturnType<typeof prisma.galleryItem.findMany>> = [];
   let liveSessions: Awaited<ReturnType<typeof prisma.liveSession.findMany>> = [];
   let users: Awaited<ReturnType<typeof prisma.user.findMany>> = [];
   const settings = await getSiteSettings();
 
   try {
-    [liveSessions, users] = await Promise.all([
+    [galleryItems, liveSessions, users] = await Promise.all([
+      prisma.galleryItem.findMany({
+        orderBy: { createdAt: "desc" }
+      }),
       prisma.liveSession.findMany({
         orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
       }),
@@ -205,12 +209,20 @@ export default async function AdminPage() {
       })
     ]);
   } catch {
+    galleryItems = [];
     liveSessions = [];
     users = [];
   }
 
   return (
     <AdminDashboard
+      galleryItems={galleryItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        imageUrl: item.imageUrl,
+        createdAt: item.createdAt.toISOString()
+      }))}
       liveSessions={liveSessions.map((item) => ({
         id: item.id,
         title: item.title,

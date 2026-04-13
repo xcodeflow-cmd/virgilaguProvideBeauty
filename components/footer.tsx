@@ -20,7 +20,7 @@ export function Footer() {
               <Link href="/live" className="transition hover:text-white">Live</Link>
               <Link href="/courses" className="transition hover:text-white">Courses</Link>
               <Link href="/gallery" className="transition hover:text-white">Gallery</Link>
-              <Link href="/reviews" className="transition hover:text-white">Reviews</Link>
+              <Link href="/reviews" className="transition hover:text-white">Feedback</Link>
               <Link href={siteConfig.socials.instagram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 transition hover:text-white">Instagram <ArrowUpRight className="h-3.5 w-3.5" /></Link>
               <Link href={siteConfig.socials.mero} target="_blank" rel="noreferrer" className="transition hover:text-white">MERO</Link>
               <Link href={siteConfig.socials.whatsapp} target="_blank" rel="noreferrer" className="transition hover:text-white">WhatsApp</Link>

@@ -1,7 +1,10 @@
 import { FadeIn } from "@/components/motion-shell";
 import { GalleryPageContent } from "@/components/site/gallery-page-content";
+import { getOrderedGalleryMedia } from "@/lib/media-library";
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const { images, videos } = await getOrderedGalleryMedia();
+
   return (
     <section className="section-shell section-space">
       <FadeIn className="max-w-5xl">
@@ -12,7 +15,7 @@ export default function GalleryPage() {
       </FadeIn>
 
       <div className="mx-auto mt-16 max-w-[92rem]">
-        <GalleryPageContent />
+        <GalleryPageContent images={images} videos={videos} />
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, Radio } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
@@ -136,7 +136,7 @@ type MediasoupTransportLike = {
   }): Promise<MediasoupConsumerLike>;
 };
 
-const LIVE_POLL_INTERVAL = 5000;
+const LIVE_POLL_INTERVAL = 1000;
 const CHAT_POLL_INTERVAL = 2000;
 const MEDIA_RECORDER_MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
@@ -1528,6 +1528,7 @@ export function LivePageContent({
         (((currentSession?.compareAtPrice || 0) - (currentSession?.price || 0)) / (currentSession?.compareAtPrice || 1)) * 100
       )
     : 0;
+  const currentSessionLocked = Boolean(currentSession && !canViewCurrentSession && !isAdmin);
   const diagnostics = [
     `Rol: ${debug.role}`,
     `Status stream: ${streamStatus}`,
@@ -1634,6 +1635,12 @@ export function LivePageContent({
                     <span className="live-dot" />
                     {statusLabel}
                   </div>
+                  {currentSessionLocked ? (
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-[#f3dfbf]">
+                      <Lock className="h-3.5 w-3.5" />
+                      Live blocat
+                    </div>
+                  ) : null}
                   {sessionScheduleLabel ? (
                     <div className="rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.45]">
                       {sessionScheduleLabel}
@@ -1702,9 +1709,9 @@ export function LivePageContent({
               </div>
             ) : null}
 
-            <div ref={videoStageRef} className="relative bg-black">
-              <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
+              <div ref={videoStageRef} className="relative bg-black">
+                <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
                 <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
               ) : currentSession?.isLive ? (
@@ -1715,12 +1722,18 @@ export function LivePageContent({
                 </div>
               )}
 
-              <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2 sm:left-4 sm:top-4">
-                <div className="rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md">
-                  <Radio className="mr-1 inline h-3.5 w-3.5 text-red-300" />
-                  {statusLabel}
+                <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2 sm:left-4 sm:top-4">
+                  <div className="rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md">
+                    <Radio className="mr-1 inline h-3.5 w-3.5 text-red-300" />
+                    {statusLabel}
+                  </div>
+                  {currentSessionLocked ? (
+                    <div className="rounded-full border border-[#d6b98c]/20 bg-black/[0.62] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-[#f3dfbf] backdrop-blur-md">
+                      <Lock className="mr-1 inline h-3.5 w-3.5" />
+                      Acces blocat
+                    </div>
+                  ) : null}
                 </div>
-              </div>
 
               <button
                 type="button"
@@ -1766,11 +1779,26 @@ export function LivePageContent({
                 ) : null}
               </div>
               {!canViewCurrentSession && !isAdmin && currentSession?.price ? (
-                <Button asChild className="min-h-11">
-                  <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
-                    Cumpara live-ul {formatLei(currentSession.price)}
-                  </a>
-                </Button>
+                <div className="flex flex-col items-start gap-2">
+                  <Button asChild className="min-h-11">
+                    <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
+                      Cumpara live-ul {formatLei(currentSession.price)}
+                    </a>
+                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-white/60">
+                    {currentSessionHasDiscount ? (
+                      <>
+                        <span className="line-through text-white/35">{formatLei(currentSession.compareAtPrice || 0)}</span>
+                        <span className="text-white">{formatLei(currentSession.price)}</span>
+                        <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
+                          -{currentSessionDiscountPercent}%
+                        </span>
+                      </>
+                    ) : (
+                      <span>{formatLei(currentSession.price)}</span>
+                    )}
+                  </div>
+                </div>
               ) : null}
             </div>
 
