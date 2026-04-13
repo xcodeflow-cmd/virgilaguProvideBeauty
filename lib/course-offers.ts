@@ -136,5 +136,5 @@ export const palmaresDetails = [
 ] as const;
 
 export function getCourseCheckoutHref(courseId: string) {
-  return `/api/stripe/checkout?mode=payment&courseId=${courseId}`;
+  return `/checkout?mode=payment&courseId=${courseId}`;
 }

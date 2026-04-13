@@ -5,11 +5,6 @@ import { courseOffers } from "@/lib/course-offers";
 import { prisma } from "@/lib/prisma";
 
 const subscriptionPriceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID || "price_subscription_placeholder";
-const oneTimePriceId = process.env.STRIPE_ONE_TIME_PRICE_ID || "price_single_placeholder";
-const hasConfiguredOneTimePriceId =
-  !!process.env.STRIPE_ONE_TIME_PRICE_ID &&
-  !process.env.STRIPE_ONE_TIME_PRICE_ID.includes("replace") &&
-  process.env.STRIPE_ONE_TIME_PRICE_ID !== "price_single_placeholder";
 
 export async function GET(request: Request) {
   const session = await auth();
@@ -65,22 +60,17 @@ export async function GET(request: Request) {
             }
           ]
         : [
-            hasConfiguredOneTimePriceId
-              ? {
-                  price: oneTimePriceId,
-                  quantity: 1
-                }
-              : {
-                  price_data: {
-                    currency: "eur",
-                    product_data: {
-                      name: liveSession?.title || "Single live session access",
-                      description: liveSession?.description
-                    },
-                    unit_amount: liveSession?.price || undefined
-                  },
-                  quantity: 1
-                }
+            {
+              price_data: {
+                currency: "eur",
+                product_data: {
+                  name: liveSession?.title || "Single live session access",
+                  description: liveSession?.description
+                },
+                unit_amount: liveSession?.price || undefined
+              },
+              quantity: 1
+            }
           ];
 
     const checkout = await stripe.checkout.sessions.create({

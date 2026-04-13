@@ -4,7 +4,7 @@ import heroImage from "@/assets/landing page.jpg";
 import aboutImageAward01 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.35.jpeg";
 import aboutImageAward02 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (1).jpeg";
 import aboutImageAward03 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38 (2).jpeg";
-import aboutImageMain from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.12 (1).jpeg";
+import aboutImageMain from "@/assets/about me/premii.jpeg";
 import aboutImageSecondary from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.21.jpeg";
 import salonImage from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg";
 import salonImageWide from "@/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg";
@@ -54,25 +54,25 @@ export const services = [
 
 export const subscriptionPlans = [
   {
-    name: "Abonament Live",
-    price: "de la 19 EUR / luna",
-    description: "Acces la live-uri, replay-uri si continut educational pentru frizeri care vor sa creasca real.",
+    name: "Live individual",
+    price: "de la 19 EUR / sesiune",
+    description: "Platesti doar sesiunea live sau replay-ul pe care vrei sa il vezi, fara acces global la toate live-urile.",
     features: [
-      "Acces la live stream",
-      "Acces la arhiva de sesiuni",
-      "Intrebari si raspunsuri in timpul sesiunilor",
-      "Continut educational actualizat"
+      "Acces la live-ul ales",
+      "Replay salvat automat dupa sesiune",
+      "Chat activ pentru sesiunea cumparata",
+      "Plata punctuala, fara recurenta"
     ]
   },
   {
-    name: "Sesiune individuala",
-    price: "de la 15 EUR",
-    description: "Deblochezi o sesiune singulara fara abonament recurent, pentru acces rapid la o demonstratie concreta.",
+    name: "Cursuri premium",
+    price: "pret fix / curs",
+    description: "Cursurile si trainingurile raman separate de live-uri si se achizitioneaza individual, in functie de programul ales.",
     features: [
-      "Acces one-time",
-      "Ideal pentru sesiuni punctuale",
-      "Plata simpla",
-      "Perfect pentru testarea platformei"
+      "Curs incepatori",
+      "Perfectionare 1 la 1",
+      "Checkout separat pentru fiecare program",
+      "Acces clar, fara pachete amestecate"
     ]
   }
 ];
@@ -220,8 +220,8 @@ export const liveSessions = [
     description: "Tuns live cu explicatii, eficienta de lucru si corectii de executie in timp real.",
     scheduledFor: new Date("2026-04-20T18:00:00+03:00"),
     isLive: true,
-    visibility: "SUBSCRIBERS",
-    price: null,
+    visibility: "ONE_TIME",
+    price: 10000,
     slug: "live-barber-experience"
   },
   {
@@ -230,8 +230,8 @@ export const liveSessions = [
     description: "Structura unui fade curat, adaptare pe cap si ritm de lucru pentru salon.",
     scheduledFor: new Date("2026-04-27T18:00:00+03:00"),
     isLive: false,
-    visibility: "SUBSCRIBERS",
-    price: null,
+    visibility: "ONE_TIME",
+    price: 1900,
     slug: "fade-breakdown-session"
   }
 ];

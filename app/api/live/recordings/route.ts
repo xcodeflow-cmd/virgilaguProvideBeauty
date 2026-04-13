@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { requireSubscription } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const authResult = await requireSubscription();
-
-  if ("error" in authResult) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-  }
-
   const recordings = await prisma.liveSession.findMany({
     where: {
       isLive: false,
@@ -21,7 +14,9 @@ export async function GET() {
       title: true,
       description: true,
       createdAt: true,
-      recordingUrl: true
+      recordingUrl: true,
+      price: true,
+      visibility: true
     }
   }).catch(() => []);
 
@@ -31,7 +26,9 @@ export async function GET() {
       title: item.title,
       description: item.description,
       createdAt: item.createdAt.toISOString(),
-      videoUrl: item.recordingUrl
+      videoUrl: item.recordingUrl,
+      price: item.price,
+      visibility: item.visibility
     }))
   });
 }

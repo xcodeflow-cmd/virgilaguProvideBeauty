@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createLiveToken } from "@/lib/live-token";
 import { getLiveHeartbeatIntervalMs, getLiveIceServers, getLiveJoinStaggerMs, getLiveReconnectDelayMs, getLiveWebSocketUrl } from "@/lib/live-config";
-import { requireAdmin, requireSubscription } from "@/lib/live-access";
+import { requireAdmin, requireLiveSessionAccess } from "@/lib/live-access";
 import { isLiveSessionActive } from "@/lib/live";
 import { prisma } from "@/lib/prisma";
 import type { LiveBootstrapResponse, LiveRole } from "@/types/live-media";
@@ -21,7 +21,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "liveId and role are required." }, { status: 400 });
   }
 
-  const authResult = role === "broadcaster" ? await requireAdmin() : await requireSubscription();
+  const authResult = role === "broadcaster"
+    ? await requireAdmin()
+    : await requireLiveSessionAccess(liveId, { requireActive: true });
 
   if ("error" in authResult) {
     return NextResponse.json({ error: authResult.error }, { status: authResult.status });

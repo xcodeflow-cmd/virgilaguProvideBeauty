@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireSubscription } from "@/lib/live-access";
-import { isLiveSessionActive } from "@/lib/live";
+import { requireLiveSessionAccess } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 
 async function getAuthorizedSession(liveSessionId: string) {
@@ -9,24 +8,7 @@ async function getAuthorizedSession(liveSessionId: string) {
     return { error: "Live session is required.", status: 400 as const };
   }
 
-  const authResult = await requireSubscription();
-
-  if ("error" in authResult) {
-    return authResult;
-  }
-
-  const liveSession = await prisma.liveSession.findUnique({
-    where: { id: liveSessionId }
-  });
-
-  if (!liveSession || !isLiveSessionActive(liveSession)) {
-    return { error: "Live session is not active.", status: 403 as const };
-  }
-
-  return {
-    ...authResult,
-    liveSession
-  };
+  return requireLiveSessionAccess(liveSessionId, { requireActive: true });
 }
 
 export async function GET(request: Request) {

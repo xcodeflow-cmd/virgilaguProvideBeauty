@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Maximize2, MessageSquare, Minimize2, Radio, X } from "lucide-react";
+import { Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type {
   LiveBootstrapResponse,
   LiveConsumerProfile,
@@ -23,6 +23,8 @@ type LiveSessionSummary = {
   description: string;
   scheduledFor: string;
   isLive: boolean;
+  price?: number | null;
+  visibility?: string;
 };
 
 type PastLiveSession = {
@@ -190,7 +192,9 @@ function areRecordingsEqual(current: LiveRecording[], next: LiveRecording[]) {
     (recording, index) =>
       recording.id === next[index]?.id &&
       recording.createdAt === next[index]?.createdAt &&
-      recording.videoUrl === next[index]?.videoUrl
+      recording.videoUrl === next[index]?.videoUrl &&
+      recording.price === next[index]?.price &&
+      recording.visibility === next[index]?.visibility
   );
 }
 
@@ -220,12 +224,14 @@ function getCountdownParts(targetDate: string | null, now: number) {
 }
 
 export function LivePageContent({
-  canAccess,
+  accessibleLiveIds,
+  canAccessCurrentSession,
   isAdmin,
   initialSession,
   pastSessions
 }: {
-  canAccess: boolean;
+  accessibleLiveIds: string[];
+  canAccessCurrentSession: boolean;
   isAdmin: boolean;
   initialSession: LiveSessionSummary | null;
   pastSessions: PastLiveSession[];
@@ -249,8 +255,6 @@ export function LivePageContent({
   const [streamStatus, setStreamStatus] = useState<StreamStatus>(initialSession?.isLive ? "connecting" : "offline");
   const [countdownNow, setCountdownNow] = useState(() => Date.now());
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [mobileChatOpen, setMobileChatOpen] = useState(false);
-  const [mobileChatExpanded, setMobileChatExpanded] = useState(false);
   const [debug, setDebug] = useState<LiveDebugState>({
     role: isAdmin ? "broadcaster" : "viewer",
     lastEvent: "idle",
@@ -294,6 +298,18 @@ export function LivePageContent({
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
   const recordingMimeTypeRef = useRef("video/webm");
 
+  function hasSessionAccess(session: LiveSessionSummary | null | undefined) {
+    if (!session) {
+      return false;
+    }
+
+    if (isAdmin || session.visibility === "PUBLIC" || accessibleLiveIds.includes(session.id)) {
+      return true;
+    }
+
+    return Boolean(initialSession?.id === session.id && canAccessCurrentSession);
+  }
+
   useEffect(() => {
     currentSessionRef.current = currentSession;
   }, [currentSession]);
@@ -323,13 +339,6 @@ export function LivePageContent({
 
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
-
-  useEffect(() => {
-    if (!currentSession?.isLive) {
-      setMobileChatOpen(false);
-      setMobileChatExpanded(false);
-    }
-  }, [currentSession?.isLive]);
 
   useEffect(() => {
     if (!chatScrollRef.current) {
@@ -1106,12 +1115,17 @@ export function LivePageContent({
   }
 
   async function loadCurrentLive() {
-    if (!canAccess && !isAdmin) {
-      return;
-    }
-
     try {
-      const data = await api<{ live: { id: string; title: string; description: string; createdAt: string } | null }>("/api/live/current");
+      const data = await api<{
+        live: {
+          id: string;
+          title: string;
+          description: string;
+          scheduledFor: string;
+          price?: number | null;
+          visibility?: string;
+        } | null;
+      }>("/api/live/current");
 
       if (!data.live) {
         setCurrentSession((current) => (current ? { ...current, isLive: false } : current));
@@ -1128,8 +1142,10 @@ export function LivePageContent({
           current.id === live.id &&
           current.title === live.title &&
           current.description === live.description &&
-          current.scheduledFor === live.createdAt &&
-          current.isLive
+          current.scheduledFor === live.scheduledFor &&
+          current.isLive &&
+          current.price === live.price &&
+          current.visibility === live.visibility
         ) {
           return current;
         }
@@ -1138,8 +1154,10 @@ export function LivePageContent({
           id: live.id,
           title: live.title,
           description: live.description,
-          scheduledFor: live.createdAt,
-          isLive: true
+          scheduledFor: live.scheduledFor,
+          isLive: true,
+          price: live.price,
+          visibility: live.visibility
         };
       });
     } catch {
@@ -1149,7 +1167,7 @@ export function LivePageContent({
   }
 
   async function loadMessages() {
-    if (!currentSession?.isLive) {
+    if (!currentSession?.isLive || !hasSessionAccess(currentSession)) {
       return;
     }
 
@@ -1158,10 +1176,6 @@ export function LivePageContent({
   }
 
   async function loadRecordings() {
-    if (!canAccess && !isAdmin) {
-      return;
-    }
-
     const data = await api<{ recordings: LiveRecording[] }>("/api/live/recordings");
     setRecordings((current) => (areRecordingsEqual(current, data.recordings) ? current : data.recordings));
   }
@@ -1361,10 +1375,6 @@ export function LivePageContent({
   }
 
   useEffect(() => {
-    if (!canAccess && !isAdmin) {
-      return;
-    }
-
     void loadRecordings();
     void loadCurrentLive();
 
@@ -1374,10 +1384,10 @@ export function LivePageContent({
 
     return () => window.clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canAccess, isAdmin]);
+  }, [isAdmin]);
 
   useEffect(() => {
-    if (!currentSession?.isLive || (!canAccess && !isAdmin)) {
+    if (!currentSession?.isLive || !hasSessionAccess(currentSession)) {
       return;
     }
 
@@ -1389,7 +1399,7 @@ export function LivePageContent({
 
     return () => window.clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSession?.id, currentSession?.isLive, canAccess, isAdmin]);
+  }, [currentSession?.id, currentSession?.isLive, accessibleLiveIds, isAdmin, canAccessCurrentSession]);
 
   useEffect(() => {
     if (!currentSession?.isLive) {
@@ -1405,7 +1415,7 @@ export function LivePageContent({
       return;
     }
 
-    if (!canAccess) {
+    if (!hasSessionAccess(currentSession)) {
       return;
     }
 
@@ -1413,7 +1423,7 @@ export function LivePageContent({
       void connectToLive("viewer", currentSession.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSession?.id, currentSession?.isLive, canAccess, isAdmin]);
+  }, [currentSession?.id, currentSession?.isLive, accessibleLiveIds, isAdmin, canAccessCurrentSession]);
 
   useEffect(() => {
     return () => {
@@ -1453,7 +1463,7 @@ export function LivePageContent({
   }, []);
 
   async function sendMessage() {
-    if (!chatText.trim() || !currentSession?.isLive) {
+    if (!chatText.trim() || !currentSession?.isLive || !hasSessionAccess(currentSession)) {
       return;
     }
 
@@ -1479,7 +1489,7 @@ export function LivePageContent({
     await videoStageRef.current.requestFullscreen().catch(() => undefined);
   }
 
-  const canViewLive = canAccess || isAdmin;
+  const canViewCurrentSession = hasSessionAccess(currentSession);
   const countdownParts = !currentSession?.isLive ? getCountdownParts(currentSession?.scheduledFor || null, countdownNow) : null;
   const sessionScheduleLabel = currentSession?.scheduledFor
     ? new Date(currentSession.scheduledFor).toLocaleString("ro-RO", {
@@ -1499,7 +1509,7 @@ export function LivePageContent({
         : streamStatus === "connecting" || streamStatus === "reconnecting"
           ? "Connecting"
           : "Offline";
-  const canUseChat = canViewLive && Boolean(currentSession?.isLive);
+  const canUseChat = canViewCurrentSession && Boolean(currentSession?.isLive);
   const diagnostics = [
     `Rol: ${debug.role}`,
     `Status stream: ${streamStatus}`,
@@ -1585,7 +1595,9 @@ export function LivePageContent({
           </div>
         ) : (
           <div className="flex h-full min-h-[18rem] items-center justify-center rounded-[1.4rem] bg-white/[0.03] px-5 text-center text-sm text-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-            {canViewLive ? "Chatul devine activ cand sesiunea este LIVE." : "Chatul este disponibil dupa autentificare si acces activ."}
+            {currentSession?.isLive
+              ? "Chatul devine activ imediat dupa achizitia live-ului curent."
+              : "Chatul devine activ cand sesiunea achizitionata intra LIVE."}
           </div>
         )}
       </div>
@@ -1615,12 +1627,12 @@ export function LivePageContent({
                 </h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/[0.58] sm:text-base sm:leading-7">
                   {currentSession?.isLive
-                    ? "Video-ul ramane in prim-plan, iar chatul se deschide doar cand ai nevoie de el."
+                    ? "Video-ul si chatul raman vizibile impreuna, inclusiv pe telefon."
                     : countdownParts
                       ? "Urmatoarea sesiune este programata. Timerul este actualizat automat si ramane editabil din admin."
-                      : canViewLive
+                      : canViewCurrentSession
                         ? "Nu exista un LIVE activ in acest moment, dar layout-ul ramane pregatit pentru urmatoarea sesiune."
-                        : "Ai nevoie de autentificare si acces activ pentru a intra in sesiunea live."}
+                        : "Live-ul se deblocheaza individual, doar pentru sesiunea pe care o cumperi."}
                 </p>
               </div>
 
@@ -1666,7 +1678,7 @@ export function LivePageContent({
                 <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
               ) : (
                 <div className="flex aspect-video min-h-[13rem] items-center justify-center bg-black px-6 text-center text-white/60 sm:min-h-[18rem] xl:min-h-[20rem]">
-                  {canViewLive ? "Niciun LIVE activ momentan" : "Ai nevoie de abonament activ pentru a accesa LIVE-ul"}
+                  {canViewCurrentSession ? "Niciun LIVE activ momentan" : "Cumpara live-ul curent pentru acces instant la video si chat."}
                 </div>
               )}
 
@@ -1675,16 +1687,6 @@ export function LivePageContent({
                   <Radio className="mr-1 inline h-3.5 w-3.5 text-red-300" />
                   {statusLabel}
                 </div>
-                {currentSession?.isLive ? (
-                  <button
-                    type="button"
-                    onClick={() => setMobileChatOpen((value) => !value)}
-                    className="inline-flex items-center gap-2 rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md xl:hidden"
-                  >
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    {mobileChatOpen ? "Ascunde chat" : "Chat"}
-                  </button>
-                ) : null}
               </div>
 
               <button
@@ -1709,6 +1711,14 @@ export function LivePageContent({
               ) : null}
             </div>
 
+            {currentSession?.isLive ? (
+              <div className="border-t border-white/10 xl:hidden">
+                <div className="flex h-[17.5rem] flex-col">
+                  {chatPanel}
+                </div>
+              </div>
+            ) : null}
+
             <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
               <div className="space-y-2">
                 <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">
@@ -1722,9 +1732,11 @@ export function LivePageContent({
                   <p className="hidden text-sm leading-7 text-white/[0.44] sm:block">{currentSession.description}</p>
                 ) : null}
               </div>
-              {!canViewLive && !isAdmin ? (
+              {!canViewCurrentSession && !isAdmin && currentSession?.price ? (
                 <Button asChild className="min-h-11">
-                  <a href="/courses">Activeaza accesul</a>
+                  <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
+                    Cumpara live-ul {formatCurrency(currentSession.price)}
+                  </a>
                 </Button>
               ) : null}
             </div>
@@ -1732,7 +1744,7 @@ export function LivePageContent({
             {error ? <p className="px-4 pb-4 text-sm text-red-300 sm:px-6">{error}</p> : null}
           </div>
 
-          {canViewLive ? (
+          {isAdmin || canViewCurrentSession ? (
             <details className="premium-card rounded-[1.6rem] p-4 sm:p-5">
               <summary className="cursor-pointer list-none text-sm uppercase tracking-[0.34em] text-white/[0.55]">
                 Diagnostic LIVE
@@ -1749,7 +1761,8 @@ export function LivePageContent({
 
           <div className="hidden xl:block">
             <PastLiveList
-              canAccess={canViewLive}
+              accessibleLiveIds={accessibleLiveIds}
+              isAdmin={isAdmin}
               sessions={recordings.map((item) => ({
                 id: item.id,
                 title: item.title,
@@ -1772,7 +1785,8 @@ export function LivePageContent({
 
       <div className="xl:hidden">
         <PastLiveList
-          canAccess={canViewLive}
+          accessibleLiveIds={accessibleLiveIds}
+          isAdmin={isAdmin}
           sessions={recordings.map((item) => ({
             id: item.id,
             title: item.title,
@@ -1783,73 +1797,6 @@ export function LivePageContent({
             visibility: item.visibility
           }))}
         />
-      </div>
-
-      <div className="pointer-events-none fixed inset-0 z-40 xl:hidden">
-        {canViewLive && currentSession?.isLive ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setMobileChatOpen(true)}
-              className={cn(
-                "pointer-events-auto absolute bottom-4 right-4 inline-flex h-14 items-center gap-3 rounded-full border border-[#d6b98c]/25 bg-[#111111]/92 px-4 text-sm text-white shadow-[0_18px_50px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300",
-                mobileChatOpen ? "pointer-events-none translate-y-4 opacity-0" : "translate-y-0 opacity-100"
-              )}
-            >
-              <MessageSquare className="h-4 w-4 text-[#ecd4ac]" />
-              Chat
-              <span className="rounded-full bg-white/[0.06] px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-white/55">
-                {messages.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              aria-label="Inchide chatul"
-              onClick={() => setMobileChatOpen(false)}
-              className={cn(
-                "absolute inset-0 bg-black/55 backdrop-blur-[2px] transition duration-300",
-                mobileChatOpen ? "pointer-events-auto opacity-100" : "opacity-0"
-              )}
-            />
-
-            <div
-              className={cn(
-                "absolute inset-x-3 bottom-3 overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#090909]/95 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl transition-all duration-300",
-                mobileChatOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-[calc(100%+1.5rem)] opacity-0",
-                mobileChatExpanded ? "h-[min(84dvh,46rem)]" : "h-[min(72dvh,34rem)]"
-              )}
-            >
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-                <button
-                  type="button"
-                  onClick={() => setMobileChatOpen(false)}
-                  className="inline-flex items-center gap-2 text-sm text-white"
-                >
-                  <MessageSquare className="h-4 w-4 text-[#ecd4ac]" />
-                  Chat LIVE
-                </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setMobileChatExpanded((value) => !value)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
-                  >
-                    {mobileChatExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMobileChatOpen(false)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              {chatPanel}
-            </div>
-          </>
-        ) : null}
       </div>
     </div>
   );

@@ -26,8 +26,8 @@ export function VideoCard({
   const ctaHref = canAccess
     ? `/live#${item.slug}`
     : item.visibility === "ONE_TIME" && item.price
-      ? `/api/stripe/checkout?mode=payment&liveSessionId=${item.id}`
-      : "/api/stripe/checkout?mode=subscription";
+      ? `/checkout?mode=payment&liveSessionId=${item.id}`
+      : "/live";
 
   return (
     <article className="premium-card overflow-hidden hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
@@ -35,7 +35,7 @@ export function VideoCard({
         <Image src={item.thumbnailUrl} alt={item.title} fill className="object-cover" />
         <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/[0.45] px-3 py-1 text-xs uppercase tracking-[0.3em] text-white">
           {item.isLive ? <Radio className="h-3.5 w-3.5 text-red-500" /> : <Video className="h-3.5 w-3.5 text-accent" />}
-          {item.isLive ? "Live now" : item.visibility === "SUBSCRIBERS" ? "Members" : "Single access"}
+          {item.isLive ? "Live now" : item.visibility === "PUBLIC" ? "Public" : "Single access"}
         </div>
       </div>
       <div className="space-y-5 p-6">
@@ -46,7 +46,7 @@ export function VideoCard({
         </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-white/50">
-            {item.price ? formatCurrency(item.price) : "Included in subscription"}
+            {item.price ? formatCurrency(item.price) : "Pretul se seteaza din admin"}
           </p>
           <Button asChild variant={canAccess ? "primary" : "secondary"}>
             <Link href={ctaHref}>
@@ -56,7 +56,7 @@ export function VideoCard({
                   Unlock
                 </>
               ) : (
-                "Subscribe"
+                "Vezi detalii"
               )}
             </Link>
           </Button>

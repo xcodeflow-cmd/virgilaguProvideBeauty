@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Instagram, MessageCircle, Phone } from "lucide-react";
 
-import { BookingForm } from "@/components/booking-form";
 import { FadeIn } from "@/components/motion-shell";
 import { siteConfig } from "@/lib/data";
 
@@ -48,9 +47,6 @@ export default function ContactPage() {
         </div>
       </FadeIn>
 
-      <div className="mt-8 sm:mt-10" id="booking">
-        <BookingForm />
-      </div>
     </section>
   );
 }

@@ -36,11 +36,7 @@ export async function getPrimaryLiveSession() {
   }
 }
 
-export async function getPastLiveSessions(canAccess: boolean) {
-  if (!canAccess) {
-    return [];
-  }
-
+export async function getPastLiveSessions() {
   try {
     const sessions = await prisma.liveSession.findMany({
       where: {

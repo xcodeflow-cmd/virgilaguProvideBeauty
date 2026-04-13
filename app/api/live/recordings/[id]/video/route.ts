@@ -1,17 +1,16 @@
 import { prisma } from "@/lib/prisma";
-import { requireSubscription } from "@/lib/live-access";
+import { requireLiveSessionAccess } from "@/lib/live-access";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireSubscription();
+  const { id } = await params;
+  const authResult = await requireLiveSessionAccess(id);
 
   if ("error" in authResult) {
     return Response.json({ error: authResult.error }, { status: authResult.status });
   }
-
-  const { id } = await params;
   const recording = await prisma.liveSession.findUnique({
     where: { id },
     select: {

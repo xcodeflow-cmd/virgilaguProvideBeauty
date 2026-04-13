@@ -25,6 +25,7 @@ type AdminLiveSession = {
   description?: string;
   thumbnailUrl: string;
   visibility: string;
+  price: number | null;
   isLive: boolean;
   scheduledFor: string;
   recordingUrl: string;
@@ -115,15 +116,11 @@ export function AdminDashboard({
       <div className="grid gap-6 xl:grid-cols-[19rem_minmax(0,1fr)]">
         <aside className="xl:sticky xl:top-28 xl:self-start">
           <div className="premium-card p-5 sm:p-6">
-            <p className="text-xs uppercase tracking-[0.36em] text-[#d6b98c]">Admin Control</p>
-            <h1 className="mt-4 text-3xl leading-tight text-white sm:text-4xl">
-              Mobil first, clar si rapid pentru operatiuni reale.
-            </h1>
-            <p className="mt-4 text-sm leading-7 text-white/[0.58]">
+            <p className="hidden">
               Navigarea, programarea LIVE si managementul galeriei sunt prioritizate pentru atingere,
               viteză si vizibilitate.
             </p>
-            <nav className="mt-6 grid gap-2.5">
+            <nav className="grid gap-2.5">
               {[
                 { href: "#overview", label: "Overview" },
                 { href: "#live", label: "Live timer" },
@@ -184,7 +181,7 @@ export function AdminDashboard({
                   <h2 className="mt-3 text-2xl text-white sm:text-3xl">Seteaza, editeaza sau reseteaza countdown-ul.</h2>
                 </div>
                 <div className="rounded-full bg-[#d6b98c]/10 px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-[#f0dbba]">
-                  Fara schimbari in logica live
+                  Acces per sesiune
                 </div>
               </div>
 
@@ -207,12 +204,8 @@ export function AdminDashboard({
                   disabled={liveStartMode !== "SCHEDULE"}
                   className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <select name="visibility" defaultValue="SUBSCRIBERS" className="premium-input">
-                  <option value="SUBSCRIBERS">Subscribers</option>
-                  <option value="PUBLIC">Public</option>
-                  <option value="ONE_TIME">One time</option>
-                </select>
-                <input name="price" type="number" placeholder="Pret in bani, ex 1900" className="premium-input" />
+                <input type="hidden" name="visibility" value="ONE_TIME" />
+                <input name="price" type="number" min="1" required placeholder="Pret in euro centi, ex 1900" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
                 </Button>
@@ -260,6 +253,16 @@ export function AdminDashboard({
                         className="premium-input"
                       />
                     </label>
+                    <label className="space-y-2">
+                      <span className="text-sm text-white/60">Pret live</span>
+                      <input
+                        name="price"
+                        type="number"
+                        min="1"
+                        defaultValue={selectedLiveSession.price || ""}
+                        className="premium-input"
+                      />
+                    </label>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button type="submit" name="mode" value="UPDATE" className="min-h-12">
                         Salveaza timerul
@@ -299,6 +302,7 @@ export function AdminDashboard({
                               {session.visibility} • {session.isLive ? "LIVE" : "scheduled"} •{" "}
                               {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
                             </p>
+                            {session.price ? <p className="mt-2 text-sm text-white/[0.42]">{(session.price / 100).toFixed(2)} EUR</p> : null}
                             {session.recordingUrl ? <p className="mt-2 text-xs uppercase tracking-[0.26em] text-white/[0.35]">VOD salvat</p> : null}
                           </div>
                           <div className="flex flex-col gap-2 sm:min-w-[11rem]">

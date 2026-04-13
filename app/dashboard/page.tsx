@@ -20,11 +20,67 @@ async function getDashboardData(userId: string) {
   }
 }
 
+async function getAdminDashboardData() {
+  try {
+    const [users, liveSessions, purchases] = await Promise.all([
+      prisma.user.count(),
+      prisma.liveSession.count(),
+      prisma.purchase.count()
+    ]);
+
+    return { users, liveSessions, purchases };
+  } catch {
+    return { users: 0, liveSessions: 0, purchases: 0 };
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/auth/signin");
+  }
+
+  if (session.user.role === "ADMIN") {
+    const adminData = await getAdminDashboardData();
+
+    return (
+      <section className="section-shell section-space">
+        <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.14),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))] shadow-luxury">
+          <div className="grid gap-0 xl:grid-cols-[1.02fr_0.98fr]">
+            <div className="border-b border-white/10 p-8 sm:p-10 xl:border-b-0 xl:border-r xl:p-14">
+              <p className="text-xs uppercase tracking-[0.42em] text-[#d6b98c]">Dashboard admin</p>
+              <h1 className="mt-6 max-w-4xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
+                Control pentru live-uri, utilizatori si replay-uri.
+              </h1>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Button asChild className="px-7">
+                  <Link href="/admin">Mergi in admin</Link>
+                </Button>
+                <Button asChild variant="secondary" className="px-7">
+                  <Link href="/live">Vezi pagina live</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 p-8 sm:grid-cols-3 sm:p-10 xl:p-14">
+              <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="dashboard-label">Utilizatori</p>
+                <p className="mt-3 text-3xl text-white">{adminData.users}</p>
+              </div>
+              <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="dashboard-label">Live-uri</p>
+                <p className="mt-3 text-3xl text-white">{adminData.liveSessions}</p>
+              </div>
+              <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
+                <p className="dashboard-label">Achizitii</p>
+                <p className="mt-3 text-3xl text-white">{adminData.purchases}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const data = await getDashboardData(session.user.id);

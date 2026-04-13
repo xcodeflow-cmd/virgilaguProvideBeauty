@@ -3,6 +3,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.liveChatMessage.deleteMany();
+  await prisma.liveSignal.deleteMany();
+  await prisma.purchase.deleteMany();
+  await prisma.liveSession.deleteMany();
+  await prisma.galleryItem.deleteMany();
+  await prisma.testimonial.deleteMany();
+
   await prisma.galleryItem.createMany({
     data: [
       {
@@ -37,7 +44,8 @@ async function main() {
         scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
         durationMinutes: 75,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
-        visibility: "SUBSCRIBERS",
+        visibility: "ONE_TIME",
+        price: 10000,
         isFeatured: true
       },
       {
@@ -77,25 +85,25 @@ async function main() {
       id: "main",
       subscriptionPlans: [
         {
-          name: "Abonament Live",
-          price: "de la 19 EUR / luna",
-          description: "Acces la live-uri, replay-uri si sesiuni educative pentru profesionisti.",
+          name: "Live individual",
+          price: "de la 19 EUR / sesiune",
+          description: "Platesti doar sesiunea live sau replay-ul pe care vrei sa il vezi, fara acces global la toate live-urile.",
           features: [
-            "Acces la live stream",
-            "Acces la arhiva de sesiuni",
-            "Intrebari si raspunsuri in timpul sesiunilor",
-            "Continut educational actualizat"
+            "Acces la live-ul ales",
+            "Replay salvat automat dupa sesiune",
+            "Chat activ pentru sesiunea cumparata",
+            "Plata punctuala, fara recurenta"
           ]
         },
         {
-          name: "Sesiune individuala",
-          price: "de la 15 EUR",
-          description: "Deblochezi o sesiune singulara fara abonament recurent.",
+          name: "Cursuri premium",
+          price: "pret fix / curs",
+          description: "Cursurile si trainingurile raman separate de live-uri si se achizitioneaza individual, in functie de programul ales.",
           features: [
-            "Acces one-time",
-            "Ideal pentru sesiuni punctuale",
-            "Plata simpla",
-            "Perfect pentru testarea platformei"
+            "Curs incepatori",
+            "Perfectionare 1 la 1",
+            "Checkout separat pentru fiecare program",
+            "Acces clar, fara pachete amestecate"
           ]
         }
       ],

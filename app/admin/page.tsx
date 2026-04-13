@@ -56,7 +56,7 @@ async function LegacyAdminPageUnused() {
       <SectionHeading
         eyebrow="Admin"
         title="Admin dashboard pentru continut, galerie si live."
-        description="Un singur cont de administrator gestioneaza site-ul: galerie, sesiuni live, abonamente si continutul cursurilor."
+        description="Un singur cont de administrator gestioneaza site-ul: galerie, sesiuni live, achizitii individuale si continutul cursurilor."
       />
 
       <div className="mt-10 grid gap-6 xl:grid-cols-2">
@@ -94,12 +94,8 @@ async function LegacyAdminPageUnused() {
             <input name="title" required placeholder="Titlu live" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <textarea name="description" required placeholder="Descriere" rows={4} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <input name="scheduledFor" type="datetime-local" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
-            <select name="visibility" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none">
-              <option value="SUBSCRIBERS">Subscribers</option>
-              <option value="PUBLIC">Public</option>
-              <option value="ONE_TIME">One time</option>
-            </select>
-            <input name="price" type="number" placeholder="Pret in bani, ex 1900" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
+            <input type="hidden" name="visibility" value="ONE_TIME" />
+            <input name="price" type="number" min="1" required placeholder="Pret in euro centi, ex 1900" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <Button type="submit">Adauga live</Button>
           </form>
           <div className="mt-8 space-y-3">
@@ -220,6 +216,7 @@ export default async function AdminPage() {
         description: item.description,
         thumbnailUrl: item.thumbnailUrl,
         visibility: item.visibility,
+        price: item.price,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),
         recordingUrl: item.recordingUrl || ""

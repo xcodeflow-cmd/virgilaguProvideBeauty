@@ -78,9 +78,14 @@ export async function addLiveSession(formData: FormData) {
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = startMode === "SCHEDULE" && scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date();
+  const price = Number(formData.get("price") || 0);
 
   if (Number.isNaN(scheduledFor.getTime())) {
     throw new Error("Invalid scheduled date.");
+  }
+
+  if (!price || price < 1) {
+    throw new Error("Live price is required.");
   }
 
   await prisma.liveSession.create({
@@ -92,10 +97,10 @@ export async function addLiveSession(formData: FormData) {
       thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
       streamUrl: null,
       recordingUrl: null,
-      visibility: (String(formData.get("visibility") || "SUBSCRIBERS") as SessionVisibility),
+      visibility: SessionVisibility.ONE_TIME,
       isLive: false,
       isFeatured: false,
-      price: formData.get("price") ? Number(formData.get("price")) : null
+      price
     }
   });
 
@@ -128,6 +133,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
+  const price = Number(formData.get("price") || 0);
   if (!id) {
     throw new Error("Missing live session id.");
   }
@@ -146,12 +152,18 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     throw new Error("Invalid scheduled date.");
   }
 
+  if (!price || price < 1) {
+    throw new Error("Live price is required.");
+  }
+
   await prisma.liveSession.update({
     where: { id },
     data: {
       title,
       description,
-      scheduledFor
+      scheduledFor,
+      price,
+      visibility: SessionVisibility.ONE_TIME
     }
   });
 

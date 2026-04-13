@@ -1,23 +1,32 @@
 import { auth } from "@/auth";
 
 import { LivePageContent } from "@/components/site/live-page-content";
-import { hasSubscriptionAccess } from "@/lib/live-access";
+import { canAccessLiveSession, getPurchasedLiveSessionIds } from "@/lib/live-access";
 import { getPastLiveSessions, getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 
 export default async function LivePage() {
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
-  const [hasAccess, liveSession] = await Promise.all([
-    hasSubscriptionAccess(session?.user?.id, session?.user?.role),
-    getPrimaryLiveSession()
+  const liveSession = await getPrimaryLiveSession();
+  const [purchasedLiveIds, currentSessionAccess] = await Promise.all([
+    getPurchasedLiveSessionIds(session?.user?.id, session?.user?.role),
+    liveSession
+      ? canAccessLiveSession({
+          userId: session?.user?.id,
+          role: session?.user?.role,
+          liveSessionId: liveSession.id,
+          visibility: liveSession.visibility
+        })
+      : Promise.resolve(false)
   ]);
-  const pastSessions = await getPastLiveSessions(true);
+  const pastSessions = await getPastLiveSessions();
   const isActive = liveSession ? isLiveSessionActive(liveSession) : false;
 
   return (
     <section className="section-shell py-4 sm:py-8 lg:py-10">
       <LivePageContent
-        canAccess={hasAccess}
+        accessibleLiveIds={purchasedLiveIds}
+        canAccessCurrentSession={isAdmin || currentSessionAccess}
         isAdmin={isAdmin}
         initialSession={liveSession
           ? {
@@ -25,7 +34,9 @@ export default async function LivePage() {
               title: liveSession.title,
               description: liveSession.description,
               scheduledFor: liveSession.scheduledFor.toISOString(),
-              isLive: isActive
+              isLive: isActive,
+              price: liveSession.price,
+              visibility: liveSession.visibility
             }
           : null}
         pastSessions={pastSessions.map((item) => ({
