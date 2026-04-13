@@ -20,10 +20,6 @@ export default function ContactPage() {
             <h1 className="mt-5 max-w-4xl text-4xl leading-[0.9] text-white sm:text-6xl lg:text-7xl">
               Hai direct la conversatia care misca lucrurile.
             </h1>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-white/[0.64] sm:text-lg sm:leading-8">
-              Alege canalul rapid, cere detalii pentru cursuri sau programeaza o discutie privata.
-              Totul este gandit sa ajungi la actiune in cateva secunde.
-            </p>
             <div className="mt-8 inline-flex rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-2 text-[11px] uppercase tracking-[0.34em] text-[#f3dfbf]">
               Raspuns rapid
             </div>

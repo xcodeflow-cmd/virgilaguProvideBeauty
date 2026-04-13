@@ -14,7 +14,7 @@ export function VideoGalleryGrid({
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
-      {items.map((item, index) => (
+      {items.map((item) => (
         <article
           key={item.id}
           className={`overflow-hidden rounded-[2rem] border ${
@@ -26,8 +26,9 @@ export function VideoGalleryGrid({
               src={item.src}
               controls
               playsInline
-              preload={index < 2 ? "metadata" : "none"}
+              preload="metadata"
               className="aspect-[4/5] w-full bg-black object-cover"
+              style={{ backgroundColor: "#000" }}
             />
           </div>
           <div className="space-y-3 p-5 sm:p-6">

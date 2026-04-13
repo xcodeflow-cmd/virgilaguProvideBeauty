@@ -17,7 +17,13 @@ function titleFromFilename(filename: string) {
 }
 
 export async function getOrderedGalleryMedia() {
-  const uploadedItems = await getManagedGalleryItems();
+  const uploadedItems = (await getManagedGalleryItems()).filter((item) => {
+    const isLegacySeed =
+      ["Fast Fade Dublin", "Master Barber Romania", "Fade curat"].includes(item.title) ||
+      item.imageUrl.includes("WhatsApp Image 2026-04-04");
+
+    return !isLegacySeed;
+  });
 
   const assetImages = galleryImageOrder.map((number) => ({
     id: `asset-gallery-${number}`,

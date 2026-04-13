@@ -20,7 +20,7 @@ export function GalleryPageContent({
 
       <div>
         <p className="text-xs uppercase tracking-[0.36em] text-[#d6b98c]">Galerie video</p>
-        <h2 className="mt-4 text-4xl leading-[0.9] text-white sm:text-5xl">Clipurile `videoGalerie` sunt jos, in ordinea ceruta.</h2>
+        <h2 className="mt-4 text-4xl leading-[0.9] text-white sm:text-5xl">Galerie video</h2>
         <div className="mt-8">
           <VideoGalleryGrid items={videos} />
         </div>

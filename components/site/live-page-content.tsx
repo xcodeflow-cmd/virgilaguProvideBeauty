@@ -1529,24 +1529,12 @@ export function LivePageContent({
       )
     : 0;
   const currentSessionLocked = Boolean(currentSession && !canViewCurrentSession && !isAdmin);
-  const diagnostics = [
-    `Rol: ${debug.role}`,
-    `Status stream: ${streamStatus}`,
-    `Ultimul eveniment: ${debug.lastEvent}`,
-    `Conexiune: ${debug.connectionState}`,
-    `Vieweri conectati: ${debug.viewers}`,
-    `Reconnect attempts: ${debug.reconnectAttempts}`,
-    `Remote tracks: ${debug.remoteTracks}`,
-    `Calitate curenta: ${debug.consumerProfile}`
-  ];
-
   const chatPanel = (
     <div className="flex h-full flex-col">
       <div className="border-b border-white/10 px-4 py-4 sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-[#d6b98c]">Live Chat</p>
-            <h3 className="mt-2 text-xl text-white sm:text-2xl">Conversație in timp real</h3>
           </div>
           <div className="rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.45]">
             {messages.length} mesaje
@@ -1654,9 +1642,9 @@ export function LivePageContent({
                   {currentSession?.isLive
                     ? "Video-ul si chatul raman vizibile impreuna, inclusiv pe telefon."
                     : countdownParts
-                      ? "Urmatoarea sesiune este programata. Timerul este actualizat automat si ramane editabil din admin."
+                      ? "Urmatoarea sesiune este programata."
                       : canViewCurrentSession
-                        ? "Nu exista un LIVE activ in acest moment, dar layout-ul ramane pregatit pentru urmatoarea sesiune."
+                        ? "Momentan nu este nici un live activ."
                         : "Live-ul se deblocheaza individual, doar pentru sesiunea pe care o cumperi."}
                 </p>
                 {currentSession?.price ? (
@@ -1804,21 +1792,6 @@ export function LivePageContent({
 
             {error ? <p className="px-4 pb-4 text-sm text-red-300 sm:px-6">{error}</p> : null}
           </div>
-
-          {isAdmin || canViewCurrentSession ? (
-            <details className="premium-card rounded-[1.6rem] p-4 sm:p-5">
-              <summary className="cursor-pointer list-none text-sm uppercase tracking-[0.34em] text-white/[0.55]">
-                Diagnostic LIVE
-              </summary>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {diagnostics.map((item) => (
-                  <div key={item} className="rounded-[1.1rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/[0.68]">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </details>
-          ) : null}
 
           <div className="hidden xl:block">
             <PastLiveList

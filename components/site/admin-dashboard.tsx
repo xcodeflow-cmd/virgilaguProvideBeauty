@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { CalendarDays, ImagePlus, Radio, Trash2, Upload, UserRound } from "lucide-react";
 
@@ -74,11 +74,21 @@ export function AdminDashboard({
 }) {
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
+  const liveEditorRef = useRef<HTMLDivElement | null>(null);
 
   const selectedLiveSession = useMemo(
     () => liveSessions.find((session) => session.id === selectedLiveId) || liveSessions[0] || null,
     [liveSessions, selectedLiveId]
   );
+
+  useEffect(() => {
+    if (!liveSessions.length) {
+      setSelectedLiveId(null);
+      return;
+    }
+
+    setSelectedLiveId((current) => (current && liveSessions.some((session) => session.id === current) ? current : liveSessions[0].id));
+  }, [liveSessions]);
 
   return (
     <section className="section-shell py-8 sm:py-12">
@@ -171,7 +181,7 @@ export function AdminDashboard({
             </div>
 
             <div className="space-y-6">
-              <div className="premium-card p-5 sm:p-6">
+              <div ref={liveEditorRef} className="premium-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="dashboard-label">Countdown editor</p>
@@ -303,7 +313,15 @@ export function AdminDashboard({
                             {session.recordingUrl ? <p className="mt-2 text-xs uppercase tracking-[0.26em] text-white/[0.35]">VOD salvat</p> : null}
                           </div>
                           <div className="flex flex-col gap-2 sm:min-w-[11rem]">
-                            <Button type="button" variant="secondary" className="min-h-11" onClick={() => setSelectedLiveId(session.id)}>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              className="min-h-11"
+                              onClick={() => {
+                                setSelectedLiveId(session.id);
+                                liveEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                              }}
+                            >
                               <CalendarDays className="h-4 w-4" />
                               Editeaza live
                             </Button>
@@ -395,7 +413,7 @@ export function AdminDashboard({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="dashboard-label">Gallery</p>
-                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload global in galerie, sincronizat pentru tot site-ul.</h2>
+                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Upload in galerie.</h2>
               </div>
               <div className="rounded-full bg-white/[0.04] px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/[0.48]">
                 Global sync
