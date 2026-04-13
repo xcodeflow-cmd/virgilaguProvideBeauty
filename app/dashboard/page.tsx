@@ -147,9 +147,6 @@ export default async function DashboardPage() {
         <div className="premium-card p-7 sm:p-8">
           <p className="dashboard-label">Continut</p>
           <h2 className="mt-3 text-4xl text-white">Video, replay, booking.</h2>
-          <p className="mt-5 max-w-xl text-sm leading-7 text-white/[0.58]">
-            Accesul si istoricul tau sunt grupate intr-un shell mai calm si mai usor de parcurs.
-          </p>
         </div>
       </div>
 
