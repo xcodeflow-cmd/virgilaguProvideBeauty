@@ -20,43 +20,55 @@ export function PastLiveList({
   sessions: PastLiveSession[];
 }) {
   return (
-    <div className="premium-card rounded-[2rem] p-6 sm:p-7">
-      <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">Live-uri anterioare</p>
-      <h3 className="mt-3 text-3xl text-white">Replay-uri disponibile</h3>
+    <div className="premium-card rounded-[1.7rem] p-4 sm:rounded-[2rem] sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.35em] text-[#d6b98c]">Live-uri anterioare</p>
+          <h3 className="mt-2 text-2xl text-white sm:text-3xl">Replay-uri disponibile</h3>
+        </div>
+        <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
+          {sessions.length} disponibile
+        </div>
+      </div>
 
-      <div className="mt-8 grid gap-4">
+      <div className="mt-5 grid gap-3 sm:mt-6">
         {sessions.length ? (
           sessions.map((session) => (
-            <div key={session.id} className="rounded-[1.55rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(214,185,140,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-5 shadow-[0_20px_55px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-0.5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xl text-white">{session.title}</p>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">{session.description}</p>
+            <div
+              key={session.id}
+              className="rounded-[1.35rem] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(214,185,140,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-4 shadow-[0_20px_55px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-0.5 sm:rounded-[1.55rem] sm:p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg text-white sm:text-xl">{session.title}</p>
+                  {session.description ? (
+                    <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-white/60 sm:block">{session.description}</p>
+                  ) : null}
                 </div>
-                <div className="rounded-full bg-[#d6b98c]/[0.08] px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
+                <div className="rounded-full bg-[#d6b98c]/[0.08] px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
                   {session.price ? `${(session.price / 100).toFixed(0)} EUR` : "Abonament"}
                 </div>
               </div>
-              <p className="mt-3 text-xs uppercase tracking-[0.25em] text-white/40">
+              <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/40">
                 {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
               </p>
-              <div className="mt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 {canAccess ? (
-                  <Button asChild>
+                  <Button asChild className="min-h-11">
                     <Link href={session.recordingUrl} target="_blank" rel="noreferrer">
                       Vezi replay
                     </Link>
                   </Button>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <>
                     {session.visibility === "ONE_TIME" && session.price ? (
-                      <Button asChild>
+                      <Button asChild className="min-h-11">
                         <Link href={`/api/stripe/checkout?mode=payment&liveSessionId=${session.id}`}>
                           Deblocheaza replay
                         </Link>
                       </Button>
                     ) : (
-                      <Button asChild>
+                      <Button asChild className="min-h-11">
                         <Link href="/api/stripe/checkout?mode=subscription">
                           Activeaza accesul
                         </Link>
@@ -67,13 +79,13 @@ export function PastLiveList({
                         ? `Deblocare la ${(session.price / 100).toFixed(0)} EUR.`
                         : "Replay-ul intra prin abonament activ."}
                     </p>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
           ))
         ) : (
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-8 text-sm text-white/[0.55]">
+          <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.03] px-5 py-7 text-sm text-white/[0.55]">
             Niciun replay disponibil momentan.
           </div>
         )}

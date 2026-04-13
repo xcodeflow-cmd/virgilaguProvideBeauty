@@ -1576,7 +1576,7 @@ export function LivePageContent({
                 }}
                 maxLength={500}
                 placeholder="Scrie un mesaj"
-                className="premium-input flex-1"
+                className="premium-input h-12 flex-1"
               />
               <Button type="button" className="min-h-12 shrink-0" onClick={() => void sendMessage()}>
                 Trimite
@@ -1593,10 +1593,10 @@ export function LivePageContent({
   );
 
   return (
-    <div className="space-y-6 pb-24 xl:pb-0">
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.52fr)_24rem]">
+    <div className="space-y-4 pb-24 sm:space-y-6 xl:pb-0">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.68fr)_22rem] xl:items-start">
         <div className="space-y-5">
-          <div className="panel-edge overflow-hidden rounded-[2rem] sm:rounded-[2.4rem]">
+          <div className="panel-edge overflow-hidden rounded-[1.65rem] sm:rounded-[2.2rem]">
             <div className="grid gap-4 px-4 py-4 sm:px-6 sm:py-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
@@ -1610,10 +1610,10 @@ export function LivePageContent({
                     </div>
                   ) : null}
                 </div>
-                <h2 className="mt-4 max-w-4xl text-3xl leading-tight text-white sm:text-4xl lg:text-5xl">
+                <h2 className="mt-3 max-w-4xl text-[2rem] leading-[0.94] text-white sm:text-4xl lg:text-[4.2rem]">
                   {currentSession?.title || "LIVE Barber Experience"}
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/[0.58] sm:text-base">
+                <p className="mt-2 max-w-xl text-sm leading-6 text-white/[0.58] sm:text-base sm:leading-7">
                   {currentSession?.isLive
                     ? "Video-ul ramane in prim-plan, iar chatul se deschide doar cand ai nevoie de el."
                     : countdownParts
@@ -1643,14 +1643,14 @@ export function LivePageContent({
             </div>
 
             {countdownParts ? (
-              <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:grid-cols-4 sm:px-6">
+              <div className="grid gap-2 border-t border-white/10 px-4 py-4 sm:grid-cols-4 sm:gap-3 sm:px-6">
                 {countdownParts.map((item) => (
                   <div
                     key={item.label}
                     className="countdown-tile"
                     style={{ animation: "countdownPulse 2.8s ease-in-out infinite" }}
                   >
-                    <div className="text-[2rem] leading-none text-white sm:text-[2.4rem]">{item.value}</div>
+                    <div className="text-[1.85rem] leading-none text-white sm:text-[2.4rem]">{item.value}</div>
                     <div className="mt-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.42]">{item.label}</div>
                   </div>
                 ))}
@@ -1659,12 +1659,13 @@ export function LivePageContent({
 
             <div ref={videoStageRef} className="relative bg-black">
               <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
-                <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video min-h-[15rem] w-full bg-black object-cover sm:min-h-[20rem]" />
+                <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
               ) : currentSession?.isLive ? (
-                <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video min-h-[15rem] w-full bg-black object-cover sm:min-h-[20rem]" />
+                <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
               ) : (
-                <div className="flex aspect-video min-h-[15rem] items-center justify-center bg-black px-6 text-center text-white/60 sm:min-h-[20rem]">
+                <div className="flex aspect-video min-h-[13rem] items-center justify-center bg-black px-6 text-center text-white/60 sm:min-h-[18rem] xl:min-h-[20rem]">
                   {canViewLive ? "Niciun LIVE activ momentan" : "Ai nevoie de abonament activ pentru a accesa LIVE-ul"}
                 </div>
               )}
@@ -1681,7 +1682,7 @@ export function LivePageContent({
                     className="inline-flex items-center gap-2 rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md xl:hidden"
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
-                    {mobileChatOpen ? "Ascunde chat" : "Deschide chat"}
+                    {mobileChatOpen ? "Ascunde chat" : "Chat"}
                   </button>
                 ) : null}
               </div>
@@ -1708,9 +1709,9 @@ export function LivePageContent({
               ) : null}
             </div>
 
-            <div className="grid gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
               <div className="space-y-2">
-                <p className="text-sm leading-7 text-white/[0.58]">
+                <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">
                   {currentSession?.isLive
                     ? "Broadcasterul publica o singura data catre server, iar spectatorii primesc fluxul prin distributie centralizata."
                     : countdownParts
@@ -1718,7 +1719,7 @@ export function LivePageContent({
                       : "Cand adminul programeaza o sesiune, countdown-ul apare automat in aceasta zona."}
                 </p>
                 {currentSession?.description ? (
-                  <p className="text-sm leading-7 text-white/[0.44]">{currentSession.description}</p>
+                  <p className="hidden text-sm leading-7 text-white/[0.44] sm:block">{currentSession.description}</p>
                 ) : null}
               </div>
               {!canViewLive && !isAdmin ? (
@@ -1762,8 +1763,8 @@ export function LivePageContent({
           </div>
         </div>
 
-        <div className="hidden xl:block">
-          <div className="panel-edge flex min-h-[42rem] flex-col overflow-hidden rounded-[2rem]">
+        <div className="hidden xl:block xl:sticky xl:top-24">
+          <div className="panel-edge flex min-h-[38rem] flex-col overflow-hidden rounded-[2rem]">
             {chatPanel}
           </div>
         </div>
@@ -1784,43 +1785,70 @@ export function LivePageContent({
         />
       </div>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-3 xl:hidden">
+      <div className="pointer-events-none fixed inset-0 z-40 xl:hidden">
         {canViewLive && currentSession?.isLive ? (
-          <div
-            className={cn(
-              "pointer-events-auto mx-auto max-w-2xl overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#090909]/95 shadow-[0_28px_80px_rgba(0,0,0,0.36)] backdrop-blur-xl transition-all duration-300",
-              mobileChatOpen ? "translate-y-0" : "translate-y-[calc(100%-4.5rem)]",
-              mobileChatExpanded ? "h-[min(78dvh,44rem)]" : "h-[24rem]"
-            )}
-          >
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-              <button
-                type="button"
-                onClick={() => setMobileChatOpen((value) => !value)}
-                className="inline-flex items-center gap-2 text-sm text-white"
-              >
-                <MessageSquare className="h-4 w-4 text-[#ecd4ac]" />
-                {mobileChatOpen ? "Chat LIVE" : "Deschide chatul"}
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMobileChatExpanded((value) => !value)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
-                >
-                  {mobileChatExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setMobileChatOpen(true)}
+              className={cn(
+                "pointer-events-auto absolute bottom-4 right-4 inline-flex h-14 items-center gap-3 rounded-full border border-[#d6b98c]/25 bg-[#111111]/92 px-4 text-sm text-white shadow-[0_18px_50px_rgba(0,0,0,0.4)] backdrop-blur-xl transition-all duration-300",
+                mobileChatOpen ? "pointer-events-none translate-y-4 opacity-0" : "translate-y-0 opacity-100"
+              )}
+            >
+              <MessageSquare className="h-4 w-4 text-[#ecd4ac]" />
+              Chat
+              <span className="rounded-full bg-white/[0.06] px-2 py-1 text-[11px] uppercase tracking-[0.2em] text-white/55">
+                {messages.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Inchide chatul"
+              onClick={() => setMobileChatOpen(false)}
+              className={cn(
+                "absolute inset-0 bg-black/55 backdrop-blur-[2px] transition duration-300",
+                mobileChatOpen ? "pointer-events-auto opacity-100" : "opacity-0"
+              )}
+            />
+
+            <div
+              className={cn(
+                "absolute inset-x-3 bottom-3 overflow-hidden rounded-[1.8rem] border border-white/10 bg-[#090909]/95 shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl transition-all duration-300",
+                mobileChatOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-[calc(100%+1.5rem)] opacity-0",
+                mobileChatExpanded ? "h-[min(84dvh,46rem)]" : "h-[min(72dvh,34rem)]"
+              )}
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <button
                   type="button"
                   onClick={() => setMobileChatOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
+                  className="inline-flex items-center gap-2 text-sm text-white"
                 >
-                  <X className="h-4 w-4" />
+                  <MessageSquare className="h-4 w-4 text-[#ecd4ac]" />
+                  Chat LIVE
                 </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMobileChatExpanded((value) => !value)}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
+                  >
+                    {mobileChatExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileChatOpen(false)}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.05] text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
+              {chatPanel}
             </div>
-            {chatPanel}
-          </div>
+          </>
         ) : null}
       </div>
     </div>
