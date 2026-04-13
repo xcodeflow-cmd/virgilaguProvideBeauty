@@ -134,6 +134,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const price = Number(formData.get("price") || 0);
+  const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);
   if (!id) {
     throw new Error("Missing live session id.");
   }
@@ -163,7 +164,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
       description,
       scheduledFor,
       price,
-      visibility: SessionVisibility.ONE_TIME
+      visibility: visibilityValue as SessionVisibility
     }
   });
 

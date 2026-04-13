@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
 import { defaultGalleryImages, getDefaultContentState } from "@/lib/cleaning-content";
 import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
+import { formatCurrency } from "@/lib/utils";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -263,6 +264,17 @@ export function AdminDashboard({
                         className="premium-input"
                       />
                     </label>
+                    <label className="space-y-2">
+                      <span className="text-sm text-white/60">Tip acces</span>
+                      <select
+                        name="visibility"
+                        defaultValue={selectedLiveSession.visibility}
+                        className="premium-input"
+                      >
+                        <option value="ONE_TIME">One time</option>
+                        <option value="PUBLIC">Public</option>
+                      </select>
+                    </label>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button type="submit" name="mode" value="UPDATE" className="min-h-12">
                         Salveaza timerul
@@ -302,7 +314,7 @@ export function AdminDashboard({
                               {session.visibility} • {session.isLive ? "LIVE" : "scheduled"} •{" "}
                               {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
                             </p>
-                            {session.price ? <p className="mt-2 text-sm text-white/[0.42]">{(session.price / 100).toFixed(2)} EUR</p> : null}
+                            {session.price ? <p className="mt-2 text-sm text-white/[0.42]">{formatCurrency(session.price, "RON")}</p> : null}
                             {session.recordingUrl ? <p className="mt-2 text-xs uppercase tracking-[0.26em] text-white/[0.35]">VOD salvat</p> : null}
                           </div>
                           <div className="flex flex-col gap-2 sm:min-w-[11rem]">

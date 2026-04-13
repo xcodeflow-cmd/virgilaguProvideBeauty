@@ -6,10 +6,21 @@ import { prisma } from "@/lib/prisma";
 
 const subscriptionPriceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID || "price_subscription_placeholder";
 
+function getBaseUrl(request: Request) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  const url = new URL(request.url);
+  return `${url.protocol}//${url.host}`;
+}
+
 export async function GET(request: Request) {
   const session = await auth();
 
-  if (!session?.user?.email) {
+  if (!session?.user?.email || !session.user.id) {
     return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 
@@ -25,6 +36,7 @@ export async function GET(request: Request) {
 
   try {
     const stripe = getStripe();
+    const baseUrl = getBaseUrl(request);
     const liveSession = mode === "payment" && liveSessionId
       ? await prisma.liveSession.findUnique({
           where: { id: liveSessionId },
@@ -83,8 +95,8 @@ export async function GET(request: Request) {
         courseId: courseOffer?.id || ""
       },
       line_items: lineItems,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}${courseOffer ? "/courses" : "/live"}?checkout=cancelled`,
+      success_url: `${baseUrl}/dashboard?checkout=success`,
+      cancel_url: `${baseUrl}${courseOffer ? "/courses" : "/live"}?checkout=cancelled`,
       subscription_data: mode === "subscription"
         ? {
             metadata: {
@@ -97,6 +109,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(checkout.url || new URL("/dashboard", request.url));
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Stripe checkout could not be created." }, { status: 500 });
+    return NextResponse.json({
+      error: error instanceof Error ? `Stripe checkout could not be created: ${error.message}` : "Stripe checkout could not be created."
+    }, { status: 500 });
   }
 }
