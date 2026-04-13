@@ -25,10 +25,6 @@ export default function ReviewsPage() {
       <div className="mx-auto mt-16 max-w-[92rem] space-y-10">
         <div className="overflow-hidden rounded-[2.6rem] border border-[#f0b35b]/18 bg-[radial-gradient(circle_at_top_left,rgba(240,179,91,0.16),transparent_26%),linear-gradient(180deg,#120d06,#070707)] p-7 shadow-[0_36px_120px_rgba(0,0,0,0.34)] sm:p-10">
           <div className="grid gap-8">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.38em] text-[#f0b35b]">Ordine fixa</p>
-              <h2 className="mt-4 text-4xl leading-[0.9] text-white sm:text-5xl">1, 2, 4, 3, 5, apoi feedback.</h2>
-            </div>
             <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr_0.92fr]">
               {visibleReviews.map((review) => (
                 <div
@@ -70,7 +66,7 @@ export default function ReviewsPage() {
           </div>
         </div>
 
-        <VideoGalleryGrid items={videos} accent="feedback" />
+        <VideoGalleryGrid items={videos} accent="feedback" hideMeta />
       </div>
     </section>
   );

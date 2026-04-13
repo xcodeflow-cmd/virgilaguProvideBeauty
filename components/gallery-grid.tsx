@@ -52,11 +52,6 @@ export function GalleryGrid({
                     className="object-cover transition duration-700 group-hover:scale-[1.05]"
                   />
                 </div>
-                <div className="space-y-3 p-6">
-                  <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{item.category}</p>
-                  <h3 className="text-2xl leading-tight text-white sm:text-[2rem]">{item.title}</h3>
-                  {item.subtitle ? <p className="text-sm text-white/65">{item.subtitle}</p> : null}
-                </div>
               </button>
             </Dialog.Trigger>
             <Dialog.Portal>
