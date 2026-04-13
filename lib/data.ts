@@ -55,7 +55,7 @@ export const services = [
 export const subscriptionPlans = [
   {
     name: "Live individual",
-    price: "de la 19 EUR / sesiune",
+    price: "50 RON / sesiune",
     description: "Platesti doar sesiunea live sau replay-ul pe care vrei sa il vezi, fara acces global la toate live-urile.",
     features: [
       "Acces la live-ul ales",
@@ -218,20 +218,20 @@ export const liveSessions = [
     id: "live-1",
     title: "LIVE Barber Experience",
     description: "Tuns live cu explicatii, eficienta de lucru si corectii de executie in timp real.",
-    scheduledFor: new Date("2026-04-20T18:00:00+03:00"),
+    scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 2),
     isLive: true,
     visibility: "ONE_TIME",
-    price: 10000,
+    price: 5000,
     slug: "live-barber-experience"
   },
   {
     id: "live-2",
-    title: "Fade Breakdown Session",
-    description: "Structura unui fade curat, adaptare pe cap si ritm de lucru pentru salon.",
-    scheduledFor: new Date("2026-04-27T18:00:00+03:00"),
+    title: "Replay Test",
+    description: "Replay salvat automat pentru verificarea fluxului de achizitie individuala.",
+    scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24),
     isLive: false,
     visibility: "ONE_TIME",
-    price: 1900,
-    slug: "fade-breakdown-session"
+    price: 5000,
+    slug: "replay-test"
   }
 ];

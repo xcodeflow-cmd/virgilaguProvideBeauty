@@ -59,7 +59,7 @@ export default async function CheckoutPage({
     <CheckoutConfirmation
       title={liveSession.title}
       description={liveSession.description}
-      priceLabel={formatCurrency(liveSession.price)}
+      priceLabel={formatCurrency(liveSession.price, "RON")}
       checkoutPath={`/api/stripe/checkout?mode=payment&liveSessionId=${liveSession.id}`}
     />
   );

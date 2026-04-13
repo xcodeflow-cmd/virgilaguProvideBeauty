@@ -1735,7 +1735,7 @@ export function LivePageContent({
               {!canViewCurrentSession && !isAdmin && currentSession?.price ? (
                 <Button asChild className="min-h-11">
                   <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
-                    Cumpara live-ul {formatCurrency(currentSession.price)}
+                    Cumpara live-ul {formatCurrency(currentSession.price, "RON")}
                   </a>
                 </Button>
               ) : null}

@@ -104,7 +104,7 @@ async function recordOneTimePurchase(session: Stripe.Checkout.Session) {
       liveSessionId,
       type: "ONE_TIME",
       amount: session.amount_total || 0,
-      currency: session.currency || "eur"
+      currency: session.currency || "ron"
     },
     create: {
       userId,
@@ -112,7 +112,7 @@ async function recordOneTimePurchase(session: Stripe.Checkout.Session) {
       stripePaymentId: paymentIntentId,
       type: "ONE_TIME",
       amount: session.amount_total || 0,
-      currency: session.currency || "eur"
+      currency: session.currency || "ron"
     }
   });
 }

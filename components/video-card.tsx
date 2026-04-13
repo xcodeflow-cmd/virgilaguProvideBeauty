@@ -46,7 +46,7 @@ export function VideoCard({
         </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-white/50">
-            {item.price ? formatCurrency(item.price) : "Pretul se seteaza din admin"}
+            {item.price ? formatCurrency(item.price, "RON") : "Pretul se seteaza din admin"}
           </p>
           <Button asChild variant={canAccess ? "primary" : "secondary"}>
             <Link href={ctaHref}>

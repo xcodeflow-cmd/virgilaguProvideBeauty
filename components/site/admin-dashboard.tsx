@@ -205,7 +205,7 @@ export function AdminDashboard({
                   className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <input type="hidden" name="visibility" value="ONE_TIME" />
-                <input name="price" type="number" min="1" required placeholder="Pret in euro centi, ex 1900" className="premium-input" />
+                <input name="price" type="number" min="1" required placeholder="Pret in bani, ex 5000" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
                 </Button>

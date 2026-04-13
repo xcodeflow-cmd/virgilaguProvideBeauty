@@ -62,7 +62,7 @@ export async function GET(request: Request) {
         : [
             {
               price_data: {
-                currency: "eur",
+                currency: "ron",
                 product_data: {
                   name: liveSession?.title || "Single live session access",
                   description: liveSession?.description

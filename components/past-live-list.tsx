@@ -52,7 +52,7 @@ export function PastLiveList({
                   ) : null}
                 </div>
                 <div className="rounded-full bg-[#d6b98c]/[0.08] px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
-                  {session.price ? formatCurrency(session.price) : "Fara pret"}
+                  {session.price ? formatCurrency(session.price, "RON") : "Fara pret"}
                 </div>
               </div>
               <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/40">
@@ -80,7 +80,7 @@ export function PastLiveList({
                     )}
                     <p className="text-sm text-white/50">
                       {session.visibility === "ONE_TIME" && session.price
-                        ? `Deblocare la ${formatCurrency(session.price)}.`
+                        ? `Deblocare la ${formatCurrency(session.price, "RON")}.`
                         : "Pretul live-ului se seteaza din admin."}
                     </p>
                   </>

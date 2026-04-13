@@ -41,22 +41,22 @@ async function main() {
         title: "LIVE Barber Experience",
         slug: "live-barber-experience",
         description: "Sesiune live cu explicatii clare, ritm de lucru si eficienta in salon.",
-        scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+        scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 2),
         durationMinutes: 75,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
         visibility: "ONE_TIME",
-        price: 10000,
+        price: 5000,
         isFeatured: true
       },
       {
-        title: "Fade Breakdown Session",
-        slug: "fade-breakdown-session",
-        description: "Structura unui fade curat si adaptarea executiei la tipologia clientului.",
-        scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+        title: "Replay Test",
+        slug: "replay-test",
+        description: "Replay salvat automat pentru verificarea fluxului de achizitie individuala.",
+        scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24),
         durationMinutes: 60,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg",
         visibility: "ONE_TIME",
-        price: 1900
+        price: 5000
       }
     ],
     skipDuplicates: true
@@ -86,7 +86,7 @@ async function main() {
       subscriptionPlans: [
         {
           name: "Live individual",
-          price: "de la 19 EUR / sesiune",
+          price: "50 RON / sesiune",
           description: "Platesti doar sesiunea live sau replay-ul pe care vrei sa il vezi, fara acces global la toate live-urile.",
           features: [
             "Acces la live-ul ales",
