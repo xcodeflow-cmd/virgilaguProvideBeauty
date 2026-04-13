@@ -36,6 +36,7 @@ export default async function LivePage() {
               scheduledFor: liveSession.scheduledFor.toISOString(),
               isLive: isActive,
               price: liveSession.price,
+              compareAtPrice: liveSession.compareAtPrice,
               visibility: liveSession.visibility
             }
           : null}
@@ -46,6 +47,7 @@ export default async function LivePage() {
           scheduledFor: item.scheduledFor.toISOString(),
           recordingUrl: item.recordingUrl || "",
           price: item.price,
+          compareAtPrice: item.compareAtPrice,
           visibility: item.visibility
         }))}
       />

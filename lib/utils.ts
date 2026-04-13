@@ -12,6 +12,14 @@ export function formatCurrency(amount: number, currency = "EUR") {
   }).format(amount / 100);
 }
 
+export function formatLei(amount: number) {
+  return new Intl.NumberFormat("ro-RO", {
+    style: "currency",
+    currency: "RON",
+    maximumFractionDigits: 0
+  }).format(amount);
+}
+
 export function formatDate(value: Date | string) {
   return new Intl.DateTimeFormat("ro-RO", {
     dateStyle: "medium",

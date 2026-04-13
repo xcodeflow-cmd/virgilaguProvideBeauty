@@ -100,7 +100,8 @@ export async function addLiveSession(formData: FormData) {
       visibility: SessionVisibility.ONE_TIME,
       isLive: false,
       isFeatured: false,
-      price
+      price,
+      compareAtPrice: null
     }
   });
 
@@ -157,6 +158,28 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     throw new Error("Live price is required.");
   }
 
+  if (!Object.values(SessionVisibility).includes(visibilityValue as SessionVisibility)) {
+    throw new Error("Invalid live visibility.");
+  }
+
+  const existingSession = await prisma.liveSession.findUnique({
+    where: { id },
+    select: {
+      price: true,
+      compareAtPrice: true
+    }
+  });
+
+  if (!existingSession) {
+    throw new Error("Live session not found.");
+  }
+
+  const previousReferencePrice = Math.max(
+    existingSession.price || 0,
+    existingSession.compareAtPrice || 0
+  );
+  const compareAtPrice = previousReferencePrice > price ? previousReferencePrice : null;
+
   await prisma.liveSession.update({
     where: { id },
     data: {
@@ -164,6 +187,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
       description,
       scheduledFor,
       price,
+      compareAtPrice,
       visibility: visibilityValue as SessionVisibility
     }
   });

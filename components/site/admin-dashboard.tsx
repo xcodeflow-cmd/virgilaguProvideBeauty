@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
 import { defaultGalleryImages, getDefaultContentState } from "@/lib/cleaning-content";
 import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
-import { formatCurrency } from "@/lib/utils";
+import { formatLei } from "@/lib/utils";
 
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -27,6 +27,7 @@ type AdminLiveSession = {
   thumbnailUrl: string;
   visibility: string;
   price: number | null;
+  compareAtPrice: number | null;
   isLive: boolean;
   scheduledFor: string;
   recordingUrl: string;
@@ -206,7 +207,7 @@ export function AdminDashboard({
                   className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <input type="hidden" name="visibility" value="ONE_TIME" />
-                <input name="price" type="number" min="1" required placeholder="Pret in bani, ex 5000" className="premium-input" />
+                <input name="price" type="number" min="1" step="1" required placeholder="Pret in lei, ex 50" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
                 </Button>
@@ -260,10 +261,20 @@ export function AdminDashboard({
                         name="price"
                         type="number"
                         min="1"
+                        step="1"
                         defaultValue={selectedLiveSession.price || ""}
                         className="premium-input"
                       />
+                      <p className="text-xs leading-5 text-white/45">
+                        Valoarea se salveaza direct in lei. Exemplu: 50 = 50 RON. Daca salvezi un pret mai mic decat cel anterior,
+                        site-ul afiseaza automat reducerea cu pretul vechi taiat.
+                      </p>
                     </label>
+                    {selectedLiveSession.compareAtPrice && selectedLiveSession.price && selectedLiveSession.compareAtPrice > selectedLiveSession.price ? (
+                      <div className="rounded-[1.35rem] border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-4 text-sm text-[#f3dfbf]">
+                        Reducere activa: {formatLei(selectedLiveSession.compareAtPrice || 0)} -> {formatLei(selectedLiveSession.price || 0)}
+                      </div>
+                    ) : null}
                     <label className="space-y-2">
                       <span className="text-sm text-white/60">Tip acces</span>
                       <select
@@ -299,7 +310,13 @@ export function AdminDashboard({
                 </div>
                 <div className="mt-6 grid gap-3">
                   {liveSessions.length ? (
-                    liveSessions.map((session) => (
+                    liveSessions.map((session) => {
+                      const hasDiscount = Boolean(session.compareAtPrice && session.price && session.compareAtPrice > session.price);
+                      const discountPercent = hasDiscount
+                        ? Math.round((((session.compareAtPrice || 0) - (session.price || 0)) / (session.compareAtPrice || 1)) * 100)
+                        : 0;
+
+                      return (
                       <div
                         key={session.id}
                         className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4"
@@ -311,16 +328,28 @@ export function AdminDashboard({
                           <div className="min-w-0">
                             <p className="text-base text-white">{session.title}</p>
                             <p className="mt-2 text-sm leading-6 text-white/[0.52]">
-                              {session.visibility} • {session.isLive ? "LIVE" : "scheduled"} •{" "}
+                              {session.visibility} • {session.isLive ? "LIVE" : "programat"} •{" "}
                               {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
                             </p>
-                            {session.price ? <p className="mt-2 text-sm text-white/[0.42]">{formatCurrency(session.price, "RON")}</p> : null}
+                            {session.price ? (
+                              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                                {hasDiscount ? (
+                                  <span className="text-white/35 line-through">{formatLei(session.compareAtPrice || 0)}</span>
+                                ) : null}
+                                <span className="text-white/[0.58]">{formatLei(session.price)}</span>
+                                {hasDiscount ? (
+                                  <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
+                                    -{discountPercent}%
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : null}
                             {session.recordingUrl ? <p className="mt-2 text-xs uppercase tracking-[0.26em] text-white/[0.35]">VOD salvat</p> : null}
                           </div>
                           <div className="flex flex-col gap-2 sm:min-w-[11rem]">
                             <Button type="button" variant="secondary" className="min-h-11" onClick={() => setSelectedLiveId(session.id)}>
                               <CalendarDays className="h-4 w-4" />
-                              Editeaza timer
+                              Editeaza live
                             </Button>
                             <form action={deleteLiveSession}>
                               <input type="hidden" name="id" value={session.id} />
@@ -332,7 +361,8 @@ export function AdminDashboard({
                           </div>
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] px-4 py-5 text-sm text-white/[0.55]">
                       Nu exista sesiuni live.

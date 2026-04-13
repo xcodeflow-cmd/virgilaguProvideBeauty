@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { StaticImageData } from "next/image";
 import { Lock, Radio, Video } from "lucide-react";
 
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate, formatLei } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 export function VideoCard({
@@ -46,7 +46,7 @@ export function VideoCard({
         </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-white/50">
-            {item.price ? formatCurrency(item.price, "RON") : "Pretul se seteaza din admin"}
+            {item.price ? formatLei(item.price) : "Pretul se seteaza din admin"}
           </p>
           <Button asChild variant={canAccess ? "primary" : "secondary"}>
             <Link href={ctaHref}>

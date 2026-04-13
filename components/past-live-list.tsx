@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatLei } from "@/lib/utils";
 
 type PastLiveSession = {
   id: string;
@@ -10,6 +10,7 @@ type PastLiveSession = {
   scheduledFor: string;
   recordingUrl: string;
   price?: number | null;
+  compareAtPrice?: number | null;
   visibility?: string;
 };
 
@@ -38,6 +39,10 @@ export function PastLiveList({
         {sessions.length ? (
           sessions.map((session) => {
             const hasAccess = isAdmin || accessibleLiveIds.includes(session.id);
+            const hasDiscount = Boolean(session.compareAtPrice && session.price && session.compareAtPrice > session.price);
+            const discountPercent = hasDiscount
+              ? Math.round((((session.compareAtPrice || 0) - (session.price || 0)) / (session.compareAtPrice || 1)) * 100)
+              : 0;
 
             return (
               <div
@@ -52,9 +57,18 @@ export function PastLiveList({
                   ) : null}
                 </div>
                 <div className="rounded-full bg-[#d6b98c]/[0.08] px-3 py-2 text-[10px] uppercase tracking-[0.3em] text-[#f1dec0]">
-                  {session.price ? formatCurrency(session.price, "RON") : "Fara pret"}
+                  {hasDiscount ? `Reducere ${discountPercent}%` : session.price ? formatLei(session.price) : "Fara pret"}
                 </div>
               </div>
+              {hasDiscount ? (
+                <div className="mt-3 flex items-center gap-2 text-sm">
+                  <span className="text-white/35 line-through">{formatLei(session.compareAtPrice || 0)}</span>
+                  <span className="text-white">{formatLei(session.price || 0)}</span>
+                  <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
+                    Reducere
+                  </span>
+                </div>
+              ) : null}
               <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/40">
                 {new Date(session.scheduledFor).toLocaleString("ro-RO", { timeZone: "Europe/Bucharest" })}
               </p>
@@ -80,7 +94,7 @@ export function PastLiveList({
                     )}
                     <p className="text-sm text-white/50">
                       {session.visibility === "ONE_TIME" && session.price
-                        ? `Deblocare la ${formatCurrency(session.price, "RON")}.`
+                        ? `Deblocare la ${formatLei(session.price)}.`
                         : "Pretul live-ului se seteaza din admin."}
                     </p>
                   </>

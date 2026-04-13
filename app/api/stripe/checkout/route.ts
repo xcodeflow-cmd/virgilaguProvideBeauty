@@ -79,7 +79,7 @@ export async function GET(request: Request) {
                   name: liveSession?.title || "Single live session access",
                   description: liveSession?.description
                 },
-                unit_amount: liveSession?.price || undefined
+                unit_amount: liveSession?.price ? liveSession.price * 100 : undefined
               },
               quantity: 1
             }

@@ -50,6 +50,7 @@ export async function getPastLiveSessions() {
         scheduledFor: true,
         recordingUrl: true,
         price: true,
+        compareAtPrice: true,
         visibility: true,
         isLive: true,
         createdAt: true,

@@ -221,7 +221,7 @@ export const liveSessions = [
     scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 2),
     isLive: true,
     visibility: "ONE_TIME",
-    price: 5000,
+    price: 50,
     slug: "live-barber-experience"
   },
   {
@@ -231,7 +231,7 @@ export const liveSessions = [
     scheduledFor: new Date(Date.now() - 1000 * 60 * 60 * 24),
     isLive: false,
     visibility: "ONE_TIME",
-    price: 5000,
+    price: 50,
     slug: "replay-test"
   }
 ];

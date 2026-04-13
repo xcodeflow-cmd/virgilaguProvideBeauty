@@ -5,7 +5,7 @@ import { Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatLei } from "@/lib/utils";
 import type {
   LiveBootstrapResponse,
   LiveConsumerProfile,
@@ -24,6 +24,7 @@ type LiveSessionSummary = {
   scheduledFor: string;
   isLive: boolean;
   price?: number | null;
+  compareAtPrice?: number | null;
   visibility?: string;
 };
 
@@ -34,6 +35,7 @@ type PastLiveSession = {
   scheduledFor: string;
   recordingUrl: string;
   price?: number | null;
+  compareAtPrice?: number | null;
   visibility?: string;
 };
 
@@ -51,6 +53,7 @@ type LiveRecording = {
   createdAt: string;
   videoUrl: string;
   price?: number | null;
+  compareAtPrice?: number | null;
   visibility?: string;
 };
 
@@ -194,6 +197,7 @@ function areRecordingsEqual(current: LiveRecording[], next: LiveRecording[]) {
       recording.createdAt === next[index]?.createdAt &&
       recording.videoUrl === next[index]?.videoUrl &&
       recording.price === next[index]?.price &&
+      recording.compareAtPrice === next[index]?.compareAtPrice &&
       recording.visibility === next[index]?.visibility
   );
 }
@@ -248,6 +252,7 @@ export function LivePageContent({
       createdAt: item.scheduledFor,
       videoUrl: item.recordingUrl,
       price: item.price,
+      compareAtPrice: item.compareAtPrice,
       visibility: item.visibility
     }))
   );
@@ -1123,6 +1128,7 @@ export function LivePageContent({
           description: string;
           scheduledFor: string;
           price?: number | null;
+          compareAtPrice?: number | null;
           visibility?: string;
         } | null;
       }>("/api/live/current");
@@ -1145,6 +1151,7 @@ export function LivePageContent({
           current.scheduledFor === live.scheduledFor &&
           current.isLive &&
           current.price === live.price &&
+          current.compareAtPrice === live.compareAtPrice &&
           current.visibility === live.visibility
         ) {
           return current;
@@ -1157,6 +1164,7 @@ export function LivePageContent({
           scheduledFor: live.scheduledFor,
           isLive: true,
           price: live.price,
+          compareAtPrice: live.compareAtPrice,
           visibility: live.visibility
         };
       });
@@ -1510,6 +1518,16 @@ export function LivePageContent({
           ? "Connecting"
           : "Offline";
   const canUseChat = canViewCurrentSession && Boolean(currentSession?.isLive);
+  const currentSessionHasDiscount = Boolean(
+    currentSession?.compareAtPrice &&
+    currentSession?.price &&
+    currentSession.compareAtPrice > currentSession.price
+  );
+  const currentSessionDiscountPercent = currentSessionHasDiscount
+    ? Math.round(
+        (((currentSession?.compareAtPrice || 0) - (currentSession?.price || 0)) / (currentSession?.compareAtPrice || 1)) * 100
+      )
+    : 0;
   const diagnostics = [
     `Rol: ${debug.role}`,
     `Status stream: ${streamStatus}`,
@@ -1634,6 +1652,21 @@ export function LivePageContent({
                         ? "Nu exista un LIVE activ in acest moment, dar layout-ul ramane pregatit pentru urmatoarea sesiune."
                         : "Live-ul se deblocheaza individual, doar pentru sesiunea pe care o cumperi."}
                 </p>
+                {currentSession?.price ? (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {currentSessionHasDiscount ? (
+                      <span className="text-sm text-white/35 line-through">{formatLei(currentSession.compareAtPrice || 0)}</span>
+                    ) : null}
+                    <span className="rounded-full bg-[#d6b98c]/10 px-4 py-2 text-sm text-[#f3dfbf]">
+                      {formatLei(currentSession.price)}
+                    </span>
+                    {currentSessionHasDiscount ? (
+                      <span className="rounded-full bg-[#d6b98c]/12 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-[#f3dfbf]">
+                        Reducere {currentSessionDiscountPercent}%
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-2 sm:justify-end">
@@ -1735,7 +1768,7 @@ export function LivePageContent({
               {!canViewCurrentSession && !isAdmin && currentSession?.price ? (
                 <Button asChild className="min-h-11">
                   <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
-                    Cumpara live-ul {formatCurrency(currentSession.price, "RON")}
+                    Cumpara live-ul {formatLei(currentSession.price)}
                   </a>
                 </Button>
               ) : null}
@@ -1770,6 +1803,7 @@ export function LivePageContent({
                 scheduledFor: item.createdAt,
                 recordingUrl: item.videoUrl,
                 price: item.price,
+                compareAtPrice: item.compareAtPrice,
                 visibility: item.visibility
               }))}
             />
@@ -1794,6 +1828,7 @@ export function LivePageContent({
             scheduledFor: item.createdAt,
             recordingUrl: item.videoUrl,
             price: item.price,
+            compareAtPrice: item.compareAtPrice,
             visibility: item.visibility
           }))}
         />

@@ -45,7 +45,8 @@ async function main() {
         durationMinutes: 75,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
         visibility: "ONE_TIME",
-        price: 5000,
+        price: 50,
+        compareAtPrice: null,
         isFeatured: true
       },
       {
@@ -56,7 +57,8 @@ async function main() {
         durationMinutes: 60,
         thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40.jpeg",
         visibility: "ONE_TIME",
-        price: 5000
+        price: 50,
+        compareAtPrice: null
       }
     ],
     skipDuplicates: true

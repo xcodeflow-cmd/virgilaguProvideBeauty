@@ -95,7 +95,7 @@ async function LegacyAdminPageUnused() {
             <textarea name="description" required placeholder="Descriere" rows={4} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <input name="scheduledFor" type="datetime-local" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <input type="hidden" name="visibility" value="ONE_TIME" />
-            <input name="price" type="number" min="1" required placeholder="Pret in bani, ex 5000" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
+            <input name="price" type="number" min="1" step="1" required placeholder="Pret in lei, ex 50" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none" />
             <Button type="submit">Adauga live</Button>
           </form>
           <div className="mt-8 space-y-3">
@@ -217,6 +217,7 @@ export default async function AdminPage() {
         thumbnailUrl: item.thumbnailUrl,
         visibility: item.visibility,
         price: item.price,
+        compareAtPrice: item.compareAtPrice,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),
         recordingUrl: item.recordingUrl || ""

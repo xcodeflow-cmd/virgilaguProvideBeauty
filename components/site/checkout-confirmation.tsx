@@ -11,12 +11,6 @@ type CheckoutConfirmationProps = {
   checkoutPath: string;
 };
 
-const terms = [
-  "1. Acces live si continut video: sumele achitate pentru acces la sesiuni live sau pentru achizitionarea de continut video nu sunt rambursabile. Exceptie: rambursarea poate fi acordata exclusiv in cazul unor probleme tehnice majore care au impiedicat accesul sau vizionarea, dovedite prin dovezi concrete (capturi, inregistrari, erori evidente).",
-  "2. Cursuri si plati efectuate din greseala: in cazul in care o plata pentru un curs a fost efectuata din eroare, aceasta poate fi rambursata doar daca utilizatorul nu a participat la niciun curs si nu a accesat continutul aferent.",
-  "3. Conditii generale pentru rambursari: cererile de rambursare trebuie transmise intr-un interval rezonabil de timp de la efectuarea platii, fiecare solicitare este analizata individual, iar decizia finala apartine furnizorului platformei."
-];
-
 export function CheckoutConfirmation({
   title,
   description,
@@ -40,12 +34,26 @@ export function CheckoutConfirmation({
 
         <div className="grid gap-6 p-7 sm:p-10">
           <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5 sm:p-6">
-            <h2 className="text-2xl text-white">Termeni si conditii / Plati si rambursari</h2>
+            <h2 className="text-2xl text-white">Termeni si conditii / Plati, rambursari si drepturi de autor</h2>
             <div className="mt-5 space-y-4 text-sm leading-7 text-white/65">
-              {terms.map((term) => (
-                <p key={term}>{term}</p>
-              ))}
-              <p>Prin continuarea utilizarii platformei si efectuarea unei plati, confirmati ca ati citit si acceptat acesti termeni.</p>
+              <p>Prin achizitionarea oricarui produs sau serviciu (acces la live-uri, cursuri sau continut video), utilizatorul este de acord cu urmatoarele conditii:</p>
+              <p>1. Acces live si continut video</p>
+              <p>Sumele achitate pentru acces la sesiuni live sau pentru achizitionarea de continut video nu sunt rambursabile.</p>
+              <p>Exceptie: rambursarea poate fi acordata exclusiv in cazul unor probleme tehnice majore care au impiedicat accesul sau vizionarea, dovedite prin dovezi concrete (capturi, inregistrari, erori evidente).</p>
+              <p>2. Cursuri - plati efectuate din greseala</p>
+              <p>In cazul in care o plata pentru un curs a fost efectuata din eroare, aceasta poate fi rambursata doar daca utilizatorul nu a participat la niciun curs si nu a accesat continutul aferent.</p>
+              <p>3. Conditii generale pentru rambursari</p>
+              <p>* Cererile de rambursare trebuie transmise intr-un interval rezonabil de timp de la efectuarea platii</p>
+              <p>* Fiecare solicitare este analizata individual</p>
+              <p>* Decizia finala apartine furnizorului platformei</p>
+              <p>4. Drepturi de autor si utilizare continut</p>
+              <p>Toate materialele disponibile pe platforma (inclusiv, dar fara a se limita la: sesiuni live, inregistrari video, cursuri, materiale media) sunt protejate prin drepturi de autor si apartin exclusiv furnizorului platformei.</p>
+              <p>Este strict interzisa:</p>
+              <p>* copierea, inregistrarea, distribuirea sau republicarea continutului</p>
+              <p>* transmiterea accesului catre alte persoane</p>
+              <p>* utilizarea materialelor in scop comercial sau public</p>
+              <p>Orice incalcare a acestor prevederi (inclusiv distribuirea sau utilizarea neautorizata a continutului sau a conturilor) va atrage demersuri legale impotriva persoanelor implicate.</p>
+              <p>Prin continuarea utilizarii platformei si efectuarea unei plati, confirmati ca ati citit si sunteti de acord cu acesti termeni si conditii.</p>
             </div>
           </div>
 
@@ -56,7 +64,7 @@ export function CheckoutConfirmation({
               onChange={(event) => setAccepted(event.target.checked)}
               className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-[#d6b98c]"
             />
-            Confirm ca am citit si accept termenii si conditiile de plata si rambursare.
+            Confirm ca am citit si accept termenii si conditiile, inclusiv platile, rambursarile si drepturile de autor.
           </label>
 
           <div className="flex flex-wrap gap-3">

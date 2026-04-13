@@ -16,6 +16,7 @@ export async function GET() {
       description: session.description,
       scheduledFor: session.scheduledFor.toISOString(),
       price: session.price,
+      compareAtPrice: session.compareAtPrice,
       visibility: session.visibility
     }
   });

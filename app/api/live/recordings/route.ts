@@ -16,6 +16,7 @@ export async function GET() {
       createdAt: true,
       recordingUrl: true,
       price: true,
+      compareAtPrice: true,
       visibility: true
     }
   }).catch(() => []);
@@ -28,6 +29,7 @@ export async function GET() {
       createdAt: item.createdAt.toISOString(),
       videoUrl: item.recordingUrl,
       price: item.price,
+      compareAtPrice: item.compareAtPrice,
       visibility: item.visibility
     }))
   });

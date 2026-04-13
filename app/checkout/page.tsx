@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CheckoutConfirmation } from "@/components/site/checkout-confirmation";
 import { courseOffers } from "@/lib/course-offers";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency } from "@/lib/utils";
+import { formatLei } from "@/lib/utils";
 
 export default async function CheckoutPage({
   searchParams
@@ -56,11 +56,11 @@ export default async function CheckoutPage({
   }
 
   return (
-    <CheckoutConfirmation
-      title={liveSession.title}
-      description={liveSession.description}
-      priceLabel={formatCurrency(liveSession.price, "RON")}
-      checkoutPath={`/api/stripe/checkout?mode=payment&liveSessionId=${liveSession.id}`}
-    />
+      <CheckoutConfirmation
+        title={liveSession.title}
+        description={liveSession.description}
+        priceLabel={formatLei(liveSession.price)}
+        checkoutPath={`/api/stripe/checkout?mode=payment&liveSessionId=${liveSession.id}`}
+      />
   );
 }

@@ -132,6 +132,7 @@ model LiveSession {
   recordingMimeType String?
   recordingData   Bytes?
   price           Int?
+  compareAtPrice  Int?
   visibility      SessionVisibility @default(SUBSCRIBERS)
   isLive          Boolean           @default(false)
   isFeatured      Boolean           @default(false)
