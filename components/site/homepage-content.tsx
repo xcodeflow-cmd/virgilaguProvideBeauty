@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
 import siteLogo from "@/assets/logo.png";
 import { defaultServices } from "@/lib/cleaning-content";
+import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref, palmaresDetails, palmaresHighlights } from "@/lib/course-offers";
 import { brandImages, compactReviews } from "@/lib/data";
 
@@ -71,7 +72,7 @@ function PalmaresDialog() {
   );
 }
 
-export function HomepageContent() {
+export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffer[] }) {
   const { content } = useCleaningContent();
   const services = content.services.length ? content.services : defaultServices;
 
@@ -179,7 +180,7 @@ export function HomepageContent() {
         </FadeIn>
 
         <Stagger className="mt-14 grid gap-5 xl:grid-cols-3">
-          {courseOffers.map((course, index) => (
+          {offers.map((course, index) => (
             <StaggerItem key={course.id}>
               <CourseDetailDialog
                 course={course}

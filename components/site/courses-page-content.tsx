@@ -5,10 +5,11 @@ import { Award, GraduationCap, ScissorsLineDashed } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
+import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref } from "@/lib/course-offers";
 import { brandImages } from "@/lib/data";
 
-export function CoursesPageContent() {
+export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseOffer[] }) {
   const feedbackVideos = [
     {
       id: "feedback-01",
@@ -83,7 +84,7 @@ export function CoursesPageContent() {
       </FadeIn>
 
       <Stagger className="mx-auto mt-14 grid max-w-7xl gap-5 xl:grid-cols-3">
-        {courseOffers.map((course) => (
+        {offers.map((course) => (
           <StaggerItem key={course.id}>
             <CourseDetailDialog course={course} ctaHref={getCourseCheckoutHref(course.id)} compact />
           </StaggerItem>

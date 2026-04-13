@@ -123,7 +123,11 @@ async function main() {
             "Master Barber Romania, 2 ani la rand",
             "Alte clasari de top in industrie"
           ],
-          details: ["Pret: 3650 RON", "Numar maxim de participanti: 6"]
+          details: ["Pret: 3650 RON", "Numar maxim de participanti: 6"],
+          pricing: {
+            priceValue: 3650,
+            compareAtPriceValue: null
+          }
         },
         advanced: {
           title: "Curs de perfectionare 1 la 1",
@@ -141,7 +145,11 @@ async function main() {
             "Adaptare la forma fetei",
             "Tehnici moderne de tuns",
             "Controlul sculelor"
-          ]
+          ],
+          pricing: {
+            priceValue: 1000,
+            compareAtPriceValue: null
+          }
         },
         liveExperience: {
           title: "LIVE Barber Experience",
@@ -158,7 +166,11 @@ async function main() {
             "Tehnici de precizie",
             "Mindset profesionist"
           ],
-          details: ["Pret: 100 RON / sesiune", "Frecventa: lunar"]
+          details: ["Pret: 100 RON / sesiune", "Frecventa: lunar"],
+          pricing: {
+            priceValue: 100,
+            compareAtPriceValue: null
+          }
         }
       }
     }

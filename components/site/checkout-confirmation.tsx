@@ -8,6 +8,7 @@ type CheckoutConfirmationProps = {
   title: string;
   description: string;
   priceLabel: string;
+  compareAtPriceLabel?: string | null;
   checkoutPath: string;
 };
 
@@ -15,6 +16,7 @@ export function CheckoutConfirmation({
   title,
   description,
   priceLabel,
+  compareAtPriceLabel,
   checkoutPath
 }: CheckoutConfirmationProps) {
   const [accepted, setAccepted] = useState(false);
@@ -27,8 +29,11 @@ export function CheckoutConfirmation({
           <p className="text-[11px] uppercase tracking-[0.35em] text-[#d6b98c]">Confirmare plata</p>
           <h1 className="mt-4 text-4xl leading-[0.92] text-white sm:text-5xl">{title}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">{description}</p>
-          <div className="mt-6 inline-flex rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-2 text-sm text-[#f3dfbf]">
-            {priceLabel}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {compareAtPriceLabel ? <span className="text-sm text-white/35 line-through">{compareAtPriceLabel}</span> : null}
+            <div className="inline-flex rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-2 text-sm text-[#f3dfbf]">
+              {priceLabel}
+            </div>
           </div>
         </div>
 

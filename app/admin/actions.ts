@@ -215,6 +215,93 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   revalidatePath("/admin");
 }
 
+export async function updateCoursePricing(formData: FormData) {
+  await requireAdmin();
+
+  const currentSettings = await prisma.siteSettings.findUnique({
+    where: { id: "main" }
+  });
+
+  const currentCourses = (currentSettings?.courses as typeof courses | null) || courses;
+  const nextBeginnerPrice = Math.round(Number(formData.get("beginner_price") || 0));
+  const nextAdvancedPrice = Math.round(Number(formData.get("advanced_price") || 0));
+  const nextLiveExperiencePrice = Math.round(Number(formData.get("live_experience_price") || 0));
+
+  if (!nextBeginnerPrice || !nextAdvancedPrice || !nextLiveExperiencePrice) {
+    throw new Error("All course prices are required.");
+  }
+
+  const nextCourses = {
+    ...currentCourses,
+    beginner: {
+      ...currentCourses.beginner,
+      pricing: {
+        priceValue: nextBeginnerPrice,
+        compareAtPriceValue:
+          Math.max(
+            currentCourses.beginner.pricing?.priceValue || 0,
+            currentCourses.beginner.pricing?.compareAtPriceValue || 0
+          ) > nextBeginnerPrice
+            ? Math.max(
+                currentCourses.beginner.pricing?.priceValue || 0,
+                currentCourses.beginner.pricing?.compareAtPriceValue || 0
+              )
+            : null
+      }
+    },
+    advanced: {
+      ...currentCourses.advanced,
+      pricing: {
+        priceValue: nextAdvancedPrice,
+        compareAtPriceValue:
+          Math.max(
+            currentCourses.advanced.pricing?.priceValue || 0,
+            currentCourses.advanced.pricing?.compareAtPriceValue || 0
+          ) > nextAdvancedPrice
+            ? Math.max(
+                currentCourses.advanced.pricing?.priceValue || 0,
+                currentCourses.advanced.pricing?.compareAtPriceValue || 0
+              )
+            : null
+      }
+    },
+    liveExperience: {
+      ...currentCourses.liveExperience,
+      pricing: {
+        priceValue: nextLiveExperiencePrice,
+        compareAtPriceValue:
+          Math.max(
+            currentCourses.liveExperience.pricing?.priceValue || 0,
+            currentCourses.liveExperience.pricing?.compareAtPriceValue || 0
+          ) > nextLiveExperiencePrice
+            ? Math.max(
+                currentCourses.liveExperience.pricing?.priceValue || 0,
+                currentCourses.liveExperience.pricing?.compareAtPriceValue || 0
+              )
+            : null
+      }
+    }
+  };
+
+  await prisma.siteSettings.upsert({
+    where: { id: "main" },
+    update: {
+      courses: nextCourses,
+      subscriptionPlans: (currentSettings?.subscriptionPlans as typeof subscriptionPlans | null) || subscriptionPlans
+    },
+    create: {
+      id: "main",
+      courses: nextCourses,
+      subscriptionPlans
+    }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/courses");
+  revalidatePath("/checkout");
+  revalidatePath("/admin");
+}
+
 export async function updateSiteSettings(formData: FormData) {
   await requireAdmin();
 

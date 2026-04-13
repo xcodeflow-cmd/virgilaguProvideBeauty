@@ -4,7 +4,7 @@ import { useMemo, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import { CalendarDays, ImagePlus, Radio, Trash2, Upload, UserRound } from "lucide-react";
 
-import { addLiveSession, deleteLiveSession, updateLiveSessionSchedule } from "@/app/admin/actions";
+import { addLiveSession, deleteLiveSession, updateCoursePricing, updateLiveSessionSchedule } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { useCleaningContent } from "@/components/site/use-cleaning-content";
 import { defaultGalleryImages, getDefaultContentState } from "@/lib/cleaning-content";
@@ -40,12 +40,38 @@ type AdminUser = {
   createdAt: string;
 };
 
+type AdminCourseSettings = {
+  beginner: {
+    title: string;
+    pricing?: {
+      priceValue: number;
+      compareAtPriceValue: number | null;
+    };
+  };
+  advanced: {
+    title: string;
+    pricing?: {
+      priceValue: number;
+      compareAtPriceValue: number | null;
+    };
+  };
+  liveExperience: {
+    title: string;
+    pricing?: {
+      priceValue: number;
+      compareAtPriceValue: number | null;
+    };
+  };
+};
+
 export function AdminDashboard({
   liveSessions,
-  users
+  users,
+  courseSettings
 }: {
   liveSessions: AdminLiveSession[];
   users: AdminUser[];
+  courseSettings: AdminCourseSettings;
 }) {
   const { content, setContent } = useCleaningContent();
   const [galleryPreview, setGalleryPreview] = useState<{ title: string; subtitle: string; imageUrl: string } | null>(null);
@@ -371,6 +397,68 @@ export function AdminDashboard({
                 </div>
               </div>
             </div>
+          </section>
+
+          <section className="premium-card p-5 sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="dashboard-label">Preturi cursuri</p>
+                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Reduceri vizibile si pe site-ul public.</h2>
+              </div>
+              <div className="rounded-full bg-[#d6b98c]/10 px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-[#f0dbba]">
+                Public + checkout
+              </div>
+            </div>
+
+            <form action={updateCoursePricing} className="mt-6 grid gap-4 xl:grid-cols-3">
+              {[
+                {
+                  key: "beginner_price",
+                  title: courseSettings.beginner.title,
+                  price: courseSettings.beginner.pricing?.priceValue || 0,
+                  compareAt: courseSettings.beginner.pricing?.compareAtPriceValue || null
+                },
+                {
+                  key: "advanced_price",
+                  title: courseSettings.advanced.title,
+                  price: courseSettings.advanced.pricing?.priceValue || 0,
+                  compareAt: courseSettings.advanced.pricing?.compareAtPriceValue || null
+                },
+                {
+                  key: "live_experience_price",
+                  title: courseSettings.liveExperience.title,
+                  price: courseSettings.liveExperience.pricing?.priceValue || 0,
+                  compareAt: courseSettings.liveExperience.pricing?.compareAtPriceValue || null
+                }
+              ].map((course) => {
+                const hasDiscount = Boolean(course.compareAt && course.compareAt > course.price);
+
+                return (
+                  <div key={course.key} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+                    <p className="text-lg text-white">{course.title}</p>
+                    <label className="mt-4 block space-y-2">
+                      <span className="text-sm text-white/60">Pret actual in lei</span>
+                      <input name={course.key} type="number" min="1" step="1" defaultValue={course.price} className="premium-input" />
+                    </label>
+                    {hasDiscount ? (
+                      <div className="mt-4 rounded-[1.2rem] border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-4 text-sm text-[#f3dfbf]">
+                        {formatLei(course.compareAt || 0)} {"->"} {formatLei(course.price)}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-white/45">
+                        Daca setezi un pret mai mic decat cel anterior, reducerea apare automat pe homepage, pagina de cursuri si checkout.
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+
+              <div className="xl:col-span-3">
+                <Button type="submit" className="min-h-12">
+                  Salveaza preturile cursurilor
+                </Button>
+              </div>
+            </form>
           </section>
 
           <section id="gallery" className="premium-card p-5 sm:p-6">

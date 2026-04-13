@@ -170,7 +170,11 @@ export const courses = {
     details: [
       "Pret: 3650 RON",
       "Numar maxim de participanti: 6"
-    ]
+    ],
+    pricing: {
+      priceValue: 3650,
+      compareAtPriceValue: null
+    }
   },
   advanced: {
     title: "Curs de perfectionare 1 la 1",
@@ -189,7 +193,11 @@ export const courses = {
       "Adaptare la forma fetei",
       "Tehnici moderne de tuns",
       "Controlul sculelor"
-    ]
+    ],
+    pricing: {
+      priceValue: 1000,
+      compareAtPriceValue: null
+    }
   },
   liveExperience: {
     title: "LIVE Barber Experience",
@@ -209,7 +217,11 @@ export const courses = {
     details: [
       "Pret: 100 RON / sesiune",
       "Frecventa: lunar"
-    ]
+    ],
+    pricing: {
+      priceValue: 100,
+      compareAtPriceValue: null
+    }
   }
 };
 

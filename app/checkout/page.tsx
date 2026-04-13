@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { CheckoutConfirmation } from "@/components/site/checkout-confirmation";
-import { courseOffers } from "@/lib/course-offers";
+import { getManagedCourseOffers } from "@/lib/course-offers";
 import { prisma } from "@/lib/prisma";
+import { getSiteSettings } from "@/lib/site-content";
 import { formatLei } from "@/lib/utils";
 
 export default async function CheckoutPage({
@@ -20,7 +21,9 @@ export default async function CheckoutPage({
   }
 
   if (courseId) {
-    const course = courseOffers.find((item) => item.id === courseId);
+    const settings = await getSiteSettings();
+    const offers = getManagedCourseOffers(settings.courses);
+    const course = offers.find((item) => item.id === courseId);
 
     if (!course) {
       notFound();
@@ -31,6 +34,7 @@ export default async function CheckoutPage({
         title={course.title}
         description={course.description}
         priceLabel={course.price}
+        compareAtPriceLabel={course.compareAtPrice}
         checkoutPath={`/api/stripe/checkout?mode=payment&courseId=${course.id}`}
       />
     );
@@ -47,6 +51,7 @@ export default async function CheckoutPage({
       title: true,
       description: true,
       price: true,
+      compareAtPrice: true,
       visibility: true
     }
   });
@@ -60,6 +65,11 @@ export default async function CheckoutPage({
         title={liveSession.title}
         description={liveSession.description}
         priceLabel={formatLei(liveSession.price)}
+        compareAtPriceLabel={
+          liveSession.compareAtPrice && liveSession.compareAtPrice > liveSession.price
+            ? formatLei(liveSession.compareAtPrice)
+            : null
+        }
         checkoutPath={`/api/stripe/checkout?mode=payment&liveSessionId=${liveSession.id}`}
       />
   );

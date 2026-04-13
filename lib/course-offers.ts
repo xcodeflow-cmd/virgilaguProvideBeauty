@@ -3,14 +3,22 @@ import type { StaticImageData } from "next/image";
 import courseImage01 from "@/assets/about me/curs1.jpeg";
 import courseImage02 from "@/assets/about me/curs2.jpeg";
 import courseImage03 from "@/assets/about me/curs3.jpeg";
+import { courses as defaultCourses } from "@/lib/data";
+import { formatLei } from "@/lib/utils";
+
+type CoursePricingKey = "beginner" | "advanced" | "liveExperience";
 
 export type CourseOffer = {
   id: string;
+  pricingKey: CoursePricingKey;
   label: string;
   title: string;
   shortTitle: string;
   price: string;
   priceValue: number;
+  compareAtPrice: string | null;
+  compareAtPriceValue: number | null;
+  priceSuffix?: string;
   note: string;
   image: StaticImageData;
   description: string;
@@ -23,14 +31,28 @@ export type CourseOffer = {
   purchaseLabel: string;
 };
 
-export const courseOffers: CourseOffer[] = [
+type BaseCourseOffer = Omit<CourseOffer, "price" | "priceValue" | "compareAtPrice" | "compareAtPriceValue"> & {
+  defaultPriceValue: number;
+};
+
+type CoursePricingOverride = {
+  priceValue?: number | null;
+  compareAtPriceValue?: number | null;
+};
+
+export type CoursePricingMap = Record<CoursePricingKey, {
+  priceValue: number;
+  compareAtPriceValue: number | null;
+}>;
+
+const baseCourseOffers: BaseCourseOffer[] = [
   {
     id: "beginner-freestyle",
+    pricingKey: "beginner",
     label: "Incepatori",
     title: "Curs de frizerie pentru incepatori",
     shortTitle: "De la 0",
-    price: "3650 lei",
-    priceValue: 365000,
+    defaultPriceValue: 3650,
     note: "max 6 cursanti",
     image: courseImage01,
     description:
@@ -55,11 +77,12 @@ export const courseOffers: CourseOffer[] = [
   },
   {
     id: "advanced-one-to-one",
+    pricingKey: "advanced",
     label: "Perfectionare",
     title: "Curs de perfectionare 1 la 1",
     shortTitle: "1 la 1",
-    price: "1000 lei / zi",
-    priceValue: 100000,
+    defaultPriceValue: 1000,
+    priceSuffix: "/ zi",
     note: "1 zi intensiva",
     image: courseImage02,
     description:
@@ -89,11 +112,12 @@ export const courseOffers: CourseOffer[] = [
   },
   {
     id: "live-barber-experience",
+    pricingKey: "liveExperience",
     label: "LIVE",
     title: "LIVE Barber Experience",
     shortTitle: "Lunar",
-    price: "100 lei / sesiune LIVE",
-    priceValue: 10000,
+    defaultPriceValue: 100,
+    priceSuffix: "/ sesiune LIVE",
     note: "sesiune lunara",
     image: courseImage03,
     description:
@@ -134,6 +158,48 @@ export const palmaresDetails = [
   "Experienta de peste 10 ani convertita in disciplina, control si standard ridicat in executie.",
   "Rezultate construite prin consistenta, nu prin imagine cosmetizata."
 ] as const;
+
+function buildPriceLabel(priceValue: number, suffix?: string) {
+  return suffix ? `${formatLei(priceValue)} ${suffix}` : formatLei(priceValue);
+}
+
+export function getCoursePricingMap(coursesContent?: typeof defaultCourses): CoursePricingMap {
+  return {
+    beginner: {
+      priceValue: coursesContent?.beginner?.pricing?.priceValue ?? defaultCourses.beginner.pricing.priceValue,
+      compareAtPriceValue: coursesContent?.beginner?.pricing?.compareAtPriceValue ?? defaultCourses.beginner.pricing.compareAtPriceValue
+    },
+    advanced: {
+      priceValue: coursesContent?.advanced?.pricing?.priceValue ?? defaultCourses.advanced.pricing.priceValue,
+      compareAtPriceValue: coursesContent?.advanced?.pricing?.compareAtPriceValue ?? defaultCourses.advanced.pricing.compareAtPriceValue
+    },
+    liveExperience: {
+      priceValue: coursesContent?.liveExperience?.pricing?.priceValue ?? defaultCourses.liveExperience.pricing.priceValue,
+      compareAtPriceValue: coursesContent?.liveExperience?.pricing?.compareAtPriceValue ?? defaultCourses.liveExperience.pricing.compareAtPriceValue
+    }
+  };
+}
+
+export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
+  const pricingMap = getCoursePricingMap(coursesContent);
+
+  return baseCourseOffers.map((course) => {
+    const override = pricingMap[course.pricingKey] as CoursePricingOverride;
+    const priceValue = override.priceValue && override.priceValue > 0 ? override.priceValue : course.defaultPriceValue;
+    const compareAtPriceValue =
+      override.compareAtPriceValue && override.compareAtPriceValue > priceValue ? override.compareAtPriceValue : null;
+
+    return {
+      ...course,
+      priceValue,
+      compareAtPriceValue,
+      price: buildPriceLabel(priceValue, course.priceSuffix),
+      compareAtPrice: compareAtPriceValue ? buildPriceLabel(compareAtPriceValue, course.priceSuffix) : null
+    };
+  });
+}
+
+export const courseOffers: CourseOffer[] = getManagedCourseOffers();
 
 export function getCourseCheckoutHref(courseId: string) {
   return `/checkout?mode=payment&courseId=${courseId}`;

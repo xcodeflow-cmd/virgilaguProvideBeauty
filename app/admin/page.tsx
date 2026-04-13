@@ -192,6 +192,7 @@ export default async function AdminPage() {
 
   let liveSessions: Awaited<ReturnType<typeof prisma.liveSession.findMany>> = [];
   let users: Awaited<ReturnType<typeof prisma.user.findMany>> = [];
+  const settings = await getSiteSettings();
 
   try {
     [liveSessions, users] = await Promise.all([
@@ -228,6 +229,7 @@ export default async function AdminPage() {
         role: item.role,
         createdAt: item.createdAt.toISOString()
       }))}
+      courseSettings={settings.courses}
     />
   );
 }

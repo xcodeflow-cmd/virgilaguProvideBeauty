@@ -36,6 +36,11 @@ export function CourseDetailDialog({
   compact?: boolean;
   className?: string;
 }) {
+  const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
+  const discountPercent = hasDiscount
+    ? Math.round((((course.compareAtPriceValue || 0) - course.priceValue) / (course.compareAtPriceValue || 1)) * 100)
+    : 0;
+
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
@@ -57,9 +62,16 @@ export function CourseDetailDialog({
             <div className="absolute inset-x-5 bottom-5 z-10">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
-                <span className="rounded-full bg-black/[0.35] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-white/[0.64]">
-                  {course.note}
-                </span>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {hasDiscount ? (
+                    <span className="rounded-full bg-[#d6b98c]/15 px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#f3dfbf]">
+                      Reducere {discountPercent}%
+                    </span>
+                  ) : null}
+                  <span className="rounded-full bg-black/[0.35] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-white/[0.64]">
+                    {course.note}
+                  </span>
+                </div>
               </div>
               <p className="mt-3 text-3xl leading-tight text-white">{course.shortTitle}</p>
             </div>
@@ -76,7 +88,12 @@ export function CourseDetailDialog({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
-                <p className="mt-2 text-xl text-white sm:text-2xl">{course.price}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {hasDiscount && course.compareAtPrice ? (
+                    <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
+                  ) : null}
+                  <p className="text-xl text-white sm:text-2xl">{course.price}</p>
+                </div>
               </div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
                 Detalii
@@ -97,7 +114,12 @@ export function CourseDetailDialog({
               <div className="absolute inset-x-0 bottom-0 p-6">
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
                 <p className="mt-3 text-4xl leading-[0.92] text-white">{course.title}</p>
-                <p className="mt-4 text-sm leading-7 text-white/[0.68]">{course.price}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-7">
+                  {hasDiscount && course.compareAtPrice ? (
+                    <span className="text-white/35 line-through">{course.compareAtPrice}</span>
+                  ) : null}
+                  <span className="text-white/[0.82]">{course.price}</span>
+                </div>
               </div>
             </div>
 
@@ -156,7 +178,12 @@ export function CourseDetailDialog({
               <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret final</p>
-                  <p className="mt-2 text-3xl text-white">{course.price}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    {hasDiscount && course.compareAtPrice ? (
+                      <p className="text-lg text-white/35 line-through">{course.compareAtPrice}</p>
+                    ) : null}
+                    <p className="text-3xl text-white">{course.price}</p>
+                  </div>
                 </div>
                 <Button asChild className="px-7">
                   <Link href={ctaHref}>{course.purchaseLabel}</Link>
