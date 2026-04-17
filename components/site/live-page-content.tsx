@@ -1712,15 +1712,15 @@ export function LivePageContent({
               </div>
             ) : null}
 
-              <div ref={videoStageRef} className="relative bg-black">
+              <div ref={videoStageRef} className="relative max-h-[calc(100svh-18rem)] overflow-hidden bg-black sm:max-h-none">
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
-                <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
+                <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] sm:object-cover xl:min-h-[20rem]" />
               ) : currentSession?.isLive ? (
-                <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video min-h-[13rem] w-full bg-black object-cover sm:min-h-[18rem] xl:min-h-[20rem]" />
+                <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] sm:object-cover xl:min-h-[20rem]" />
               ) : (
-                <div className="flex aspect-video min-h-[13rem] items-center justify-center bg-black px-6 text-center text-white/60 sm:min-h-[18rem] xl:min-h-[20rem]">
+                <div className="flex aspect-video max-h-[calc(100svh-18rem)] min-h-0 items-center justify-center bg-black px-6 text-center text-white/60 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]">
                   {canViewCurrentSession ? "Niciun LIVE activ momentan" : "Cumpara live-ul curent pentru acces instant la video si chat."}
                 </div>
               )}

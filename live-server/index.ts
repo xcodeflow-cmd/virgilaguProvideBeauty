@@ -1,8 +1,8 @@
 import { randomUUID } from "crypto";
-import { createServer } from "http";
+import { createServer, type IncomingMessage } from "http";
 
 import { loadEnvConfig } from "@next/env";
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer, WebSocket, type RawData } from "ws";
 
 import {
   getLiveConsumerMonitorIntervalMs,
@@ -827,7 +827,7 @@ async function handleRequest(peer: LivePeer, request: LiveWsRequest) {
           await transport.setMaxIncomingBitrate(LIVE_MAX_INCOMING_BITRATE);
         }
 
-        transport.on("dtlsstatechange", (state) => {
+        transport.on("dtlsstatechange", (state: string) => {
           if (state === "failed") {
             void safeCloseTransport(peer, transport, "dtls failed");
             return;
@@ -1167,7 +1167,7 @@ async function bootstrap() {
     path: LIVE_WS_PATH,
   });
 
-  server.on("connection", async (ws, request) => {
+  server.on("connection", async (ws: WebSocket, request: IncomingMessage) => {
     const requestUrl = new URL(request.url || LIVE_WS_PATH, `http://${request.headers.host || "localhost"}`);
     const token = requestUrl.searchParams.get("token") || "";
     const querySecret = requestUrl.searchParams.get("secret");
@@ -1263,7 +1263,7 @@ async function bootstrap() {
         }
       });
 
-      ws.on("message", (raw) => {
+      ws.on("message", (raw: RawData) => {
         let message: LiveWsMessage | LiveWsClientControlMessage;
 
         try {
@@ -1346,7 +1346,7 @@ async function bootstrap() {
         });
       });
 
-      ws.on("error", (error) => {
+      ws.on("error", (error: Error) => {
         clearAuthTimeout();
 
         if (peer) {

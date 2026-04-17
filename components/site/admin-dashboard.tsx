@@ -436,9 +436,6 @@ export function AdminDashboard({
                   <span className="text-xs uppercase tracking-[0.28em] text-white/[0.35]">PNG, JPG, WEBP</span>
                   <input type="file" name="imageFile" accept="image/*" className="hidden" required />
                 </label>
-                <p className="text-sm leading-7 text-white/[0.55]">
-                  Upload-ul se salveaza in baza de date si devine vizibil pe tot site-ul, nu doar local in browserul adminului.
-                </p>
                 <Button type="submit" className="min-h-12 w-full">
                   Adauga in galerie
                 </Button>
