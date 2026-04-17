@@ -195,7 +195,7 @@ export function Navbar({ session }: { session: Session | null }) {
                 </nav>
 
                 <div className="mt-4 border-t border-white/10 pt-4 md:hidden">
-                  <AuthButtons session={session} />
+                  <AuthButtons session={session} onNavigate={() => setIsOpen(false)} />
                 </div>
               </div>
             </div>
