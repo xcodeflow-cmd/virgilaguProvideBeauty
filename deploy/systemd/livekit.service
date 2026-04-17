@@ -1,0 +1,17 @@
+[Unit]
+Description=LiveKit Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/provibe/livekit
+ExecStart=/usr/local/bin/livekit-server --config /opt/provibe/livekit/livekit.yaml
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

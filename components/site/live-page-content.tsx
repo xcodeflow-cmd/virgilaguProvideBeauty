@@ -139,7 +139,6 @@ type MediasoupTransportLike = {
 
 const LIVE_POLL_INTERVAL = 1000;
 const CHAT_POLL_INTERVAL = 2000;
-const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || "ws://78.47.119.183:7880";
 const LIVEKIT_ROOM_NAME = "main";
 const LIVEKIT_IDENTITY = "streamer";
 const LIVEKIT_RECONNECT_DELAY_MS = 3000;
@@ -175,6 +174,59 @@ function getMediaRecorderMimeType() {
 
   const supported = MEDIA_RECORDER_MIME_CANDIDATES.find((candidate) => MediaRecorder.isTypeSupported(candidate));
   return supported || "";
+}
+
+function normalizeLiveKitUrl(rawUrl: string) {
+  const trimmed = rawUrl.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && parsed.protocol === "ws:") {
+      parsed.protocol = "wss:";
+    }
+
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return trimmed.replace(/\/$/, "");
+  }
+}
+
+function getLiveKitUrl() {
+  const configuredUrl = normalizeLiveKitUrl(process.env.NEXT_PUBLIC_LIVEKIT_URL || "");
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "provibe.ro" || window.location.hostname.endsWith(".provibe.ro")) {
+      return "wss://live.provibe.ro";
+    }
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.hostname}:7880`;
+  }
+
+  return "";
+}
+
+function ensureMediaDevicesAvailable() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    throw new Error("Camera este disponibila doar in browser.");
+  }
+
+  if (!window.isSecureContext) {
+    throw new Error("Camera si microfonul functioneaza doar pe HTTPS sau localhost.");
+  }
+
+  if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+    throw new Error("Browserul nu expune mediaDevices.getUserMedia in acest context.");
+  }
 }
 
 function areMessagesEqual(current: ChatMessage[], next: ChatMessage[]) {
@@ -1067,6 +1119,12 @@ export function LivePageContent({
           lastEvent: `${role} token requested`,
           connectionState: "connecting"
         });
+        const liveKitUrl = getLiveKitUrl();
+
+        if (!liveKitUrl) {
+          throw new Error("Lipseste NEXT_PUBLIC_LIVEKIT_URL pentru conexiunea live.");
+        }
+
         const token = await getToken(liveId, role);
         const room = new Room({
           adaptiveStream: role === "viewer",
@@ -1127,13 +1185,13 @@ export function LivePageContent({
           }
         });
 
-        await room.connect(LIVEKIT_URL, token);
+        await room.connect(liveKitUrl, token);
         syncExistingRemoteTracks(room);
 
         updateDebug({
           connectionState: "connected",
           viewers: room.remoteParticipants.size,
-          lastEvent: `${role} connected to ${LIVEKIT_ROOM_NAME}`
+          lastEvent: `${role} connected to ${LIVEKIT_ROOM_NAME} via ${liveKitUrl}`
         });
 
         if (role === "viewer") {
@@ -1331,6 +1389,8 @@ export function LivePageContent({
   }
 
   async function getSafeBroadcastStream() {
+    ensureMediaDevicesAvailable();
+
     const profiles = buildCaptureProfiles();
     let lastError: unknown;
 

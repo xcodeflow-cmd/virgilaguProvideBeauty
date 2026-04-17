@@ -49,6 +49,9 @@ Copy `.env.example` to `.env` and fill in:
 - `NEXT_PUBLIC_APP_URL`
 - `STRIPE_SUBSCRIPTION_PRICE_ID`
 - `STRIPE_ONE_TIME_PRICE_ID`
+- `NEXT_PUBLIC_LIVEKIT_URL`
+- `LIVEKIT_API_KEY`
+- `LIVEKIT_API_SECRET`
 
 ## Local Run
 1. Install dependencies with `npm install`
