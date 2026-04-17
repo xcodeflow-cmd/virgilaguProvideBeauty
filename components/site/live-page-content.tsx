@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Room, RoomEvent, Track, VideoPresets, type RemoteTrack } from "livekit-client";
+import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
 import { Camera, Lock, Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
@@ -146,7 +146,6 @@ const LIVEKIT_VIDEO_ENCODING = {
   maxBitrate: 8_000_000,
   maxFramerate: 30
 };
-const LIVEKIT_VIDEO_LAYERS = [VideoPresets.h720, VideoPresets.h540];
 const MEDIA_RECORDER_MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
@@ -1217,11 +1216,9 @@ export function LivePageContent({
             track,
             track.kind === "video"
               ? {
-                  simulcast: true,
                   source: Track.Source.Camera,
                   videoCodec: "h264",
-                  videoEncoding: LIVEKIT_VIDEO_ENCODING,
-                  videoSimulcastLayers: LIVEKIT_VIDEO_LAYERS
+                  videoEncoding: LIVEKIT_VIDEO_ENCODING
                 }
               : {
                   source: Track.Source.Microphone
@@ -1352,8 +1349,8 @@ export function LivePageContent({
           video: {
             facingMode: facingMode ? { ideal: facingMode } : undefined,
             aspectRatio: { ideal: 16 / 9 },
-            width: { ideal: 1280, max: 1280 },
-            height: { ideal: 720, max: 720 },
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
             frameRate: { ideal: 30, max: 30 }
           },
           audio: audioConstraints
@@ -1362,9 +1359,9 @@ export function LivePageContent({
           video: {
             facingMode: facingMode ? { ideal: facingMode } : undefined,
             aspectRatio: { ideal: 16 / 9 },
-            width: { ideal: 960, max: 960 },
-            height: { ideal: 540, max: 540 },
-            frameRate: { ideal: 24, max: 24 }
+            width: { ideal: 1280, max: 1280 },
+            height: { ideal: 720, max: 720 },
+            frameRate: { ideal: 30, max: 30 }
           },
           audio: audioConstraints
         }
@@ -1378,7 +1375,7 @@ export function LivePageContent({
           aspectRatio: { ideal: 16 / 9 },
           width: { ideal: 1920, max: 1920 },
           height: { ideal: 1080, max: 1080 },
-          frameRate: { ideal: 30, max: 30 }
+          frameRate: { ideal: 60, max: 60 }
         },
         audio: audioConstraints
       },
@@ -1440,8 +1437,22 @@ export function LivePageContent({
       const nextDeviceId = videoInputs.length > 1
         ? videoInputs[(currentIndex + 1 + videoInputs.length) % videoInputs.length]?.deviceId || ""
         : "";
-      const nextStream = nextDeviceId
-        ? await navigator.mediaDevices.getUserMedia({
+      let nextStream: MediaStream | null = null;
+
+      try {
+        nextStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { exact: nextFacingMode },
+            width: { ideal: 1920, max: 1920 },
+            height: { ideal: 1080, max: 1080 },
+            frameRate: { ideal: 30, max: 30 },
+            aspectRatio: { ideal: 16 / 9 }
+          },
+          audio: false
+        });
+      } catch {
+        if (nextDeviceId) {
+          nextStream = await navigator.mediaDevices.getUserMedia({
             video: {
               deviceId: { exact: nextDeviceId },
               width: { ideal: 1920, max: 1920 },
@@ -1450,8 +1461,12 @@ export function LivePageContent({
               aspectRatio: { ideal: 16 / 9 }
             },
             audio: false
-          })
-        : await getSafeBroadcastStream(nextFacingMode, false);
+          });
+        } else {
+          nextStream = await getSafeBroadcastStream(nextFacingMode, false);
+        }
+      }
+
       const nextVideoTrack = nextStream.getVideoTracks()[0];
 
       if (!nextVideoTrack) {
@@ -1473,11 +1488,9 @@ export function LivePageContent({
         }
 
         await room.localParticipant.publishTrack(nextVideoTrack, {
-          simulcast: true,
           source: Track.Source.Camera,
           videoCodec: "h264",
-          videoEncoding: LIVEKIT_VIDEO_ENCODING,
-          videoSimulcastLayers: LIVEKIT_VIDEO_LAYERS
+          videoEncoding: LIVEKIT_VIDEO_ENCODING
         });
       }
 
