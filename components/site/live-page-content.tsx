@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
-import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
+import { Room, RoomEvent, Track, VideoPresets, type RemoteTrack } from "livekit-client";
+import { Camera, Lock, Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
@@ -142,6 +142,11 @@ const CHAT_POLL_INTERVAL = 2000;
 const LIVEKIT_ROOM_NAME = "main";
 const LIVEKIT_IDENTITY = "streamer";
 const LIVEKIT_RECONNECT_DELAY_MS = 3000;
+const LIVEKIT_VIDEO_ENCODING = {
+  maxBitrate: 4_000_000,
+  maxFramerate: 30
+};
+const LIVEKIT_VIDEO_LAYERS = [VideoPresets.h540, VideoPresets.h216];
 const MEDIA_RECORDER_MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
@@ -351,6 +356,8 @@ export function LivePageContent({
   const [streamStatus, setStreamStatus] = useState<StreamStatus>(initialSession?.isLive ? "connecting" : "offline");
   const [countdownNow, setCountdownNow] = useState(() => Date.now());
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState<"user" | "environment">("user");
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [debug, setDebug] = useState<LiveDebugState>({
     role: isAdmin ? "broadcaster" : "viewer",
     lastEvent: "idle",
@@ -1206,7 +1213,20 @@ export function LivePageContent({
         }
 
         for (const track of stream.getTracks()) {
-          await room.localParticipant.publishTrack(track);
+          await room.localParticipant.publishTrack(
+            track,
+            track.kind === "video"
+              ? {
+                  simulcast: true,
+                  source: Track.Source.Camera,
+                  videoCodec: "h264",
+                  videoEncoding: LIVEKIT_VIDEO_ENCODING,
+                  videoSimulcastLayers: LIVEKIT_VIDEO_LAYERS
+                }
+              : {
+                  source: Track.Source.Microphone
+                }
+          );
         }
 
         adminHeartbeatRef.current = window.setInterval(() => {
@@ -1316,34 +1336,37 @@ export function LivePageContent({
     setRecordings((current) => (areRecordingsEqual(current, data.recordings) ? current : data.recordings));
   }
 
-  function buildCaptureProfiles() {
+  function buildCaptureProfiles(facingMode?: "user" | "environment", includeAudio = true) {
     const { isIOS, isSafari } = detectAppleWebKit();
+    const audioConstraints = includeAudio
+      ? {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      : false;
 
     if (isIOS || isSafari) {
       return [
         {
           video: {
+            facingMode: facingMode ? { ideal: facingMode } : undefined,
+            aspectRatio: { ideal: 16 / 9 },
             width: { ideal: 1280, max: 1280 },
             height: { ideal: 720, max: 720 },
             frameRate: { ideal: 30, max: 30 }
           },
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          }
+          audio: audioConstraints
         },
         {
           video: {
+            facingMode: facingMode ? { ideal: facingMode } : undefined,
+            aspectRatio: { ideal: 16 / 9 },
             width: { ideal: 960, max: 960 },
             height: { ideal: 540, max: 540 },
             frameRate: { ideal: 24, max: 24 }
           },
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          }
+          audio: audioConstraints
         }
       ] satisfies MediaStreamConstraints[];
     }
@@ -1351,47 +1374,41 @@ export function LivePageContent({
     return [
       {
         video: {
+          facingMode: facingMode ? { ideal: facingMode } : undefined,
+          aspectRatio: { ideal: 16 / 9 },
           width: { ideal: 1920, max: 1920 },
           height: { ideal: 1080, max: 1080 },
           frameRate: { ideal: 30, max: 30 }
         },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        audio: audioConstraints
       },
       {
         video: {
+          facingMode: facingMode ? { ideal: facingMode } : undefined,
+          aspectRatio: { ideal: 16 / 9 },
           width: { ideal: 1280, max: 1280 },
           height: { ideal: 720, max: 720 },
           frameRate: { ideal: 30, max: 30 }
         },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        audio: audioConstraints
       },
       {
         video: {
+          facingMode: facingMode ? { ideal: facingMode } : undefined,
+          aspectRatio: { ideal: 16 / 9 },
           width: { ideal: 854, max: 854 },
           height: { ideal: 480, max: 480 },
           frameRate: { ideal: 24, max: 24 }
         },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
+        audio: audioConstraints
       }
     ] satisfies MediaStreamConstraints[];
   }
 
-  async function getSafeBroadcastStream() {
+  async function getSafeBroadcastStream(facingMode = cameraFacingMode, includeAudio = true) {
     ensureMediaDevicesAvailable();
 
-    const profiles = buildCaptureProfiles();
+    const profiles = buildCaptureProfiles(facingMode, includeAudio);
     let lastError: unknown;
 
     for (const constraints of profiles) {
@@ -1403,6 +1420,58 @@ export function LivePageContent({
     }
 
     throw lastError instanceof Error ? lastError : new Error("Could not access camera or microphone.");
+  }
+
+  async function switchCamera() {
+    if (!isAdmin || isSwitchingCamera || !localStreamRef.current) {
+      return;
+    }
+
+    const nextFacingMode = cameraFacingMode === "user" ? "environment" : "user";
+
+    try {
+      setIsSwitchingCamera(true);
+      setError(null);
+
+      const nextStream = await getSafeBroadcastStream(nextFacingMode, false);
+      const nextVideoTrack = nextStream.getVideoTracks()[0];
+
+      if (!nextVideoTrack) {
+        throw new Error("Camera noua nu este disponibila.");
+      }
+
+      const currentStream = localStreamRef.current;
+      const currentVideoTrack = currentStream.getVideoTracks()[0] || null;
+      const audioTracks = currentStream.getAudioTracks();
+      const replacementStream = new MediaStream([...audioTracks, nextVideoTrack]);
+
+      const room = liveKitRoomRef.current;
+
+      if (room) {
+        const publishedVideoTrack = Array.from(room.localParticipant.videoTrackPublications.values()).find((publication) => publication.track)?.track;
+
+        if (publishedVideoTrack) {
+          await room.localParticipant.unpublishTrack(publishedVideoTrack.mediaStreamTrack, false);
+        }
+
+        await room.localParticipant.publishTrack(nextVideoTrack, {
+          simulcast: true,
+          source: Track.Source.Camera,
+          videoCodec: "h264",
+          videoEncoding: LIVEKIT_VIDEO_ENCODING,
+          videoSimulcastLayers: LIVEKIT_VIDEO_LAYERS
+        });
+      }
+
+      currentVideoTrack?.stop();
+      setLocalStream(replacementStream);
+      setCameraFacingMode(nextFacingMode);
+      updateDebug({ lastEvent: `camera switched to ${nextFacingMode}` });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Camera nu a putut fi schimbata.");
+    } finally {
+      setIsSwitchingCamera(false);
+    }
   }
 
   async function startLive() {
@@ -1808,6 +1877,10 @@ export function LivePageContent({
                   <>
                     <Button type="button" className="min-h-11" onClick={() => void startLive()} disabled={!currentSession || currentSession.isLive}>
                       Go Live
+                    </Button>
+                    <Button type="button" variant="secondary" className="min-h-11" onClick={() => void switchCamera()} disabled={!localStream || isSwitchingCamera}>
+                      <Camera className="h-4 w-4" />
+                      {isSwitchingCamera ? "Schimba..." : "Intoarce camera"}
                     </Button>
                     <Button type="button" variant="secondary" className="min-h-11" onClick={() => void stopLive()} disabled={!currentSession?.isLive}>
                       Stop Live
