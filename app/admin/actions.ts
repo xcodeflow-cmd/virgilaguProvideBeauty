@@ -54,6 +54,22 @@ function getSafeLiveSchedule(startMode: string, scheduledValue: string, fallback
   return parsedDate;
 }
 
+function parseOptionalPrice(value: FormDataEntryValue | null) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const parsedValue = Math.round(Number(rawValue));
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+    throw new Error("Live price must be at least 1 RON when provided.");
+  }
+
+  return parsedValue;
+}
+
 export async function addGalleryItem(formData: FormData) {
   await requireAdmin();
 
@@ -107,11 +123,8 @@ export async function addLiveSession(formData: FormData) {
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
-  const price = Math.round(Number(formData.get("price") || 0));
-
-  if (!price || price < 1) {
-    throw new Error("Live price is required.");
-  }
+  const price = parseOptionalPrice(formData.get("price"));
+  const visibilityValue = String(formData.get("visibility") || (price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC));
 
   if (!title) {
     throw new Error("Live title is required.");
@@ -119,6 +132,10 @@ export async function addLiveSession(formData: FormData) {
 
   if (!description) {
     throw new Error("Live description is required.");
+  }
+
+  if (!Object.values(SessionVisibility).includes(visibilityValue as SessionVisibility)) {
+    throw new Error("Invalid live visibility.");
   }
 
   await prisma.liveSession.create({
@@ -130,7 +147,7 @@ export async function addLiveSession(formData: FormData) {
       thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
       streamUrl: null,
       recordingUrl: null,
-      visibility: SessionVisibility.ONE_TIME,
+      visibility: visibilityValue as SessionVisibility,
       isLive: false,
       isFeatured: false,
       price,
@@ -167,7 +184,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
-  const price = Math.round(Number(formData.get("price") || 0));
+  const price = parseOptionalPrice(formData.get("price"));
   const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);
   if (!id) {
     throw new Error("Missing live session id.");
@@ -184,10 +201,6 @@ export async function updateLiveSessionSchedule(formData: FormData) {
 
   if (!description) {
     throw new Error("Description is required.");
-  }
-
-  if (!price || price < 1) {
-    throw new Error("Live price is required.");
   }
 
   if (!Object.values(SessionVisibility).includes(visibilityValue as SessionVisibility)) {
@@ -210,7 +223,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     existingSession.price || 0,
     existingSession.compareAtPrice || 0
   );
-  const compareAtPrice = previousReferencePrice > price ? previousReferencePrice : null;
+  const compareAtPrice = price && previousReferencePrice > price ? previousReferencePrice : null;
 
   await prisma.liveSession.update({
     where: { id },

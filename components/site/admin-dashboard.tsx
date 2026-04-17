@@ -172,8 +172,11 @@ export function AdminDashboard({
                   disabled={liveStartMode !== "SCHEDULE"}
                   className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <input type="hidden" name="visibility" value="ONE_TIME" />
-                <input name="price" type="number" min="1" step="1" required placeholder="Pret in lei, ex 50" className="premium-input" />
+                <select name="visibility" defaultValue="PUBLIC" className="premium-input">
+                  <option value="PUBLIC">Public</option>
+                  <option value="ONE_TIME">One time</option>
+                </select>
+                <input name="price" type="number" min="1" step="1" placeholder="Pret optional in lei, ex 50" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
                 </Button>
@@ -232,8 +235,8 @@ export function AdminDashboard({
                         className="premium-input"
                       />
                       <p className="text-xs leading-5 text-white/45">
-                        Valoarea se salveaza direct in lei. Exemplu: 50 = 50 RON. Daca salvezi un pret mai mic decat cel anterior,
-                        site-ul afiseaza automat reducerea cu pretul vechi taiat.
+                        Pretul este optional. Exemplu: 50 = 50 RON. Daca salvezi un pret mai mic decat cel anterior,
+                        site-ul afiseaza automat reducerea cu pretul vechi taiat. Pentru test fara checkout, foloseste tipul de acces PUBLIC.
                       </p>
                     </label>
                     {selectedLiveSession.compareAtPrice && selectedLiveSession.price && selectedLiveSession.compareAtPrice > selectedLiveSession.price ? (
