@@ -143,10 +143,10 @@ const LIVEKIT_ROOM_NAME = "main";
 const LIVEKIT_IDENTITY = "streamer";
 const LIVEKIT_RECONNECT_DELAY_MS = 3000;
 const LIVEKIT_VIDEO_ENCODING = {
-  maxBitrate: 4_000_000,
+  maxBitrate: 8_000_000,
   maxFramerate: 30
 };
-const LIVEKIT_VIDEO_LAYERS = [VideoPresets.h540, VideoPresets.h216];
+const LIVEKIT_VIDEO_LAYERS = [VideoPresets.h720, VideoPresets.h540];
 const MEDIA_RECORDER_MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
@@ -1134,8 +1134,8 @@ export function LivePageContent({
 
         const token = await getToken(liveId, role);
         const room = new Room({
-          adaptiveStream: role === "viewer",
-          dynacast: role === "broadcaster"
+          adaptiveStream: false,
+          dynacast: false
         });
 
         liveKitRoomRef.current = room;
@@ -1432,8 +1432,26 @@ export function LivePageContent({
     try {
       setIsSwitchingCamera(true);
       setError(null);
-
-      const nextStream = await getSafeBroadcastStream(nextFacingMode, false);
+      const currentDeviceId = localStreamRef.current.getVideoTracks()[0]?.getSettings().deviceId || "";
+      const videoInputs = typeof navigator.mediaDevices.enumerateDevices === "function"
+        ? (await navigator.mediaDevices.enumerateDevices()).filter((device) => device.kind === "videoinput")
+        : [];
+      const currentIndex = videoInputs.findIndex((device) => device.deviceId === currentDeviceId);
+      const nextDeviceId = videoInputs.length > 1
+        ? videoInputs[(currentIndex + 1 + videoInputs.length) % videoInputs.length]?.deviceId || ""
+        : "";
+      const nextStream = nextDeviceId
+        ? await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: nextDeviceId },
+              width: { ideal: 1920, max: 1920 },
+              height: { ideal: 1080, max: 1080 },
+              frameRate: { ideal: 30, max: 30 },
+              aspectRatio: { ideal: 16 / 9 }
+            },
+            audio: false
+          })
+        : await getSafeBroadcastStream(nextFacingMode, false);
       const nextVideoTrack = nextStream.getVideoTracks()[0];
 
       if (!nextVideoTrack) {
@@ -1905,7 +1923,7 @@ export function LivePageContent({
               </div>
             ) : null}
 
-              <div ref={videoStageRef} className="relative max-h-[calc(100svh-18rem)] overflow-hidden bg-black sm:max-h-none">
+              <div ref={videoStageRef} className="relative max-h-[calc(100svh-18rem)] overflow-hidden bg-black sm:max-h-none" onDoubleClick={() => void toggleFullscreen()}>
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
@@ -1934,7 +1952,7 @@ export function LivePageContent({
               <button
                 type="button"
                 onClick={() => void toggleFullscreen()}
-                className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-2 rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md transition hover:bg-black/70 sm:bottom-4 sm:right-4"
+                className="absolute right-3 top-3 z-20 inline-flex items-center gap-2 rounded-full bg-black/[0.55] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md transition hover:bg-black/70 sm:right-4 sm:top-4"
               >
                 {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
                 {isFullscreen ? "Iesi" : "Fullscreen"}
