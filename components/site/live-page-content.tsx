@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
 import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
@@ -138,6 +139,10 @@ type MediasoupTransportLike = {
 
 const LIVE_POLL_INTERVAL = 1000;
 const CHAT_POLL_INTERVAL = 2000;
+const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || "ws://78.47.119.183:7880";
+const LIVEKIT_ROOM_NAME = "main";
+const LIVEKIT_IDENTITY = "streamer";
+const LIVEKIT_RECONNECT_DELAY_MS = 3000;
 const MEDIA_RECORDER_MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
@@ -217,6 +222,25 @@ function clearMessages(current: ChatMessage[]) {
   return current.length ? [] : current;
 }
 
+async function getToken(liveId: string, role: LiveRole): Promise<string> {
+  const response = await fetch("/api/live/token", {
+    method: "POST",
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ liveId, role })
+  });
+  const data = (await response.json().catch(() => null)) as { token?: string; error?: string } | null;
+
+  if (!response.ok || !data?.token) {
+    throw new Error(data?.error || "Failed to get LiveKit token.");
+  }
+
+  return data.token;
+}
+
 function getCountdownParts(targetDate: string | null, now: number) {
   if (!targetDate) {
     return null;
@@ -293,6 +317,7 @@ export function LivePageContent({
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const liveKitRoomRef = useRef<Room | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const deviceRef = useRef<MediasoupDeviceLike | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -388,6 +413,62 @@ export function LivePageContent({
         ...patch
       };
     });
+  }
+
+  async function disconnectLiveKitRoom() {
+    const room = liveKitRoomRef.current;
+
+    if (!room) {
+      return;
+    }
+
+    liveKitRoomRef.current = null;
+
+    try {
+      await room.disconnect();
+    } catch {}
+  }
+
+  function addRemoteTrack(track: RemoteTrack) {
+    const mediaTrack = track.mediaStreamTrack;
+
+    if (!remoteStreamRef.current.getTracks().some((item) => item.id === mediaTrack.id)) {
+      remoteStreamRef.current.addTrack(mediaTrack);
+      setRemoteVideoStream();
+    }
+
+    updateDebug({
+      remoteTracks: remoteStreamRef.current.getTracks().length,
+      lastEvent: `${track.kind} track subscribed`
+    });
+  }
+
+  function removeRemoteTrack(track: RemoteTrack) {
+    const mediaTrack = track.mediaStreamTrack;
+
+    for (const item of remoteStreamRef.current.getTracks()) {
+      if (item.id === mediaTrack.id) {
+        remoteStreamRef.current.removeTrack(item);
+      }
+    }
+
+    setRemoteVideoStream();
+    updateDebug({
+      remoteTracks: remoteStreamRef.current.getTracks().length,
+      lastEvent: `${track.kind} track unsubscribed`
+    });
+  }
+
+  function syncExistingRemoteTracks(room: Room) {
+    for (const participant of room.remoteParticipants.values()) {
+      for (const publication of participant.trackPublications.values()) {
+        const track = publication.track;
+
+        if (track && (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio)) {
+          addRemoteTrack(track as RemoteTrack);
+        }
+      }
+    }
   }
 
   async function api<T>(input: RequestInfo, init?: RequestInit) {
@@ -533,6 +614,8 @@ export function LivePageContent({
       wsRef.current.close();
       wsRef.current = null;
     }
+
+    void disconnectLiveKitRoom();
 
     remoteStreamRef.current = new MediaStream();
 
@@ -981,146 +1064,118 @@ export function LivePageContent({
         setStreamStatus(debug.reconnectAttempts > 0 ? "reconnecting" : "connecting");
         updateDebug({
           role,
-          lastEvent: `${role} bootstrap requested`,
+          lastEvent: `${role} token requested`,
           connectionState: "connecting"
         });
-
-        const bootstrap = await api<LiveBootstrapResponse>("/api/live/connect", {
-          method: "POST",
-          body: JSON.stringify({ liveId, role })
+        const token = await getToken(liveId, role);
+        const room = new Room({
+          adaptiveStream: role === "viewer",
+          dynacast: role === "broadcaster"
         });
-        lastBootstrapRef.current = bootstrap;
 
-        const version = connectionVersionRef.current;
-        const websocketUrl = new URL(bootstrap.websocketUrl);
-        websocketUrl.searchParams.set("token", bootstrap.token);
-
-        if (bootstrap.secret) {
-          websocketUrl.searchParams.set("secret", bootstrap.secret);
-        }
-
-        const socket = new WebSocket(websocketUrl.toString());
-        wsRef.current = socket;
+        liveKitRoomRef.current = room;
         activeRoleRef.current = role;
+        remoteStreamRef.current = new MediaStream();
+        setRemoteVideoStream();
 
-        await new Promise<void>((resolve, reject) => {
-          socket.onopen = () => resolve();
-          socket.onerror = () => reject(new Error("Live signaling connection failed."));
+        room.on(RoomEvent.TrackSubscribed, (track) => {
+          if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
+            addRemoteTrack(track as RemoteTrack);
+            setStreamStatus("live");
+          }
         });
 
-        if (bootstrap.secret && socket.readyState === WebSocket.OPEN) {
-          const authMessage: LiveWsClientControlMessage = {
-            type: "auth",
-            secret: bootstrap.secret
-          };
+        room.on(RoomEvent.TrackUnsubscribed, (track) => {
+          if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
+            removeRemoteTrack(track as RemoteTrack);
 
-          socket.send(JSON.stringify(authMessage));
-        }
-
-        socket.onmessage = (event) => {
-          if (version !== connectionVersionRef.current) {
-            return;
-          }
-
-          let message: LiveWsMessage;
-
-          try {
-            message = JSON.parse(event.data) as LiveWsMessage;
-          } catch {
-            updateDebug({ lastEvent: "invalid signaling payload" });
-            return;
-          }
-
-          if (message.type === "response") {
-            const pending = pendingRequestsRef.current.get(message.requestId);
-
-            if (!pending) {
-              return;
+            if (role === "viewer" && !remoteStreamRef.current.getTracks().length) {
+              setStreamStatus("joining");
             }
+          }
+        });
 
-            pendingRequestsRef.current.delete(message.requestId);
+        room.on(RoomEvent.ParticipantConnected, () => {
+          updateDebug({
+            viewers: room.remoteParticipants.size,
+            lastEvent: "participant connected"
+          });
+        });
 
-            if (message.ok) {
-              pending.resolve(message.data);
-            } else {
-              pending.reject(new Error(message.error));
-            }
+        room.on(RoomEvent.ParticipantDisconnected, () => {
+          updateDebug({
+            viewers: room.remoteParticipants.size,
+            lastEvent: "participant disconnected"
+          });
+        });
 
-            return;
+        room.on(RoomEvent.Disconnected, () => {
+          if (liveKitRoomRef.current === room) {
+            liveKitRoomRef.current = null;
           }
 
-          if (message.type === "event") {
-            handleLiveEvent(message);
-          }
-        };
-
-        socket.onclose = () => {
-          if (version !== connectionVersionRef.current) {
-            return;
-          }
-
-          clearPendingRequests();
-          wsRef.current = null;
-          sendTransportRef.current = null;
-          recvTransportRef.current = null;
           updateDebug({
             connectionState: "closed",
-            lastEvent: `${role} signaling closed`
+            lastEvent: `${role} room disconnected`,
+            viewers: room.remoteParticipants.size
           });
 
           if (currentSessionRef.current?.isLive) {
-            scheduleReconnect(role, liveId, bootstrap.reconnectDelayMs);
+            scheduleReconnect(role, liveId, LIVEKIT_RECONNECT_DELAY_MS);
           } else {
             setStreamStatus("offline");
           }
-        };
+        });
 
-        socket.onerror = () => {
-          updateDebug({
-            connectionState: "failed",
-            lastEvent: `${role} signaling error`
-          });
-        };
+        await room.connect(LIVEKIT_URL, token);
+        syncExistingRemoteTracks(room);
 
-        signalHeartbeatRef.current = window.setInterval(() => {
-          if (version !== connectionVersionRef.current) {
+        updateDebug({
+          connectionState: "connected",
+          viewers: room.remoteParticipants.size,
+          lastEvent: `${role} connected to ${LIVEKIT_ROOM_NAME}`
+        });
+
+        if (role === "viewer") {
+          setStreamStatus(remoteStreamRef.current.getTracks().length ? "live" : "joining");
+          return;
+        }
+
+        const stream = localStreamRef.current ?? await getSafeBroadcastStream();
+
+        if (!localStreamRef.current) {
+          setLocalStream(stream);
+        }
+
+        for (const track of stream.getTracks()) {
+          await room.localParticipant.publishTrack(track);
+        }
+
+        adminHeartbeatRef.current = window.setInterval(() => {
+          if (!currentSessionRef.current?.id) {
             return;
           }
 
-          void sendSignalRequest("heartbeat", undefined).catch(() => {
-            socket.close();
+          void api("/api/live/heartbeat", {
+            method: "POST",
+            body: JSON.stringify({ liveId: currentSessionRef.current.id })
+          }).catch(() => {
+            updateDebug({ lastEvent: "admin heartbeat failed" });
           });
-        }, bootstrap.heartbeatIntervalMs);
+        }, 10000);
 
-        if (role === "viewer") {
-          await attachViewerTransport(bootstrap, version);
-        } else {
-          adminHeartbeatRef.current = window.setInterval(() => {
-            if (!currentSessionRef.current?.id) {
-              return;
-            }
-
-            void api("/api/live/heartbeat", {
-              method: "POST",
-              body: JSON.stringify({ liveId: currentSessionRef.current.id })
-            }).catch(() => {
-              updateDebug({ lastEvent: "admin heartbeat failed" });
-            });
-          }, bootstrap.heartbeatIntervalMs);
-
-          await publishBroadcasterStream(bootstrap, version);
-        }
+        setStreamStatus("live");
       } catch (error) {
         const message = error instanceof Error ? error.message : "Live connection failed.";
+        await disconnectLiveKitRoom();
         setError(message);
         updateDebug({
           connectionState: "failed",
           lastEvent: message
         });
 
-        if (role === "viewer" && currentSessionRef.current?.isLive) {
-          const reconnectDelayMs = lastBootstrapRef.current?.reconnectDelayMs || 3000;
-          scheduleReconnect(role, liveId, reconnectDelayMs);
+        if (currentSessionRef.current?.isLive) {
+          scheduleReconnect(role, liveId, LIVEKIT_RECONNECT_DELAY_MS);
         } else {
           setStreamStatus("offline");
         }
@@ -1296,12 +1351,14 @@ export function LivePageContent({
       return;
     }
 
+    let liveStarted = false;
+
     try {
       setError(null);
       setStreamStatus("connecting");
 
+      teardownConnection(true);
       const stream = await getSafeBroadcastStream();
-
       setLocalStream(stream);
 
       recordedChunksRef.current = [];
@@ -1322,21 +1379,28 @@ export function LivePageContent({
         method: "POST",
         body: JSON.stringify({ liveId: currentSession.id })
       });
+      liveStarted = true;
 
       const nextSession = { ...currentSession, isLive: true };
       setCurrentSession(nextSession);
       currentSessionRef.current = nextSession;
       updateDebug({
         role: "broadcaster",
-        lastEvent: "live started"
+        lastEvent: `live started as ${LIVEKIT_IDENTITY}`
       });
-
       await connectToLive("broadcaster", currentSession.id);
     } catch (error) {
+      await disconnectLiveKitRoom();
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       setLocalStream(null);
       mediaRecorderRef.current = null;
       recordedChunksRef.current = [];
+      if (liveStarted) {
+        await api("/api/live/stop", {
+          method: "POST",
+          body: JSON.stringify({ liveId: currentSession.id })
+        }).catch(() => undefined);
+      }
       setStreamStatus("offline");
       setError(error instanceof Error ? error.message : "Nu s-a putut porni sesiunea live.");
     }
@@ -1347,10 +1411,7 @@ export function LivePageContent({
       return;
     }
 
-    try {
-      await sendSignalRequest("stopBroadcast", undefined);
-    } catch {}
-
+    await disconnectLiveKitRoom();
     teardownConnection(true);
 
     await api("/api/live/stop", {
@@ -1431,7 +1492,7 @@ export function LivePageContent({
     }
 
     if (isAdmin) {
-      if (localStreamRef.current && activeRoleRef.current !== "broadcaster") {
+      if (localStreamRef.current && activeRoleRef.current !== "broadcaster" && !liveKitRoomRef.current) {
         void connectToLive("broadcaster", currentSession.id);
       }
 
@@ -1460,10 +1521,9 @@ export function LivePageContent({
     function handleOnline() {
       const session = currentSessionRef.current;
       const role = activeRoleRef.current;
-      const bootstrap = lastBootstrapRef.current;
 
-      if (session?.isLive && role && bootstrap) {
-        scheduleReconnect(role, session.id, bootstrap.reconnectDelayMs);
+      if (session?.isLive && role) {
+        scheduleReconnect(role, session.id, LIVEKIT_RECONNECT_DELAY_MS);
       }
     }
 
