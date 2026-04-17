@@ -76,7 +76,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
       <section className="section-shell section-space pt-8 sm:pt-14 lg:pt-16">
         <FadeIn className="relative overflow-hidden rounded-[2.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] px-7 py-10 shadow-[0_40px_120px_rgba(0,0,0,0.35)] sm:px-10 sm:py-12 lg:min-h-[46rem] lg:px-14 lg:py-16">
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
-            <Image src={brandImages.hero} alt="Virgil Agu" fill priority className="object-cover object-center" />
+            <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.16),transparent_24%),radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.07),transparent_22%)]" />
@@ -129,7 +129,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 fill
                 priority
                 sizes="100vw"
-                className="object-cover object-[60%_center]"
+                className="object-cover object-[58%_16%]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
             </div>

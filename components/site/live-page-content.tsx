@@ -202,6 +202,21 @@ function areRecordingsEqual(current: LiveRecording[], next: LiveRecording[]) {
   );
 }
 
+function markSessionOffline(current: LiveSessionSummary | null) {
+  if (!current || !current.isLive) {
+    return current;
+  }
+
+  return {
+    ...current,
+    isLive: false
+  };
+}
+
+function clearMessages(current: ChatMessage[]) {
+  return current.length ? [] : current;
+}
+
 function getCountdownParts(targetDate: string | null, now: number) {
   if (!targetDate) {
     return null;
@@ -1134,7 +1149,7 @@ export function LivePageContent({
       }>("/api/live/current");
 
       if (!data.live) {
-        setCurrentSession((current) => (current ? { ...current, isLive: false } : current));
+        setCurrentSession(markSessionOffline);
         setStreamStatus("offline");
         teardownConnection(true);
         return;
@@ -1169,7 +1184,7 @@ export function LivePageContent({
         };
       });
     } catch {
-      setCurrentSession((current) => (current ? { ...current, isLive: false } : current));
+      setCurrentSession(markSessionOffline);
       setStreamStatus("offline");
     }
   }
@@ -1376,8 +1391,8 @@ export function LivePageContent({
     mediaRecorderRef.current = null;
     recordedChunksRef.current = [];
     recordingMimeTypeRef.current = "video/webm";
-    setCurrentSession({ ...currentSession, isLive: false });
-    setMessages([]);
+    setCurrentSession(markSessionOffline);
+    setMessages(clearMessages);
     setStreamStatus("offline");
     await loadRecordings();
   }
