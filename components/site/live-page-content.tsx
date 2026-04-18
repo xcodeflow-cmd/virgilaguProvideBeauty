@@ -1619,9 +1619,18 @@ export function LivePageContent({
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       await new Promise<void>((resolve) => {
-        mediaRecorderRef.current?.addEventListener("stop", () => resolve(), { once: true });
-        mediaRecorderRef.current?.stop();
+        const recorder = mediaRecorderRef.current;
+
+        recorder?.addEventListener("stop", () => resolve(), { once: true });
+        try {
+          recorder?.requestData();
+        } catch {}
+        recorder?.stop();
       });
+    }
+
+    if (!recordedChunksRef.current.length) {
+      throw new Error("Recording could not be saved. No video data was captured.");
     }
 
     if (recordedChunksRef.current.length) {
