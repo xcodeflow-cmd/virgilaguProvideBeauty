@@ -1,5 +1,12 @@
+import fs from "node:fs";
+import fsp from "node:fs/promises";
+import { Readable } from "node:stream";
+
+import { getLiveRecordingExtension, getLiveRecordingFilePath } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 import { requireLiveSessionAccess } from "@/lib/live-access";
+
+export const runtime = "nodejs";
 
 export async function GET(
   _request: Request,
@@ -20,6 +27,23 @@ export async function GET(
     }
   });
 
+  const extension = getLiveRecordingExtension(recording?.recordingMimeType);
+  const recordingPath = getLiveRecordingFilePath(id, extension);
+  const fileStats = await fsp.stat(recordingPath).catch(() => null);
+
+  if (fileStats?.isFile()) {
+    const stream = fs.createReadStream(recordingPath);
+
+    return new Response(Readable.toWeb(stream as never), {
+      headers: {
+        "Content-Type": recording?.recordingMimeType || "video/webm",
+        "Content-Length": String(fileStats.size),
+        "Content-Disposition": `inline; filename="${recording?.title || "recording"}.${extension}"`,
+        "Cache-Control": "private, max-age=0, must-revalidate"
+      }
+    });
+  }
+
   if (!recording?.recordingData) {
     return Response.json({ error: "Recording not found." }, { status: 404 });
   }
@@ -27,7 +51,7 @@ export async function GET(
   return new Response(recording.recordingData, {
     headers: {
       "Content-Type": recording.recordingMimeType || "video/webm",
-      "Content-Disposition": `inline; filename="${recording.title || "recording"}.webm"`,
+      "Content-Disposition": `inline; filename="${recording.title || "recording"}.${extension}"`,
       "Cache-Control": "private, max-age=0, must-revalidate"
     }
   });

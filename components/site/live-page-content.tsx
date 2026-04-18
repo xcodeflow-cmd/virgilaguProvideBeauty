@@ -154,6 +154,13 @@ const LIVEKIT_VIDEO_ENCODING = {
   maxBitrate: 8_000_000,
   maxFramerate: 30
 };
+const MEDIA_RECORDER_MIME_CANDIDATES = [
+  "video/webm;codecs=vp9,opus",
+  "video/webm;codecs=vp8,opus",
+  "video/mp4;codecs=h264,aac",
+  "video/mp4"
+];
+
 function wait(ms: number) {
   return new Promise<void>((resolve) => {
     window.setTimeout(resolve, ms);
@@ -170,6 +177,15 @@ function detectAppleWebKit() {
   const isSafari = /Safari/.test(userAgent) && !/Chrome|CriOS|Edg|OPR|Firefox|FxiOS/.test(userAgent);
 
   return { isIOS, isSafari };
+}
+
+function getMediaRecorderMimeType() {
+  if (typeof MediaRecorder === "undefined") {
+    return "";
+  }
+
+  const supported = MEDIA_RECORDER_MIME_CANDIDATES.find((candidate) => MediaRecorder.isTypeSupported(candidate));
+  return supported || "";
 }
 
 function normalizeLiveKitUrl(rawUrl: string) {
@@ -371,7 +387,9 @@ export function LivePageContent({
   const videoStageRef = useRef<HTMLDivElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const liveKitRoomRef = useRef<Room | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
   const deviceRef = useRef<MediasoupDeviceLike | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const sendTransportRef = useRef<MediasoupTransportLike | null>(null);
@@ -394,6 +412,7 @@ export function LivePageContent({
   const consumePendingRef = useRef<Set<string>>(new Set());
   const restartInFlightRef = useRef<Set<string>>(new Set());
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
+  const recordingMimeTypeRef = useRef("video/webm");
 
   function hasSessionAccess(session: LiveSessionSummary | null | undefined) {
     if (!session) {
@@ -1540,6 +1559,20 @@ export function LivePageContent({
       const stream = await getSafeBroadcastStream();
       setLocalStream(stream);
 
+      recordedChunksRef.current = [];
+      const recordingMimeType = getMediaRecorderMimeType();
+      recordingMimeTypeRef.current = recordingMimeType || "video/webm";
+      const mediaRecorder = recordingMimeType
+        ? new MediaRecorder(stream, { mimeType: recordingMimeType })
+        : new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+      mediaRecorder.start(2000);
+      mediaRecorderRef.current = mediaRecorder;
+
       await api("/api/live/start", {
         method: "POST",
         body: JSON.stringify({ liveId: currentSession.id })
@@ -1558,6 +1591,8 @@ export function LivePageContent({
       await disconnectLiveKitRoom();
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       setLocalStream(null);
+      mediaRecorderRef.current = null;
+      recordedChunksRef.current = [];
       if (liveStarted) {
         await api("/api/live/stop", {
           method: "POST",
@@ -1582,8 +1617,46 @@ export function LivePageContent({
       body: JSON.stringify({ liveId: currentSession.id })
     });
 
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      await new Promise<void>((resolve) => {
+        const recorder = mediaRecorderRef.current;
+
+        recorder?.addEventListener("stop", () => resolve(), { once: true });
+        try {
+          recorder?.requestData();
+        } catch {}
+        recorder?.stop();
+      });
+    }
+
+    if (!recordedChunksRef.current.length) {
+      throw new Error("Recording could not be saved. No video data was captured.");
+    }
+
+    const formData = new FormData();
+    formData.append("liveId", currentSession.id);
+    const recordingMimeType = recordingMimeTypeRef.current || "video/webm";
+    const recordingExtension = recordingMimeType.includes("mp4") ? "mp4" : "webm";
+    formData.append(
+      "video",
+      new File(recordedChunksRef.current, `${currentSession.id}.${recordingExtension}`, { type: recordingMimeType })
+    );
+
+    const uploadResponse = await fetch("/api/live/upload", {
+      method: "POST",
+      credentials: "include",
+      body: formData
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error("Recording upload failed.");
+    }
+
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     setLocalStream(null);
+    mediaRecorderRef.current = null;
+    recordedChunksRef.current = [];
+    recordingMimeTypeRef.current = "video/webm";
     setCurrentSession(null);
     setMessages(clearMessages);
     setStreamStatus("offline");

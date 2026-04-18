@@ -1,6 +1,9 @@
+import fs from "node:fs/promises";
+
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/live-access";
+import { getLiveRecordingExtension, getLiveRecordingFilePath, getLiveRecordingsDir } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -24,15 +27,21 @@ export async function POST(request: Request) {
 
   const arrayBuffer = await file.arrayBuffer();
   const bytes = Buffer.from(arrayBuffer);
+  const recordingMimeType = file.type || "video/webm";
+  const recordingExtension = getLiveRecordingExtension(recordingMimeType);
+  const recordingPath = getLiveRecordingFilePath(liveId, recordingExtension);
   const recordingUrl = `/api/live/recordings/${liveId}/video`;
+
+  await fs.mkdir(getLiveRecordingsDir(), { recursive: true });
+  await fs.writeFile(recordingPath, bytes);
 
   await prisma.liveSession.update({
     where: { id: liveId },
     data: {
       isLive: false,
       recordingUrl,
-      recordingMimeType: file.type || "video/webm",
-      recordingData: bytes
+      recordingMimeType,
+      recordingData: null
     }
   });
 
