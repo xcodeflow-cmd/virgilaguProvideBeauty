@@ -79,12 +79,12 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
             <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
-            <div className="absolute left-5 top-8 z-20 w-[240px]">
+            <div className="absolute left-1 top-3 z-20 w-[288px]">
               <Image
                 src={provibeLogo}
                 alt="Provibe logo"
                 className="h-auto w-full object-contain"
-                sizes="240px"
+                sizes="288px"
               />
             </div>
           </div>
@@ -141,12 +141,12 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 className="object-cover object-[58%_16%]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
-              <div className="absolute left-4 top-4 z-20 w-32 sm:w-36">
+              <div className="absolute left-2 top-2 z-20 w-36 sm:w-40">
                 <Image
                   src={provibeLogo}
                   alt="Provibe logo"
                   className="h-auto w-full object-contain"
-                  sizes="(min-width: 640px) 144px, 128px"
+                  sizes="(min-width: 640px) 160px, 144px"
                 />
               </div>
             </div>
