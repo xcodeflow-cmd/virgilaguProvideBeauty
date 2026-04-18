@@ -135,6 +135,7 @@ model LiveSession {
   price           Int?
   compareAtPrice  Int?
   maxParticipants Int?
+  hasStarted      Boolean           @default(false)
   visibility      SessionVisibility @default(SUBSCRIBERS)
   isLive          Boolean           @default(false)
   isFeatured      Boolean           @default(false)

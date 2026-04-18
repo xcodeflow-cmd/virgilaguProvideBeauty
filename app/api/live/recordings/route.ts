@@ -6,18 +6,20 @@ export async function GET() {
   const recordings = await prisma.liveSession.findMany({
     where: {
       isLive: false,
-      recordingUrl: { not: null }
+      hasStarted: true
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { scheduledFor: "desc" },
     select: {
       id: true,
       title: true,
       description: true,
+      scheduledFor: true,
       createdAt: true,
       recordingUrl: true,
       price: true,
       compareAtPrice: true,
       maxParticipants: true,
+      hasStarted: true,
       visibility: true,
       _count: {
         select: {
@@ -32,8 +34,8 @@ export async function GET() {
       id: item.id,
       title: item.title,
       description: item.description,
-      createdAt: item.createdAt.toISOString(),
-      videoUrl: item.recordingUrl,
+      createdAt: item.scheduledFor.toISOString(),
+      videoUrl: item.recordingUrl || "",
       price: item.price,
       compareAtPrice: item.compareAtPrice,
       visibility: item.visibility,

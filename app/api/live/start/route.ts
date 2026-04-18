@@ -34,6 +34,7 @@ export async function POST(request: Request) {
       where: { id: liveId },
       data: {
         isLive: true,
+        hasStarted: true,
         scheduledFor: new Date(),
         recordingUrl: null,
         recordingMimeType: null,

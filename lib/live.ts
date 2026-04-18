@@ -35,9 +35,11 @@ export async function getPrimaryLiveSession() {
       return activeSession;
     }
 
-    const upcomingSession = sessions.find((session) => session.scheduledFor.getTime() > now.getTime());
+    const upcomingSession = sessions.find(
+      (session) => !session.hasStarted && session.scheduledFor.getTime() > now.getTime()
+    );
 
-    return upcomingSession || sessions[0];
+    return upcomingSession || null;
   } catch {
     return null;
   }
@@ -47,7 +49,8 @@ export async function getPastLiveSessions() {
   try {
     const sessions = await prisma.liveSession.findMany({
       where: {
-        recordingUrl: { not: null }
+        hasStarted: true,
+        isLive: false
       },
       orderBy: { scheduledFor: "desc" },
       select: {
@@ -59,6 +62,7 @@ export async function getPastLiveSessions() {
         price: true,
         compareAtPrice: true,
         maxParticipants: true,
+        hasStarted: true,
         visibility: true,
         isLive: true,
         createdAt: true,
@@ -73,7 +77,7 @@ export async function getPastLiveSessions() {
 
     const now = new Date();
 
-    return sessions.filter((session) => !isLiveSessionActive(session, now));
+    return sessions.filter((session) => session.hasStarted && !isLiveSessionActive(session, now));
   } catch {
     return [];
   }

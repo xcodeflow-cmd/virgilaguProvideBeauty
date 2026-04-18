@@ -1305,7 +1305,7 @@ export function LivePageContent({
       }>("/api/live/current");
 
       if (!data.live) {
-        setCurrentSession(markSessionOffline);
+        setCurrentSession(null);
         setStreamStatus("offline");
         teardownConnection(true);
         return;
@@ -1344,7 +1344,7 @@ export function LivePageContent({
         };
       });
     } catch {
-      setCurrentSession(markSessionOffline);
+      setCurrentSession(null);
       setStreamStatus("offline");
     }
   }
@@ -1646,10 +1646,11 @@ export function LivePageContent({
     mediaRecorderRef.current = null;
     recordedChunksRef.current = [];
     recordingMimeTypeRef.current = "video/webm";
-    setCurrentSession(markSessionOffline);
+    setCurrentSession(null);
     setMessages(clearMessages);
     setStreamStatus("offline");
     await loadRecordings();
+    await loadCurrentLive();
   }
 
   useEffect(() => {

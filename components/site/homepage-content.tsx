@@ -79,8 +79,8 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
             <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
-            <div className="absolute left-5 top-5 z-20 h-24 w-24 rounded-[1.4rem] bg-black/35 p-3 backdrop-blur-md">
-              <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain p-3" sizes="96px" />
+            <div className="absolute left-6 top-6 z-20 h-36 w-36">
+              <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain" sizes="144px" />
             </div>
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.16),transparent_24%),radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.07),transparent_22%)]" />
@@ -136,8 +136,8 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 className="object-cover object-[58%_16%]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
-              <div className="absolute left-4 top-4 z-20 h-20 w-20 rounded-[1.2rem] bg-black/35 p-2 backdrop-blur-md">
-                <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain p-2.5" sizes="80px" />
+              <div className="absolute left-4 top-4 z-20 h-28 w-28">
+                <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain" sizes="112px" />
               </div>
             </div>
           </div>

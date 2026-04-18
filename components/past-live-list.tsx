@@ -88,12 +88,16 @@ export function PastLiveList({
                   </p>
                 ) : null}
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  {hasAccess ? (
+                  {hasAccess && session.recordingUrl ? (
                     <Button asChild className="min-h-11">
                       <Link href={session.recordingUrl} target="_blank" rel="noreferrer">
                         Vezi replay
                       </Link>
                     </Button>
+                  ) : hasAccess ? (
+                    <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
+                      Replay in curs de salvare
+                    </div>
                   ) : (
                     <>
                       {session.visibility === "ONE_TIME" && session.price ? (

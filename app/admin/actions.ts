@@ -175,6 +175,7 @@ export async function addLiveSession(formData: FormData) {
       visibility: visibilityValue as SessionVisibility,
       isLive: false,
       isFeatured: false,
+      hasStarted: false,
       price,
       compareAtPrice: null,
       maxParticipants
