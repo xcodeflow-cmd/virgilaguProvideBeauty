@@ -28,6 +28,7 @@ export default async function LivePage() {
         accessibleLiveIds={purchasedLiveIds}
         canAccessCurrentSession={isAdmin || currentSessionAccess}
         isAdmin={isAdmin}
+        currentUserId={session?.user?.id}
         initialSession={liveSession
           ? {
               id: liveSession.id,
@@ -35,6 +36,7 @@ export default async function LivePage() {
               description: liveSession.description,
               scheduledFor: liveSession.scheduledFor.toISOString(),
               isLive: isActive,
+              thumbnailUrl: liveSession.thumbnailUrl,
               price: liveSession.price,
               compareAtPrice: liveSession.compareAtPrice,
               visibility: liveSession.visibility,

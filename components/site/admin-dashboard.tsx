@@ -88,6 +88,15 @@ function toTextarea(value?: string[] | string) {
   return value || "";
 }
 
+function splitDateTime(value: string) {
+  const [date = "", time = ""] = value.split("T");
+
+  return {
+    date,
+    time: time.slice(0, 5)
+  };
+}
+
 export function AdminDashboard({
   galleryItems,
   liveSessions,
@@ -166,6 +175,7 @@ export function AdminDashboard({
       data: courseSettings.liveExperience
     }
   ] as const;
+  const selectedSchedule = selectedLiveSession ? splitDateTime(formatRomaniaDateTimeLocal(new Date(selectedLiveSession.scheduledFor))) : null;
 
   return (
     <section className="section-shell py-8 sm:py-12">
@@ -237,12 +247,21 @@ export function AdminDashboard({
                     Programeaza timer
                   </label>
                 </div>
-                <input
-                  name="scheduledFor"
-                  type="datetime-local"
-                  disabled={liveStartMode !== "SCHEDULE"}
-                  className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
-                />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    name="scheduleDate"
+                    type="date"
+                    disabled={liveStartMode !== "SCHEDULE"}
+                    className="premium-input min-h-[3.5rem] disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  <input
+                    name="scheduleTime"
+                    type="time"
+                    step="60"
+                    disabled={liveStartMode !== "SCHEDULE"}
+                    className="premium-input min-h-[3.5rem] disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
                 <select name="visibility" defaultValue="PUBLIC" className="premium-input">
                   <option value="PUBLIC">Public</option>
                   <option value="ONE_TIME">One time</option>
@@ -285,12 +304,21 @@ export function AdminDashboard({
                       </label>
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Data timer</span>
-                        <input
-                          name="scheduledFor"
-                          type="datetime-local"
-                          defaultValue={formatRomaniaDateTimeLocal(new Date(selectedLiveSession.scheduledFor))}
-                          className="premium-input"
-                        />
+                        <div className="grid gap-3">
+                          <input
+                            name="scheduleDate"
+                            type="date"
+                            defaultValue={selectedSchedule?.date || ""}
+                            className="premium-input min-h-[3.5rem]"
+                          />
+                          <input
+                            name="scheduleTime"
+                            type="time"
+                            step="60"
+                            defaultValue={selectedSchedule?.time || ""}
+                            className="premium-input min-h-[3.5rem]"
+                          />
+                        </div>
                       </label>
                     </div>
                     <label className="space-y-2">
@@ -359,7 +387,7 @@ export function AdminDashboard({
                         <div key={session.id} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
                           <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/25">
                             {session.thumbnailUrl ? (
-                              <Image src={session.thumbnailUrl} alt={session.title} fill className="object-cover" unoptimized />
+                              <Image src={session.thumbnailUrl} alt={session.title} fill className="object-contain" unoptimized />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 text-center text-sm text-white/45">
                                 Fara thumbnail setat

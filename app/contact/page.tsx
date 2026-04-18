@@ -24,19 +24,18 @@ export default function ContactPage() {
               Raspuns rapid
             </div>
           </div>
-          <div className="grid gap-4 p-6 sm:grid-cols-3 sm:p-10 lg:p-14">
+          <div className="grid grid-cols-3 gap-2 p-4 sm:gap-4 sm:p-10 lg:p-14">
             {contactItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="group rounded-[1.6rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.2)]"
+                className="group rounded-[1.15rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.022),rgba(255,255,255,0.006))] p-3 transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.2)] sm:rounded-[1.6rem] sm:p-5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d6b98c]/10 text-accent">
-                  <item.icon className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d6b98c]/10 text-accent sm:h-12 sm:w-12">
+                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <p className="mt-8 text-[11px] uppercase tracking-[0.36em] text-white/[0.42]">{item.label}</p>
-                <p className="mt-3 text-xl text-white sm:text-2xl">{item.value}</p>
-                <p className="mt-3 text-sm text-white/[0.48]">Deschide canalul direct si continua conversatia.</p>
+                <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-white/[0.42] sm:mt-8 sm:text-[11px] sm:tracking-[0.36em]">{item.label}</p>
+                <p className="mt-2 text-xs text-white sm:mt-3 sm:text-2xl">{item.value}</p>
               </Link>
             ))}
           </div>

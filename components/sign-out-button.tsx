@@ -10,12 +10,13 @@ export function SignOutButton({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <Button
+      type="button"
       variant="secondary"
-      className="border-[rgba(201,165,108,0.26)] bg-[rgba(201,165,108,0.08)] text-[#f3e3c6]"
+      className="min-h-11 border-[rgba(201,165,108,0.26)] bg-[rgba(201,165,108,0.08)] px-4 text-[#f3e3c6]"
       onClick={() =>
         startTransition(() => {
           onComplete?.();
-          void signOut({ callbackUrl: "/" });
+          void signOut({ callbackUrl: "/", redirect: true });
         })
       }
       disabled={pending}

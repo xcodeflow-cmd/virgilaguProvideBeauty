@@ -18,6 +18,7 @@ import type { Session } from "next-auth";
 
 import { AuthButtons } from "@/components/auth-buttons";
 import { Logo } from "@/components/logo";
+import { SignOutButton } from "@/components/sign-out-button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -127,12 +128,17 @@ export function Navbar({ session }: { session: Session | null }) {
       {pathname !== "/live" && !pathname.startsWith("/auth") ? (
         <div
           className={cn(
-            "pointer-events-none fixed inset-x-0 bottom-4 z-40 px-4 transition duration-200 md:hidden",
+            "pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 px-4 transition duration-200 md:hidden",
             isOpen ? "opacity-0" : "opacity-100"
           )}
         >
-          <div className="mx-auto flex max-w-xl items-center justify-between gap-2 rounded-full border border-white/10 bg-black/70 p-2 shadow-[0_20px_70px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-            <div className="min-w-0 flex-1">
+          <div
+            className={cn(
+              "mx-auto grid max-w-xl items-center gap-2 rounded-[1.6rem] border border-white/10 bg-black/70 p-2 shadow-[0_20px_70px_rgba(0,0,0,0.35)] backdrop-blur-xl",
+              session?.user ? "grid-cols-3" : "grid-cols-2"
+            )}
+          >
+            <div className="min-w-0">
               <Link
                 href={session?.user ? (session.user.role === "ADMIN" ? "/admin" : "/dashboard") : "/auth/signin"}
                 onClick={() => setIsOpen(false)}
@@ -141,7 +147,7 @@ export function Navbar({ session }: { session: Session | null }) {
                 {session?.user ? (session.user.role === "ADMIN" ? "Admin" : "Contul meu") : "Autentificare"}
               </Link>
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <Link
                 href="/live"
                 onClick={() => setIsOpen(false)}
@@ -150,6 +156,13 @@ export function Navbar({ session }: { session: Session | null }) {
                 LIVE
               </Link>
             </div>
+            {session?.user ? (
+              <div className="min-w-0">
+                <div className="pointer-events-auto flex justify-center">
+                  <SignOutButton onComplete={() => setIsOpen(false)} />
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -163,7 +176,7 @@ export function Navbar({ session }: { session: Session | null }) {
 
           <div className="fixed inset-x-0 top-0 z-50 px-4 pt-20 sm:px-7 lg:px-10">
             <div className="section-shell">
-              <div className="mx-auto max-w-[46rem] overflow-hidden rounded-[1.85rem] border border-white/10 bg-black/[0.98] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)] sm:p-5">
+              <div className="mx-auto max-h-[calc(100svh-6rem)] max-w-[46rem] overflow-y-auto rounded-[1.85rem] border border-white/10 bg-black/[0.98] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.34)] sm:p-5">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <p className="text-[10px] uppercase tracking-[0.34em] text-white/40">Navigation</p>
                   <button

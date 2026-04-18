@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { MobilePeekCarousel } from "@/components/mobile-peek-carousel";
 import aboutImageMain from "@/assets/about me/premii.jpeg";
 import aboutImage01 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.44.38.jpeg";
 import aboutImage02 from "@/assets/about me/WhatsApp Image 2026-04-04 at 18.56.21.jpeg";
@@ -31,12 +32,23 @@ export default async function AboutPage() {
             </div>
           </div>
 
-          <div className="grid gap-3 p-3 sm:grid-cols-2 sm:p-4">
+          <div className="hidden gap-3 p-3 sm:grid sm:grid-cols-2 sm:p-4">
             {images.slice(0, 4).map((image, index) => (
               <div key={index} className={`relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/30 ${index === 0 ? "sm:col-span-2 aspect-[16/10]" : "aspect-[4/5]"}`}>
                 <Image src={image} alt={`Provibe ${index + 1}`} fill className="object-cover" unoptimized={typeof image === "string"} />
               </div>
             ))}
+          </div>
+
+          <div className="py-3 sm:hidden">
+            <MobilePeekCarousel
+              ariaLabel="Despre noi"
+              items={images.slice(0, 4).map((image, index) => (
+                <div key={index} className="relative aspect-[4/5] overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/30">
+                  <Image src={image} alt={`Provibe ${index + 1}`} fill className="object-cover" unoptimized={typeof image === "string"} />
+                </div>
+              ))}
+            />
           </div>
         </div>
       </div>

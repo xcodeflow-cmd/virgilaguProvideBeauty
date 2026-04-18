@@ -25,8 +25,10 @@ export async function GET(
     include: {
       user: {
         select: {
+          id: true,
           name: true,
-          email: true
+          email: true,
+          role: true
         }
       }
     }
@@ -37,7 +39,9 @@ export async function GET(
       id: item.id,
       text: item.content,
       timestamp: item.createdAt.toISOString(),
-      user: item.user.name || item.user.email || "Membru"
+      user: item.user.name || item.user.email || "Membru",
+      userId: item.user.id,
+      role: item.user.role
     }))
   });
 }
@@ -69,8 +73,10 @@ export async function POST(
     include: {
       user: {
         select: {
+          id: true,
           name: true,
-          email: true
+          email: true,
+          role: true
         }
       }
     }
@@ -81,7 +87,9 @@ export async function POST(
       id: message.id,
       text: message.content,
       timestamp: message.createdAt.toISOString(),
-      user: message.user.name || message.user.email || "Membru"
+      user: message.user.name || message.user.email || "Membru",
+      userId: message.user.id,
+      role: message.user.role
     }
   });
 }

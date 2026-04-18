@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Award, GraduationCap, ScissorsLineDashed } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
+import { MobilePeekCarousel } from "@/components/mobile-peek-carousel";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
 import { Button } from "@/components/ui/button";
 import type { CourseOffer } from "@/lib/course-offers";
@@ -36,35 +37,35 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
             <h1 className="mt-6 max-w-5xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
               Programe premium construite pentru progres clar, nu pentru impresie generica.
             </h1>
-            <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+            <div className="mt-10 grid max-w-2xl grid-cols-3 gap-2.5 sm:gap-4">
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
                 <p className="dashboard-label">Experienta</p>
-                <p className="mt-3 text-2xl text-white">10+ ani</p>
+                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">10+ ani</p>
               </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
                 <p className="dashboard-label">Cursanti</p>
-                <p className="mt-3 text-2xl text-white">300+</p>
+                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">300+</p>
               </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
                 <p className="dashboard-label">Format</p>
-                <p className="mt-3 text-2xl text-white">Fizic + LIVE</p>
+                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">Fizic + LIVE</p>
               </div>
             </div>
 
-            <div className="mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
-              <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.025] px-4 py-4 text-sm text-white/[0.66]">
+            <div className="mt-10 grid max-w-3xl grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <GraduationCap className="h-4 w-4" />
                 </div>
                 Baza corecta pentru cei care pornesc serios.
               </div>
-              <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.025] px-4 py-4 text-sm text-white/[0.66]">
+              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <ScissorsLineDashed className="h-4 w-4" />
                 </div>
                 Corectii directe si progres rapid in 1 la 1.
               </div>
-              <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.025] px-4 py-4 text-sm text-white/[0.66]">
+              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <Award className="h-4 w-4" />
                 </div>
@@ -106,7 +107,7 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
           </Button>
         </FadeIn>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="hidden gap-6 lg:grid-cols-3 lg:grid">
           {feedbackVideos.map((item) => (
             <FadeIn
               key={item.id}
@@ -123,6 +124,26 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
               </div>
             </FadeIn>
           ))}
+        </div>
+
+        <div className="lg:hidden">
+          <MobilePeekCarousel
+            ariaLabel="Feedback cursuri"
+            items={feedbackVideos.map((item) => (
+              <div
+                key={item.id}
+                className="overflow-hidden rounded-[2rem] border border-white/10 bg-black shadow-panel"
+              >
+                <video
+                  src={item.src}
+                  controls
+                  preload="metadata"
+                  playsInline
+                  className="aspect-[4/5] w-full bg-black object-cover"
+                />
+              </div>
+            ))}
+          />
         </div>
       </div>
     </section>

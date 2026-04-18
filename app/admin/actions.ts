@@ -40,6 +40,23 @@ function buildLiveSlug(title: string) {
   return `${base}-${Date.now().toString(36)}`;
 }
 
+function getScheduledValue(formData: FormData) {
+  const scheduledFor = String(formData.get("scheduledFor") || "").trim();
+
+  if (scheduledFor) {
+    return scheduledFor;
+  }
+
+  const scheduleDate = String(formData.get("scheduleDate") || "").trim();
+  const scheduleTime = String(formData.get("scheduleTime") || "").trim();
+
+  if (!scheduleDate || !scheduleTime) {
+    return "";
+  }
+
+  return `${scheduleDate}T${scheduleTime}`;
+}
+
 function getSafeLiveSchedule(startMode: string, scheduledValue: string, fallbackDate: Date) {
   if (startMode !== "SCHEDULE") {
     return new Date();
@@ -145,7 +162,7 @@ export async function addLiveSession(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const startMode = String(formData.get("startMode") || "NOW");
-  const scheduledValue = String(formData.get("scheduledFor") || "").trim();
+  const scheduledValue = getScheduledValue(formData);
   const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
@@ -211,7 +228,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const mode = String(formData.get("mode") || "UPDATE");
-  const scheduledValue = String(formData.get("scheduledFor") || "").trim();
+  const scheduledValue = getScheduledValue(formData);
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
   const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);

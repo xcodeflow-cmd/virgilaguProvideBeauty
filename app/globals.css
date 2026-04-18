@@ -198,6 +198,15 @@ body {
   }
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes countdownPulse {
   0%, 100% {
     transform: translateY(0);

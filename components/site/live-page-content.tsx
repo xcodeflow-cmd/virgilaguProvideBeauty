@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
 import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
@@ -24,6 +25,7 @@ type LiveSessionSummary = {
   description: string;
   scheduledFor: string;
   isLive: boolean;
+  thumbnailUrl?: string;
   price?: number | null;
   compareAtPrice?: number | null;
   visibility?: string;
@@ -50,6 +52,8 @@ type ChatMessage = {
   user: string;
   text: string;
   timestamp: string;
+  userId?: string;
+  role?: "USER" | "ADMIN";
 };
 
 type LiveRecording = {
@@ -251,7 +255,9 @@ function areMessagesEqual(current: ChatMessage[], next: ChatMessage[]) {
       message.id === next[index]?.id &&
       message.timestamp === next[index]?.timestamp &&
       message.text === next[index]?.text &&
-      message.user === next[index]?.user
+      message.user === next[index]?.user &&
+      message.userId === next[index]?.userId &&
+      message.role === next[index]?.role
   );
 }
 
@@ -337,13 +343,15 @@ export function LivePageContent({
   canAccessCurrentSession,
   isAdmin,
   initialSession,
-  pastSessions
+  pastSessions,
+  currentUserId
 }: {
   accessibleLiveIds: string[];
   canAccessCurrentSession: boolean;
   isAdmin: boolean;
   initialSession: LiveSessionSummary | null;
   pastSessions: PastLiveSession[];
+  currentUserId?: string;
 }) {
   const [currentSession, setCurrentSession] = useState<LiveSessionSummary | null>(initialSession);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -351,11 +359,11 @@ export function LivePageContent({
   const [chatText, setChatText] = useState("");
   const [recordings, setRecordings] = useState<LiveRecording[]>(
     pastSessions.map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      createdAt: item.scheduledFor,
-      thumbnailUrl: item.thumbnailUrl,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          createdAt: item.scheduledFor,
+          thumbnailUrl: item.thumbnailUrl,
       videoUrl: item.recordingUrl,
       price: item.price,
       compareAtPrice: item.compareAtPrice,
@@ -1189,14 +1197,14 @@ export function LivePageContent({
         remoteStreamRef.current = null;
         setRemoteVideoStream();
 
-        room.on(RoomEvent.TrackSubscribed, (track: any) => {
+        room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
           if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
             addRemoteTrack(track as RemoteTrack);
             setStreamStatus("live");
           }
         });
 
-        room.on(RoomEvent.TrackUnsubscribed, (track: any) => {
+        room.on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
           if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
             removeRemoteTrack(track as RemoteTrack);
 
@@ -1320,6 +1328,7 @@ export function LivePageContent({
           description: string;
           scheduledFor: string;
           isLive: boolean;
+          thumbnailUrl?: string;
           price?: number | null;
           compareAtPrice?: number | null;
           visibility?: string;
@@ -1330,6 +1339,7 @@ export function LivePageContent({
 
       if (!data.live) {
         setCurrentSession(null);
+        setMessages(clearMessages);
         setStreamStatus("offline");
         teardownConnection(true);
         return;
@@ -1345,6 +1355,7 @@ export function LivePageContent({
           current.description === live.description &&
           current.scheduledFor === live.scheduledFor &&
           current.isLive === live.isLive &&
+          current.thumbnailUrl === live.thumbnailUrl &&
           current.price === live.price &&
           current.compareAtPrice === live.compareAtPrice &&
           current.visibility === live.visibility &&
@@ -1360,6 +1371,7 @@ export function LivePageContent({
           description: live.description,
           scheduledFor: live.scheduledFor,
           isLive: live.isLive,
+          thumbnailUrl: live.thumbnailUrl,
           price: live.price,
           compareAtPrice: live.compareAtPrice,
           visibility: live.visibility,
@@ -1537,9 +1549,11 @@ export function LivePageContent({
       const room = liveKitRoomRef.current;
 
       if (room) {
-          const publishedVideoTrack = (Array.from(room.localParticipant.videoTrackPublications.values()) as any[]).find(
-            (publication: any) => publication?.track
-          )?.track as { mediaStreamTrack: MediaStreamTrack } | undefined;
+        const publishedVideoTrack = (
+          Array.from(room.localParticipant.videoTrackPublications.values()) as Array<{
+            track?: { mediaStreamTrack: MediaStreamTrack } | null;
+          }>
+        ).find((publication) => publication?.track)?.track || undefined;
 
         if (publishedVideoTrack) {
           await room.localParticipant.unpublishTrack(publishedVideoTrack.mediaStreamTrack, false);
@@ -1698,6 +1712,7 @@ export function LivePageContent({
 
   useEffect(() => {
     if (!currentSession?.isLive || !hasSessionAccess(currentSession)) {
+      setMessages(clearMessages);
       return;
     }
 
@@ -1822,6 +1837,7 @@ export function LivePageContent({
     : 0;
   const currentSessionLocked = Boolean(currentSession && !canViewCurrentSession && !isAdmin);
   const currentSessionSoldOut = Boolean(
+    currentSession?.isLive &&
     !canViewCurrentSession &&
     currentSession?.maxParticipants &&
     (currentSession?.purchasedCount || 0) >= currentSession.maxParticipants
@@ -1855,25 +1871,35 @@ export function LivePageContent({
       <div className="flex-1 px-3 py-3 sm:px-4">
         {canUseChat ? (
           <div className="flex h-full flex-col">
-            <div ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto pr-1">
+            <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
               {messages.length ? (
-                messages.map((item, index) => {
-                  const isRight = index % 2 === 1;
+                messages.map((item) => {
+                  const isOwnMessage = Boolean(currentUserId && item.userId === currentUserId);
+                  const isAdminMessage = item.role === "ADMIN";
+                  const alignment = isOwnMessage ? "justify-end" : "justify-start";
+                  const bubbleClass = isAdminMessage
+                    ? "border border-red-500/30 bg-[linear-gradient(180deg,rgba(153,27,27,0.96),rgba(127,29,29,0.9))] text-red-50 shadow-[0_20px_40px_rgba(127,29,29,0.28)]"
+                    : isOwnMessage
+                      ? "border border-[#d6b98c]/25 bg-[linear-gradient(180deg,#ecd4ac,#c99f62)] text-[#2f210d] shadow-[0_20px_36px_rgba(214,185,140,0.22)]"
+                      : "border border-white/10 bg-[#2a2a2a] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
+                  const metaClass = isAdminMessage
+                    ? "text-red-100/80"
+                    : isOwnMessage
+                      ? "text-[#4b3313]/75"
+                      : "text-white/55";
+                  const timeClass = isAdminMessage
+                    ? "text-red-100/65"
+                    : isOwnMessage
+                      ? "text-[#4b3313]/65"
+                      : "text-white/38";
 
                   return (
-                    <div key={item.id} className={`flex ${isRight ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[88%] rounded-[1.5rem] px-4 py-3 ${
-                          isRight
-                            ? "rounded-br-md bg-[linear-gradient(180deg,#ecd4ac,#cfab72)] text-black shadow-[0_20px_36px_rgba(214,185,140,0.18)]"
-                            : "rounded-bl-md bg-white/[0.05] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                        }`}
-                      >
-                        <p className={`text-xs font-medium ${isRight ? "text-black/70" : "text-white/[0.55]"}`}>
-                          {item.user}
+                    <div key={item.id} className={`flex ${alignment}`}>
+                      <div className={`max-w-[88%] rounded-[1.2rem] px-3.5 py-2.5 sm:max-w-[84%] ${bubbleClass}`}>
+                        <p className={`text-[11px] font-medium leading-5 ${metaClass}`}>
+                          {item.user} : <span className="font-normal">{item.text}</span>
                         </p>
-                        <p className="mt-1 text-sm leading-6">{item.text}</p>
-                        <p className={`mt-2 text-[11px] ${isRight ? "text-black/[0.55]" : "text-white/[0.35]"}`}>
+                        <p className={`mt-1 text-[10px] uppercase tracking-[0.22em] ${timeClass}`}>
                           {new Date(item.timestamp).toLocaleTimeString("ro-RO", {
                             timeZone: "Europe/Bucharest",
                             hour: "2-digit",
@@ -1891,7 +1917,7 @@ export function LivePageContent({
               )}
             </div>
 
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex shrink-0 gap-2 border-t border-white/10 pt-3">
               <input
                 value={chatText}
                 onChange={(event) => setChatText(event.target.value)}
@@ -1903,9 +1929,9 @@ export function LivePageContent({
                 }}
                 maxLength={500}
                 placeholder="Scrie un mesaj"
-                className="premium-input h-12 flex-1"
+                className="premium-input h-12 min-w-0 flex-1"
               />
-              <Button type="button" className="min-h-12 shrink-0" onClick={() => void sendMessage()}>
+              <Button type="button" className="min-h-12 shrink-0 px-4 sm:px-5" onClick={() => void sendMessage()}>
                 Trimite
               </Button>
             </div>
@@ -1922,7 +1948,7 @@ export function LivePageContent({
   );
 
   return (
-    <div className="space-y-4 pb-24 sm:space-y-6 xl:pb-0">
+    <div className="space-y-4 pb-28 sm:space-y-6 xl:pb-0">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.68fr)_22rem] xl:items-start">
         <div className="space-y-5">
           <div className="panel-edge overflow-hidden rounded-[1.65rem] sm:rounded-[2.2rem]">
@@ -1950,7 +1976,7 @@ export function LivePageContent({
                     </div>
                   ) : null}
                 </div>
-                <h2 className="mt-3 max-w-4xl text-[2rem] leading-[0.94] text-white sm:text-4xl lg:text-[4.2rem]">
+                <h2 className="mt-3 max-w-4xl text-[1.8rem] leading-[0.94] text-white sm:text-4xl lg:text-[4.2rem]">
                   {currentSession?.title || "LIVE Barber Experience"}
                 </h2>
                 {currentSession?.description ? (
@@ -2030,6 +2056,20 @@ export function LivePageContent({
                 <video ref={localVideoRef} autoPlay muted playsInline className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
               ) : currentSession?.isLive ? (
                 <video ref={remoteVideoRef} autoPlay playsInline controls className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
+              ) : currentSession?.thumbnailUrl ? (
+                <div className={`relative bg-black ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
+                  <Image
+                    src={currentSession.thumbnailUrl}
+                    alt={currentSession.title}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.65))]" />
+                  <div className="absolute inset-x-0 bottom-0 px-6 pb-6 text-center text-sm text-white/78 sm:text-base">
+                    {currentSessionSoldOut ? "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare." : stageMessage}
+                  </div>
+                </div>
               ) : (
                 <div className={`flex items-center justify-center bg-black px-6 text-center text-white/60 ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
                   {currentSessionSoldOut ? "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare." : stageMessage}
@@ -2070,9 +2110,9 @@ export function LivePageContent({
               ) : null}
             </div>
 
-            {currentSession?.isLive ? (
-              <div className="border-t border-white/10 xl:hidden">
-                <div className="flex h-[17.5rem] flex-col">
+              {currentSession?.isLive ? (
+                <div className="border-t border-white/10 xl:hidden">
+                <div className="flex h-[22rem] min-h-0 flex-col">
                   {chatPanel}
                 </div>
               </div>

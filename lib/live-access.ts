@@ -115,6 +115,7 @@ export async function isLiveSessionSoldOut(liveSessionId: string) {
     where: { id: liveSessionId },
     select: {
       maxParticipants: true,
+      isLive: true,
       recordingUrl: true,
       _count: {
         select: {
@@ -124,7 +125,7 @@ export async function isLiveSessionSoldOut(liveSessionId: string) {
     }
   }).catch(() => null);
 
-  if (!liveSession?.maxParticipants || liveSession.recordingUrl) {
+  if (!liveSession?.maxParticipants || !liveSession.isLive || liveSession.recordingUrl) {
     return false;
   }
 

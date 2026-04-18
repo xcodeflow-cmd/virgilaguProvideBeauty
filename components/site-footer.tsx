@@ -39,21 +39,21 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-4 gap-2 sm:gap-4">
             {socialLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] px-4 py-4 text-sm text-white/60 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 hover:text-white"
+                className="group rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] px-2 py-3 text-center text-[11px] text-white/60 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 hover:text-white sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm"
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-center gap-2 sm:justify-between">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-white/35">Social</p>
-                    <p className="mt-2 text-base text-white">{link.label}</p>
+                    <p className="hidden text-[10px] uppercase tracking-[0.3em] text-white/35 sm:block">Social</p>
+                    <p className="text-sm text-white sm:mt-2 sm:text-base">{link.label}</p>
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-white/[0.28] transition group-hover:text-[#d6b98c]" />
+                  <ArrowUpRight className="hidden h-4 w-4 text-white/[0.28] transition group-hover:text-[#d6b98c] sm:block" />
                 </div>
               </Link>
             ))}

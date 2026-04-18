@@ -18,6 +18,7 @@ export async function GET() {
       description: session.description,
       scheduledFor: session.scheduledFor.toISOString(),
       isLive,
+      thumbnailUrl: session.thumbnailUrl,
       price: session.price,
       compareAtPrice: session.compareAtPrice,
       visibility: session.visibility,

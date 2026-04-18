@@ -8,15 +8,14 @@ import { formatDate } from "@/lib/utils";
 
 async function getDashboardData(userId: string) {
   try {
-    const [subscriptions, purchases, bookings] = await Promise.all([
+    const [subscriptions, purchases] = await Promise.all([
       prisma.subscription.findMany({ where: { userId }, orderBy: { createdAt: "desc" } }),
       prisma.purchase.findMany({ where: { userId }, include: { liveSession: true }, orderBy: { createdAt: "desc" } }),
-      prisma.booking.findMany({ where: { userId }, orderBy: { createdAt: "desc" } })
     ]);
 
-    return { subscriptions, purchases, bookings };
+    return { subscriptions, purchases };
   } catch {
-    return { subscriptions: [], purchases: [], bookings: [] };
+    return { subscriptions: [], purchases: [] };
   }
 }
 
@@ -107,18 +106,14 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 p-8 sm:grid-cols-3 sm:p-10 xl:p-14">
+          <div className="grid gap-4 p-8 sm:grid-cols-2 sm:p-10 xl:p-14">
             <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
-              <p className="dashboard-label">Subscription</p>
+              <p className="dashboard-label">Cont</p>
               <p className="mt-3 text-3xl text-white">{activeSubscription ? activeSubscription.status : "Inactive"}</p>
             </div>
             <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
               <p className="dashboard-label">Purchases</p>
               <p className="mt-3 text-3xl text-white">{data.purchases.length}</p>
-            </div>
-            <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.03] p-5">
-              <p className="dashboard-label">Bookings</p>
-              <p className="mt-3 text-3xl text-white">{data.bookings.length}</p>
             </div>
           </div>
         </div>
@@ -128,36 +123,34 @@ export default async function DashboardPage() {
         <div className="premium-card p-7 sm:p-8">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="dashboard-label">Acces activ</p>
-              <h2 className="mt-3 text-4xl text-white">
-                {activeSubscription ? activeSubscription.status : "No active plan"}
-              </h2>
+              <p className="dashboard-label">Acces cont</p>
+              <h2 className="mt-3 text-4xl text-white">{activeSubscription ? activeSubscription.status : "Cont activ"}</h2>
             </div>
             <Button asChild variant="secondary">
-              <Link href="/courses">Manage Access</Link>
+              <Link href="/live">Vezi live-uri</Link>
             </Button>
           </div>
           <p className="mt-5 max-w-xl text-sm leading-7 text-white/[0.58]">
             {activeSubscription?.currentPeriodEnd
-              ? `Renews until ${formatDate(activeSubscription.currentPeriodEnd)}`
-              : "No recurring plan attached yet."}
+              ? `Valabil pana la ${formatDate(activeSubscription.currentPeriodEnd)}`
+              : "Aici vezi live-urile cumparate si continutul disponibil in cont."}
           </p>
         </div>
 
         <div className="premium-card p-7 sm:p-8">
           <p className="dashboard-label">Continut</p>
-          <h2 className="mt-3 text-4xl text-white">Video, replay, booking.</h2>
+          <h2 className="mt-3 text-4xl text-white">Replay-uri si acces cumparat.</h2>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8">
         <div className="premium-card p-7 sm:p-8">
-          <h3 className="text-3xl text-white">Session purchases</h3>
+          <h3 className="text-3xl text-white">Live-uri cumparate</h3>
           <div className="mt-7 space-y-4">
             {data.purchases.length ? data.purchases.map((purchase: (typeof data.purchases)[number]) => (
               <div key={purchase.id} className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-white/[0.68]">
                 <p className="text-lg text-white">{purchase.liveSession?.title || purchase.type}</p>
-                <p className="mt-2 text-sm">Purchased on {formatDate(purchase.createdAt)}</p>
+                <p className="mt-2 text-sm">Cumparat pe {formatDate(purchase.createdAt)}</p>
                 {purchase.liveSession ? (
                   <div className="mt-4">
                     <Button asChild variant="secondary" className="min-h-11">
@@ -166,18 +159,7 @@ export default async function DashboardPage() {
                   </div>
                 ) : null}
               </div>
-            )) : <p className="text-sm text-white/50">No purchases yet.</p>}
-          </div>
-        </div>
-        <div className="premium-card p-7 sm:p-8">
-          <h3 className="text-3xl text-white">Recent bookings</h3>
-          <div className="mt-7 space-y-4">
-            {data.bookings.length ? data.bookings.map((booking: (typeof data.bookings)[number]) => (
-              <div key={booking.id} className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-white/[0.68]">
-                <p className="text-lg text-white">{booking.service}</p>
-                <p className="mt-2 text-sm">Preferred date {formatDate(booking.preferredAt)}</p>
-              </div>
-            )) : <p className="text-sm text-white/50">No bookings yet.</p>}
+            )) : <p className="text-sm text-white/50">Nu exista live-uri cumparate momentan.</p>}
           </div>
         </div>
       </div>

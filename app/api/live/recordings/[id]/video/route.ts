@@ -33,8 +33,9 @@ export async function GET(
 
   if (fileStats?.isFile()) {
     const stream = fs.createReadStream(recordingPath);
+    const webStream = Readable.toWeb(stream) as unknown as BodyInit;
 
-    return new Response(Readable.toWeb(stream as never), {
+    return new Response(webStream, {
       headers: {
         "Content-Type": recording?.recordingMimeType || "video/webm",
         "Content-Length": String(fileStats.size),

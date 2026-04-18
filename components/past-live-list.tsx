@@ -94,7 +94,7 @@ export function PastLiveList({
                 {session.thumbnailUrl ? (
                   <div className="mt-4 overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/30">
                     <div className="relative aspect-[16/9]">
-                      <Image src={session.thumbnailUrl} alt={session.title} fill className="object-cover" unoptimized />
+                      <Image src={session.thumbnailUrl} alt={session.title} fill className="object-contain" unoptimized />
                     </div>
                   </div>
                 ) : null}
