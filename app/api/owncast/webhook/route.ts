@@ -47,6 +47,24 @@ function getRecordingUrl(payload: Record<string, unknown>) {
   return null;
 }
 
+async function findSessionByServerUrl(serverUrl: string, now: Date) {
+  const exactMatch = await prisma.liveSession.findFirst({
+    where: { streamUrl: serverUrl },
+    orderBy: [{ isLive: "desc" }, { scheduledFor: "desc" }]
+  });
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  return prisma.liveSession.findFirst({
+    where: {
+      OR: [{ isLive: true }, { scheduledFor: { lte: now } }]
+    },
+    orderBy: [{ isLive: "desc" }, { scheduledFor: "desc" }]
+  });
+}
+
 export async function POST(request: Request) {
   const url = new URL(request.url);
   const configuredSecret = process.env.OWNCAST_WEBHOOK_SECRET;
@@ -67,10 +85,7 @@ export async function POST(request: Request) {
   const now = new Date();
 
   if (eventName.includes("START")) {
-    const currentSession = await prisma.liveSession.findFirst({
-      where: { streamUrl: serverUrl },
-      orderBy: [{ isLive: "desc" }, { scheduledFor: "asc" }]
-    });
+    const currentSession = await findSessionByServerUrl(serverUrl, now);
 
     if (!currentSession) {
       return NextResponse.json({ ok: true, updated: false });
@@ -78,20 +93,17 @@ export async function POST(request: Request) {
 
     await prisma.liveSession.update({
       where: { id: currentSession.id },
-      data: { isLive: true }
+      data: {
+        isLive: true,
+        streamUrl: serverUrl
+      }
     });
 
     return NextResponse.json({ ok: true, updated: true, sessionId: currentSession.id });
   }
 
   if (eventName.includes("STOP") || eventName.includes("END")) {
-    const currentSession = await prisma.liveSession.findFirst({
-      where: {
-        streamUrl: serverUrl,
-        OR: [{ isLive: true }, { scheduledFor: { lte: now } }]
-      },
-      orderBy: [{ isLive: "desc" }, { scheduledFor: "desc" }]
-    });
+    const currentSession = await findSessionByServerUrl(serverUrl, now);
 
     if (!currentSession) {
       return NextResponse.json({ ok: true, updated: false });
@@ -101,6 +113,7 @@ export async function POST(request: Request) {
       where: { id: currentSession.id },
       data: {
         isLive: false,
+        streamUrl: serverUrl,
         recordingUrl: getRecordingUrl(payload) || currentSession.recordingUrl
       }
     });

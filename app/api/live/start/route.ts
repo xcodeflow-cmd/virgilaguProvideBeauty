@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/live-access";
+import { normalizeOwncastUrl } from "@/lib/owncast";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -25,6 +26,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Live session not found." }, { status: 404 });
   }
 
+  const owncastServerUrl = normalizeOwncastUrl(process.env.OWNCAST_SERVER_URL);
+
   await prisma.$transaction([
     prisma.liveSession.updateMany({
       where: { isLive: true },
@@ -36,6 +39,7 @@ export async function POST(request: Request) {
         isLive: true,
         hasStarted: true,
         scheduledFor: new Date(),
+        streamUrl: owncastServerUrl,
         recordingUrl: null,
         recordingMimeType: null,
         recordingData: null
