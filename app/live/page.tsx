@@ -47,6 +47,7 @@ export default async function LivePage() {
           title: item.title,
           description: item.description,
           scheduledFor: item.scheduledFor.toISOString(),
+          thumbnailUrl: item.thumbnailUrl,
           recordingUrl: item.recordingUrl || "",
           price: item.price,
           compareAtPrice: item.compareAtPrice,

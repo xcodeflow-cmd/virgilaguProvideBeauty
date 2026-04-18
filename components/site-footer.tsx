@@ -14,6 +14,7 @@ const footerLinks = [
 
 const socialLinks = [
   { href: siteConfig.socials.instagram, label: "Instagram" },
+  { href: siteConfig.socials.tiktok, label: "TikTok" },
   { href: siteConfig.socials.mero, label: "MERO" },
   { href: siteConfig.socials.whatsapp, label: "WhatsApp" }
 ];
@@ -38,17 +39,22 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {socialLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between border-b border-white/10 pb-3 text-sm text-white/60 transition hover:text-white"
+                className="group rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] px-4 py-4 text-sm text-white/60 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 hover:text-white"
               >
-                {link.label}
-                <ArrowUpRight className="h-4 w-4 text-white/[0.28] transition group-hover:text-[#d6b98c]" />
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-white/35">Social</p>
+                    <p className="mt-2 text-base text-white">{link.label}</p>
+                  </div>
+                  <ArrowUpRight className="h-4 w-4 text-white/[0.28] transition group-hover:text-[#d6b98c]" />
+                </div>
               </Link>
             ))}
           </div>

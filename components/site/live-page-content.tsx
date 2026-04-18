@@ -36,6 +36,7 @@ type PastLiveSession = {
   title: string;
   description: string;
   scheduledFor: string;
+  thumbnailUrl?: string;
   recordingUrl: string;
   price?: number | null;
   compareAtPrice?: number | null;
@@ -56,6 +57,7 @@ type LiveRecording = {
   title: string;
   description: string;
   createdAt: string;
+  thumbnailUrl?: string;
   videoUrl: string;
   price?: number | null;
   compareAtPrice?: number | null;
@@ -353,6 +355,7 @@ export function LivePageContent({
       title: item.title,
       description: item.description,
       createdAt: item.scheduledFor,
+      thumbnailUrl: item.thumbnailUrl,
       videoUrl: item.recordingUrl,
       price: item.price,
       compareAtPrice: item.compareAtPrice,
@@ -1796,6 +1799,19 @@ export function LivePageContent({
     currentSession?.maxParticipants &&
     (currentSession?.purchasedCount || 0) >= currentSession.maxParticipants
   );
+  const stageMessage = currentSession?.isLive
+    ? isAdmin
+      ? "Sesiunea este live acum."
+      : canViewCurrentSession
+        ? streamStatus === "live"
+          ? ""
+          : "Se face conectarea la sesiunea live."
+        : "Este obligatoriu accesul la aceasta sesiune."
+    : countdownParts
+      ? "Sesiunea va incepe cand timerul de mai sus expira sau cand adminul porneste live-ul."
+      : currentSession
+        ? "Sesiunea nu a inceput."
+        : "Nu exista o sesiune live curenta.";
   const chatPanel = (
     <div className="flex h-full flex-col">
       <div className="border-b border-white/10 px-4 py-4 sm:px-5">
@@ -1910,9 +1926,14 @@ export function LivePageContent({
                 <h2 className="mt-3 max-w-4xl text-[2rem] leading-[0.94] text-white sm:text-4xl lg:text-[4.2rem]">
                   {currentSession?.title || "LIVE Barber Experience"}
                 </h2>
+                {currentSession?.description ? (
+                  <p className="mt-3 max-w-3xl text-sm leading-7 text-white/[0.66] sm:text-base">
+                    {currentSession.description}
+                  </p>
+                ) : null}
                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/[0.58] sm:text-base sm:leading-7">
                   {currentSession?.isLive
-                    ? "Video-ul si chatul raman vizibile impreuna, inclusiv pe telefon."
+                    ? "Sesiunea este activa."
                     : countdownParts
                       ? "Urmatoarea sesiune este programata."
                       : currentSessionSoldOut
@@ -1988,7 +2009,7 @@ export function LivePageContent({
                 <video ref={remoteVideoRef} autoPlay playsInline controls className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
               ) : (
                 <div className={`flex items-center justify-center bg-black px-6 text-center text-white/60 ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
-                  {currentSessionSoldOut ? "Sesiunea live este sold out." : canViewCurrentSession ? "Niciun LIVE activ momentan" : "Cumpara live-ul curent pentru acces instant la video si chat."}
+                  {currentSessionSoldOut ? "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare." : stageMessage}
                 </div>
               )}
 
@@ -2019,15 +2040,9 @@ export function LivePageContent({
                 {isFullscreen ? "Iesi" : "Fullscreen"}
               </button>
 
-              {currentSession?.isLive && !isAdmin && streamStatus !== "live" ? (
+              {currentSession?.isLive && !isAdmin && streamStatus !== "live" && canViewCurrentSession ? (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/[0.55] px-6 text-center text-sm text-white/75 backdrop-blur-sm">
-                  {streamStatus === "reconnecting"
-                    ? "Conexiunea la live se reface automat."
-                    : streamStatus === "joining"
-                      ? "Se intra treptat in sesiunea live pentru o conexiune stabila."
-                      : streamStatus === "connecting"
-                        ? "Se conecteaza la fluxul live."
-                        : "Fluxul este offline momentan."}
+                  Se face conectarea la sesiunea live.
                 </div>
               ) : null}
             </div>
@@ -2042,16 +2057,7 @@ export function LivePageContent({
 
               <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                 <div className="space-y-2">
-                  <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">
-                    {currentSession?.isLive
-                      ? currentSession.description
-                      : countdownParts
-                        ? "Timerul de mai sus afiseaza timpul ramas pana la urmatorul LIVE."
-                        : "Cand adminul programeaza o sesiune, countdown-ul apare automat in aceasta zona."}
-                  </p>
-                  {currentSession?.description && !currentSession?.isLive ? (
-                    <p className="hidden text-sm leading-7 text-white/[0.44] sm:block">{currentSession.description}</p>
-                  ) : null}
+                  <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">{stageMessage}</p>
                 </div>
                 {!canViewCurrentSession && !isAdmin && currentSession?.price && !currentSessionSoldOut ? (
                   <div className="flex flex-col items-start gap-2">
@@ -2093,6 +2099,7 @@ export function LivePageContent({
                 title: item.title,
                 description: item.description,
                 scheduledFor: item.createdAt,
+                thumbnailUrl: item.thumbnailUrl,
                 recordingUrl: item.videoUrl,
                 price: item.price,
                 compareAtPrice: item.compareAtPrice,
@@ -2120,6 +2127,7 @@ export function LivePageContent({
             title: item.title,
             description: item.description,
             scheduledFor: item.createdAt,
+            thumbnailUrl: item.thumbnailUrl,
             recordingUrl: item.videoUrl,
             price: item.price,
             compareAtPrice: item.compareAtPrice,

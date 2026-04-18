@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ type PastLiveSession = {
   title: string;
   description: string;
   scheduledFor: string;
+  thumbnailUrl?: string;
   recordingUrl: string;
   price?: number | null;
   compareAtPrice?: number | null;
@@ -86,6 +88,13 @@ export function PastLiveList({
                   <p className="mt-2 text-xs uppercase tracking-[0.24em] text-white/40">
                     Achizitii {session.purchasedCount || 0}/{session.maxParticipants}
                   </p>
+                ) : null}
+                {session.thumbnailUrl ? (
+                  <div className="mt-4 overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/30">
+                    <div className="relative aspect-[16/9]">
+                      <Image src={session.thumbnailUrl} alt={session.title} fill className="object-cover" unoptimized />
+                    </div>
+                  </div>
                 ) : null}
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   {hasAccess && session.recordingUrl ? (

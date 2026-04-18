@@ -20,6 +20,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   socials: {
     instagram: "https://www.instagram.com/virgil.agu/",
+    tiktok: "https://www.tiktok.com/@virgilagu",
     whatsapp: "https://wa.me/40785571176",
     phone: "tel:+40785571176",
     mero: "https://mero.ro/p/provide-beauty"

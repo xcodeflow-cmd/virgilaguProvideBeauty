@@ -247,6 +247,12 @@ export function AdminDashboard({
                   <option value="PUBLIC">Public</option>
                   <option value="ONE_TIME">One time</option>
                 </select>
+                <input name="thumbnailUrl" placeholder="URL thumbnail optional" className="premium-input" />
+                <label className="flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
+                  <Upload className="h-5 w-5" />
+                  Adauga poza optionala pentru live
+                  <input type="file" name="thumbnailFile" accept="image/*" className="hidden" />
+                </label>
                 <input name="price" type="number" min="1" step="1" placeholder="Pret optional in lei" className="premium-input" />
                 <input name="maxParticipants" type="number" min="1" step="1" placeholder="Participanti maximi" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
@@ -317,7 +323,7 @@ export function AdminDashboard({
                     </label>
                     <label className="space-y-2">
                       <span className="text-sm text-white/60">URL thumbnail</span>
-                      <input name="thumbnailUrl" defaultValue={selectedLiveSession.thumbnailUrl} className="premium-input" />
+                      <input name="thumbnailUrl" defaultValue={selectedLiveSession.thumbnailUrl} placeholder="Lasa gol ca sa pastrezi valoarea curenta" className="premium-input" />
                     </label>
                     <label className="flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
                       <Upload className="h-5 w-5" />
@@ -352,7 +358,13 @@ export function AdminDashboard({
                       return (
                         <div key={session.id} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
                           <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/25">
-                            <Image src={session.thumbnailUrl} alt={session.title} fill className="object-cover" unoptimized />
+                            {session.thumbnailUrl ? (
+                              <Image src={session.thumbnailUrl} alt={session.title} fill className="object-cover" unoptimized />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] px-6 text-center text-sm text-white/45">
+                                Fara thumbnail setat
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">

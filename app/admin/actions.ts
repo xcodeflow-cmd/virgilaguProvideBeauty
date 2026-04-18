@@ -150,6 +150,7 @@ export async function addLiveSession(formData: FormData) {
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
   const visibilityValue = String(formData.get("visibility") || (price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC));
+  const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || "";
 
   if (!title) {
     throw new Error("Live title is required.");
@@ -169,7 +170,7 @@ export async function addLiveSession(formData: FormData) {
       slug: buildLiveSlug(title),
       description,
       scheduledFor,
-      thumbnailUrl: "/assets/salon/WhatsApp Image 2026-04-04 at 18.44.40 (1).jpeg",
+      thumbnailUrl,
       streamUrl: null,
       recordingUrl: null,
       visibility: visibilityValue as SessionVisibility,

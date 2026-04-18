@@ -56,6 +56,7 @@ export async function getPastLiveSessions() {
         title: true,
         description: true,
         scheduledFor: true,
+        thumbnailUrl: true,
         recordingUrl: true,
         price: true,
         compareAtPrice: true,
