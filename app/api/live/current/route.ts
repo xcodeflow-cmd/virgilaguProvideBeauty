@@ -5,9 +5,11 @@ import { getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 export async function GET() {
   const session = await getPrimaryLiveSession();
 
-  if (!session || !isLiveSessionActive(session)) {
+  if (!session) {
     return NextResponse.json({ live: null });
   }
+
+  const isLive = isLiveSessionActive(session);
 
   return NextResponse.json({
     live: {
@@ -15,6 +17,7 @@ export async function GET() {
       title: session.title,
       description: session.description,
       scheduledFor: session.scheduledFor.toISOString(),
+      isLive,
       price: session.price,
       compareAtPrice: session.compareAtPrice,
       visibility: session.visibility,

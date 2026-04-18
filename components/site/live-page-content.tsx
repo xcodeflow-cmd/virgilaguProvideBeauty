@@ -1296,6 +1296,7 @@ export function LivePageContent({
           title: string;
           description: string;
           scheduledFor: string;
+          isLive: boolean;
           price?: number | null;
           compareAtPrice?: number | null;
           visibility?: string;
@@ -1320,7 +1321,7 @@ export function LivePageContent({
           current.title === live.title &&
           current.description === live.description &&
           current.scheduledFor === live.scheduledFor &&
-          current.isLive &&
+          current.isLive === live.isLive &&
           current.price === live.price &&
           current.compareAtPrice === live.compareAtPrice &&
           current.visibility === live.visibility &&
@@ -1335,7 +1336,7 @@ export function LivePageContent({
           title: live.title,
           description: live.description,
           scheduledFor: live.scheduledFor,
-          isLive: true,
+          isLive: live.isLive,
           price: live.price,
           compareAtPrice: live.compareAtPrice,
           visibility: live.visibility,
