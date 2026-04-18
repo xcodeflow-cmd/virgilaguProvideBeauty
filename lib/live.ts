@@ -35,9 +35,7 @@ export async function getPrimaryLiveSession() {
       return activeSession;
     }
 
-    const upcomingSession = sessions.find(
-      (session) => !session.hasStarted && session.scheduledFor.getTime() > now.getTime()
-    );
+    const upcomingSession = sessions.find((session) => !session.hasStarted);
 
     return upcomingSession || null;
   } catch {
