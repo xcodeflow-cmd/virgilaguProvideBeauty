@@ -8,9 +8,9 @@ Repo-ul acesta foloseste LiveKit in UI:
 
 ## Ce fisiere ai in repo
 
-- `deploy/nginx/live.provibe.ro.http.conf`
+- `deploy/nginx/live.virgilagu.ro.http.conf`
   Foloseste-l prima data, inainte sa emiti certificatul.
-- `deploy/nginx/live.provibe.ro.conf`
+- `deploy/nginx/live.virgilagu.ro.conf`
   Foloseste-l dupa ce certificatul LetsEncrypt exista.
 - `deploy/livekit/livekit.yaml.example`
   Config exemplu pentru serverul LiveKit.
@@ -24,12 +24,12 @@ Repo-ul acesta foloseste LiveKit in UI:
 2. Verifica DNS:
    - `dig live.virgilagu.ro +short`
 3. Instaleaza configul HTTP temporar:
-   - copiezi `deploy/nginx/live.provibe.ro.http.conf` in `/etc/nginx/sites-available/live.virgilagu.ro`
+   - copiezi `deploy/nginx/live.virgilagu.ro.http.conf` in `/etc/nginx/sites-available/live.virgilagu.ro`
    - faci link in `/etc/nginx/sites-enabled/live.virgilagu.ro`
    - rulezi `sudo nginx -t && sudo systemctl reload nginx`
 4. Emite certificatul:
    - `sudo certbot --nginx -d live.virgilagu.ro`
-5. Inlocuiesti configul HTTP cu `deploy/nginx/live.provibe.ro.conf`
+5. Inlocuiesti configul HTTP cu `deploy/nginx/live.virgilagu.ro.conf`
 6. Rulezi din nou:
    - `sudo nginx -t && sudo systemctl reload nginx`
 7. Configurezi si pornesti LiveKit:

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
-import { Camera, Lock, Maximize2, Minimize2, Radio } from "lucide-react";
+import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { Button } from "@/components/ui/button";
@@ -386,7 +386,7 @@ export function LivePageContent({
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const videoStageRef = useRef<HTMLDivElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
-  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const liveKitRoomRef = useRef<Room | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -424,6 +424,18 @@ export function LivePageContent({
     }
 
     return Boolean(initialSession?.id === session.id && canAccessCurrentSession);
+  }
+
+  function getOrCreateRemoteStream() {
+    if (!remoteStreamRef.current) {
+      remoteStreamRef.current = new MediaStream();
+    }
+
+    return remoteStreamRef.current;
+  }
+
+  function getRemoteTrackCount() {
+    return remoteStreamRef.current?.getTracks().length ?? 0;
   }
 
   useEffect(() => {
@@ -516,30 +528,36 @@ export function LivePageContent({
 
   function addRemoteTrack(track: RemoteTrack) {
     const mediaTrack = track.mediaStreamTrack;
+    const remoteStream = getOrCreateRemoteStream();
 
-    if (!remoteStreamRef.current.getTracks().some((item) => item.id === mediaTrack.id)) {
-      remoteStreamRef.current.addTrack(mediaTrack);
+    if (!remoteStream.getTracks().some((item) => item.id === mediaTrack.id)) {
+      remoteStream.addTrack(mediaTrack);
       setRemoteVideoStream();
     }
 
     updateDebug({
-      remoteTracks: remoteStreamRef.current.getTracks().length,
+      remoteTracks: remoteStream.getTracks().length,
       lastEvent: `${track.kind} track subscribed`
     });
   }
 
   function removeRemoteTrack(track: RemoteTrack) {
     const mediaTrack = track.mediaStreamTrack;
+    const remoteStream = remoteStreamRef.current;
 
-    for (const item of remoteStreamRef.current.getTracks()) {
+    if (!remoteStream) {
+      return;
+    }
+
+    for (const item of remoteStream.getTracks()) {
       if (item.id === mediaTrack.id) {
-        remoteStreamRef.current.removeTrack(item);
+        remoteStream.removeTrack(item);
       }
     }
 
     setRemoteVideoStream();
     updateDebug({
-      remoteTracks: remoteStreamRef.current.getTracks().length,
+      remoteTracks: remoteStream.getTracks().length,
       lastEvent: `${track.kind} track unsubscribed`
     });
   }
@@ -610,6 +628,8 @@ export function LivePageContent({
   }
 
   function removeConsumer(producerId: string) {
+    const remoteStream = remoteStreamRef.current;
+
     for (const [consumerId, entry] of consumersRef.current.entries()) {
       if (entry.producerId !== producerId) {
         continue;
@@ -617,15 +637,15 @@ export function LivePageContent({
 
       const track = entry.consumer.track as MediaStreamTrack | undefined;
 
-      if (track) {
-        remoteStreamRef.current.removeTrack(track);
+      if (track && remoteStream) {
+        remoteStream.removeTrack(track);
       }
 
       entry.consumer.close();
       consumersRef.current.delete(consumerId);
     }
 
-    updateDebug({ remoteTracks: remoteStreamRef.current.getTracks().length });
+    updateDebug({ remoteTracks: getRemoteTrackCount() });
     setRemoteVideoStream();
   }
 
@@ -702,7 +722,7 @@ export function LivePageContent({
 
     void disconnectLiveKitRoom();
 
-    remoteStreamRef.current = new MediaStream();
+    remoteStreamRef.current = null;
 
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
@@ -856,7 +876,7 @@ export function LivePageContent({
       });
 
       consumersRef.current.set(consumer.id, { consumer, producerId });
-      remoteStreamRef.current.addTrack(consumer.track);
+      getOrCreateRemoteStream().addTrack(consumer.track);
       setRemoteVideoStream();
 
       await sendSignalRequest("resumeConsumer", { consumerId: consumer.id });
@@ -867,7 +887,7 @@ export function LivePageContent({
 
       updateDebug({
         lastEvent: `consuming ${payload.kind}`,
-        remoteTracks: remoteStreamRef.current.getTracks().length
+        remoteTracks: getRemoteTrackCount()
       });
     } finally {
       consumePendingRef.current.delete(producerId);
@@ -1166,7 +1186,7 @@ export function LivePageContent({
 
         liveKitRoomRef.current = room;
         activeRoleRef.current = role;
-        remoteStreamRef.current = new MediaStream();
+        remoteStreamRef.current = null;
         setRemoteVideoStream();
 
         room.on(RoomEvent.TrackSubscribed, (track: any) => {
@@ -1180,7 +1200,7 @@ export function LivePageContent({
           if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
             removeRemoteTrack(track as RemoteTrack);
 
-            if (role === "viewer" && !remoteStreamRef.current.getTracks().length) {
+            if (role === "viewer" && !getRemoteTrackCount()) {
               setStreamStatus("joining");
             }
           }
@@ -1228,7 +1248,7 @@ export function LivePageContent({
         });
 
         if (role === "viewer") {
-          setStreamStatus(remoteStreamRef.current.getTracks().length ? "live" : "joining");
+          setStreamStatus(getRemoteTrackCount() ? "live" : "joining");
           return;
         }
 
@@ -1975,10 +1995,6 @@ export function LivePageContent({
                   <>
                     <Button type="button" className="min-h-11" onClick={() => void startLive()} disabled={!currentSession || currentSession.isLive}>
                       Go Live
-                    </Button>
-                    <Button type="button" variant="secondary" className="min-h-11" onClick={() => void switchCamera()} disabled={!localStream || isSwitchingCamera}>
-                      <Camera className="h-4 w-4" />
-                      {isSwitchingCamera ? "Schimba..." : "Intoarce camera"}
                     </Button>
                     <Button type="button" variant="secondary" className="min-h-11" onClick={() => void stopLive()} disabled={!currentSession?.isLive}>
                       Stop Live
