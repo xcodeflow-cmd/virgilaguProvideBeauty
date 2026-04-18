@@ -216,8 +216,8 @@ function getLiveKitUrl() {
   }
 
   if (typeof window !== "undefined") {
-    if (window.location.hostname === "provibe.ro" || window.location.hostname.endsWith(".provibe.ro")) {
-      return "wss://live.provibe.ro";
+    if (window.location.hostname === "virgilagu.ro" || window.location.hostname.endsWith(".virgilagu.ro")) {
+      return "wss://live.virgilagu.ro";
     }
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";

@@ -1,10 +1,10 @@
-# LiveKit deploy pentru `live.provibe.ro`
+# LiveKit deploy pentru `live.virgilagu.ro`
 
 Repo-ul acesta foloseste LiveKit in UI:
 
 - frontend-ul se conecteaza la `NEXT_PUBLIC_LIVEKIT_URL`
 - token-ul este generat de `app/api/live/token/route.ts`
-- pentru productie, URL-ul public trebuie sa fie `wss://live.provibe.ro`
+- pentru productie, URL-ul public trebuie sa fie `wss://live.virgilagu.ro`
 
 ## Ce fisiere ai in repo
 
@@ -20,15 +20,15 @@ Repo-ul acesta foloseste LiveKit in UI:
 ## Ordinea corecta pe server
 
 1. Pune DNS:
-   - `A live.provibe.ro -> 78.47.119.183`
+   - `A live.virgilagu.ro -> 78.47.119.183`
 2. Verifica DNS:
-   - `dig live.provibe.ro +short`
+   - `dig live.virgilagu.ro +short`
 3. Instaleaza configul HTTP temporar:
-   - copiezi `deploy/nginx/live.provibe.ro.http.conf` in `/etc/nginx/sites-available/live.provibe.ro`
-   - faci link in `/etc/nginx/sites-enabled/live.provibe.ro`
+   - copiezi `deploy/nginx/live.provibe.ro.http.conf` in `/etc/nginx/sites-available/live.virgilagu.ro`
+   - faci link in `/etc/nginx/sites-enabled/live.virgilagu.ro`
    - rulezi `sudo nginx -t && sudo systemctl reload nginx`
 4. Emite certificatul:
-   - `sudo certbot --nginx -d live.provibe.ro`
+   - `sudo certbot --nginx -d live.virgilagu.ro`
 5. Inlocuiesti configul HTTP cu `deploy/nginx/live.provibe.ro.conf`
 6. Rulezi din nou:
    - `sudo nginx -t && sudo systemctl reload nginx`
@@ -56,7 +56,7 @@ Sursa:
 
 In Vercel trebuie sa ai:
 
-- `NEXT_PUBLIC_LIVEKIT_URL=wss://live.provibe.ro`
+- `NEXT_PUBLIC_LIVEKIT_URL=wss://live.virgilagu.ro`
 - `LIVEKIT_API_KEY=<aceeasi cheie ca in livekit.yaml>`
 - `LIVEKIT_API_SECRET=<acelasi secret ca in livekit.yaml>`
 
@@ -81,13 +81,13 @@ sudo systemctl reload nginx
 Verificare DNS:
 
 ```bash
-dig live.provibe.ro +short
+dig live.virgilagu.ro +short
 ```
 
 Verificare WebSocket public:
 
 ```bash
-curl -I https://live.provibe.ro
+curl -I https://live.virgilagu.ro
 ```
 
 ## Observatie importanta
@@ -97,4 +97,4 @@ Pagina `https://78.47.119.183:3000/live` nu este o adresa buna pentru broadcast 
 - `https` valid pe domeniu
 - `localhost`
 
-Deci testeaza broadcast-ul pe `https://provibe.ro/live`, nu pe IP-ul brut.
+Deci testeaza broadcast-ul pe `https://virgilagu.ro/live`, nu pe IP-ul brut.
