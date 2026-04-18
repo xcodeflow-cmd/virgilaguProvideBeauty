@@ -9,7 +9,7 @@ import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
 import { Button } from "@/components/ui/button";
 import siteLogo from "@/assets/logo.png";
-import logoForMainPhoto from "@/assets/logoForMainPhoto.png";
+import provibeLogo from "@/assets/provibe.png";
 import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref, palmaresDetails, palmaresHighlights } from "@/lib/course-offers";
 import { brandImages, compactReviews } from "@/lib/data";
@@ -79,9 +79,9 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
             <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
-            <div className="absolute left-[70px] top-[70px] z-20 w-[240px]">
+            <div className="absolute left-5 top-8 z-20 w-[240px]">
               <Image
-                src={logoForMainPhoto}
+                src={provibeLogo}
                 alt="Provibe logo"
                 className="h-auto w-full object-contain"
                 sizes="240px"
@@ -141,12 +141,12 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 className="object-cover object-[58%_16%]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
-              <div className="absolute left-5 top-5 z-20 w-28 sm:w-32">
+              <div className="absolute left-4 top-4 z-20 w-32 sm:w-36">
                 <Image
-                  src={logoForMainPhoto}
+                  src={provibeLogo}
                   alt="Provibe logo"
                   className="h-auto w-full object-contain"
-                  sizes="(min-width: 640px) 128px, 112px"
+                  sizes="(min-width: 640px) 144px, 128px"
                 />
               </div>
             </div>
