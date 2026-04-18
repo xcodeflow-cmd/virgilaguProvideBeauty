@@ -110,6 +110,27 @@ export async function canAccessLiveSession({
   return Boolean(purchase);
 }
 
+export async function isLiveSessionSoldOut(liveSessionId: string) {
+  const liveSession = await prisma.liveSession.findUnique({
+    where: { id: liveSessionId },
+    select: {
+      maxParticipants: true,
+      recordingUrl: true,
+      _count: {
+        select: {
+          purchases: true
+        }
+      }
+    }
+  }).catch(() => null);
+
+  if (!liveSession?.maxParticipants || liveSession.recordingUrl) {
+    return false;
+  }
+
+  return liveSession._count.purchases >= liveSession.maxParticipants;
+}
+
 export async function requireAuthUser() {
   const session = await auth();
 

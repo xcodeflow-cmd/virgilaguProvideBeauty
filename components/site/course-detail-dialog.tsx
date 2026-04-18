@@ -25,6 +25,14 @@ function CourseIcon({ label }: { label: string }) {
   return <GraduationCap className="h-5 w-5" />;
 }
 
+function CourseVisual({ course, title }: { course: CourseOffer; title: string }) {
+  if (course.imageUrl) {
+    return <Image src={course.imageUrl} alt={title} fill className="object-cover transition duration-700 group-hover:scale-[1.05]" unoptimized />;
+  }
+
+  return <CourseImage image={course.image} title={title} />;
+}
+
 export function CourseDetailDialog({
   course,
   ctaHref,
@@ -54,7 +62,7 @@ export function CourseDetailDialog({
           )}
         >
           <div className={cn("relative overflow-hidden", compact ? "aspect-[16/12]" : "aspect-[16/11]")}>
-            <CourseImage image={course.image} title={course.title} />
+            <CourseVisual course={course} title={course.title} />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.78))]" />
             <div className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/[0.35] text-white backdrop-blur-md">
               <CourseIcon label={course.label} />
@@ -64,7 +72,7 @@ export function CourseDetailDialog({
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
                 <div className="flex flex-wrap items-center justify-end gap-2">
                   {hasDiscount ? (
-                    <span className="rounded-full bg-[#d6b98c]/15 px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-[#f3dfbf]">
+                    <span className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-red-100 shadow-[0_16px_32px_rgba(185,28,28,0.22)]">
                       Reducere {discountPercent}%
                     </span>
                   ) : null}
@@ -92,7 +100,9 @@ export function CourseDetailDialog({
                   {hasDiscount && course.compareAtPrice ? (
                     <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
                   ) : null}
-                  <p className="text-xl text-white sm:text-2xl">{course.price}</p>
+                  <p className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:text-2xl">
+                    {course.price}
+                  </p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
@@ -109,7 +119,7 @@ export function CourseDetailDialog({
         <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] max-h-[90vh] w-[94vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[2.3rem] border border-white/10 bg-[#070707] p-5 shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
             <div className="relative min-h-[24rem] overflow-hidden rounded-[1.9rem]">
-              <CourseImage image={course.image} title={course.title} />
+              <CourseVisual course={course} title={course.title} />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.82))]" />
               <div className="absolute inset-x-0 bottom-0 p-6">
                 <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
@@ -137,6 +147,18 @@ export function CourseDetailDialog({
               </div>
 
               <p className="mt-6 text-base leading-8 text-white/[0.68]">{course.dialogBody}</p>
+              {course.externalLinkUrl ? (
+                <div className="mt-4">
+                  <Link
+                    href={course.externalLinkUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-medium text-red-100 underline decoration-red-500/60 underline-offset-4"
+                  >
+                    {course.externalLinkLabel || course.externalLinkUrl}
+                  </Link>
+                </div>
+              ) : null}
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
                 {course.include?.length ? (
@@ -182,7 +204,9 @@ export function CourseDetailDialog({
                     {hasDiscount && course.compareAtPrice ? (
                       <p className="text-lg text-white/35 line-through">{course.compareAtPrice}</p>
                     ) : null}
-                    <p className="text-3xl text-white">{course.price}</p>
+                    <p className="rounded-full border border-red-500/35 bg-red-500/15 px-5 py-3 text-3xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                      {course.price}
+                    </p>
                   </div>
                 </div>
                 <Button asChild className="px-7">

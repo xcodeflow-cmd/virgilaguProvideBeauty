@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { courses, liveSessions, subscriptionPlans } from "@/lib/data";
+import { courses, liveSessions, sitePages, subscriptionPlans } from "@/lib/data";
 
 export type SubscriptionPlan = (typeof subscriptionPlans)[number];
 export type CoursesContent = typeof courses;
+export type PagesContent = typeof sitePages;
 export type GalleryContentItem = {
   id: string;
   title: string;
@@ -28,18 +29,21 @@ export async function getSiteSettings() {
     if (!settings) {
       return {
         subscriptionPlans,
-        courses
+        courses,
+        pages: sitePages
       };
     }
 
     return {
       subscriptionPlans: settings.subscriptionPlans as SubscriptionPlan[],
-      courses: settings.courses as CoursesContent
+      courses: settings.courses as CoursesContent,
+      pages: (settings.pages as PagesContent | null) || sitePages
     };
   } catch {
     return {
       subscriptionPlans,
-      courses
+      courses,
+      pages: sitePages
     };
   }
 }

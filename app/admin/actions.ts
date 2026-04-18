@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { SessionVisibility } from "@prisma/client";
 
 import { auth } from "@/auth";
-import { courses, subscriptionPlans } from "@/lib/data";
+import { courses, sitePages, subscriptionPlans } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { parseRomaniaDateTimeLocal } from "@/lib/romania-time";
 
@@ -70,15 +70,39 @@ function parseOptionalPrice(value: FormDataEntryValue | null) {
   return parsedValue;
 }
 
+function parseOptionalPositiveInt(value: FormDataEntryValue | null) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return null;
+  }
+
+  const parsedValue = Math.round(Number(rawValue));
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+    throw new Error("Value must be a positive number.");
+  }
+
+  return parsedValue;
+}
+
+async function extractUploadedImageDataUrl(file: FormDataEntryValue | null) {
+  if (!(file instanceof File) || file.size <= 0) {
+    return null;
+  }
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  return `data:${file.type || "image/jpeg"};base64,${bytes.toString("base64")}`;
+}
+
 export async function addGalleryItem(formData: FormData) {
   await requireAdmin();
 
   const file = formData.get("imageFile");
   let imageUrl = String(formData.get("imageUrl") || "").trim();
 
-  if (!imageUrl && file instanceof File && file.size > 0) {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    imageUrl = `data:${file.type || "image/jpeg"};base64,${bytes.toString("base64")}`;
+  if (!imageUrl) {
+    imageUrl = (await extractUploadedImageDataUrl(file)) || "";
   }
 
   if (!imageUrl) {
@@ -124,6 +148,7 @@ export async function addLiveSession(formData: FormData) {
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
   const price = parseOptionalPrice(formData.get("price"));
+  const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
   const visibilityValue = String(formData.get("visibility") || (price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC));
 
   if (!title) {
@@ -151,7 +176,8 @@ export async function addLiveSession(formData: FormData) {
       isLive: false,
       isFeatured: false,
       price,
-      compareAtPrice: null
+      compareAtPrice: null,
+      maxParticipants
     }
   });
 
@@ -185,7 +211,9 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const mode = String(formData.get("mode") || "UPDATE");
   const scheduledValue = String(formData.get("scheduledFor") || "").trim();
   const price = parseOptionalPrice(formData.get("price"));
+  const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
   const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);
+  const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || null;
   if (!id) {
     throw new Error("Missing live session id.");
   }
@@ -233,7 +261,9 @@ export async function updateLiveSessionSchedule(formData: FormData) {
       scheduledFor,
       price,
       compareAtPrice,
-      visibility: visibilityValue as SessionVisibility
+      visibility: visibilityValue as SessionVisibility,
+      maxParticipants,
+      ...(thumbnailUrl ? { thumbnailUrl } : {})
     }
   });
 
@@ -314,12 +344,14 @@ export async function updateCoursePricing(formData: FormData) {
     where: { id: "main" },
     update: {
       courses: nextCourses,
-      subscriptionPlans: (currentSettings?.subscriptionPlans as typeof subscriptionPlans | null) || subscriptionPlans
+      subscriptionPlans: (currentSettings?.subscriptionPlans as typeof subscriptionPlans | null) || subscriptionPlans,
+      pages: (currentSettings?.pages as typeof sitePages | null) || sitePages
     },
     create: {
       id: "main",
       courses: nextCourses,
-      subscriptionPlans
+      subscriptionPlans,
+      pages: sitePages
     }
   });
 
@@ -331,6 +363,10 @@ export async function updateCoursePricing(formData: FormData) {
 
 export async function updateSiteSettings(formData: FormData) {
   await requireAdmin();
+
+  const currentSettings = await prisma.siteSettings.findUnique({
+    where: { id: "main" }
+  });
 
   const nextSubscriptionPlans = [
     {
@@ -350,22 +386,62 @@ export async function updateSiteSettings(formData: FormData) {
   const nextCourses = {
     beginner: {
       title: String(formData.get("beginner_title") || courses.beginner.title),
+      shortDescription: String(formData.get("beginner_short_description") || courses.beginner.shortDescription),
+      dialogBody: String(formData.get("beginner_dialog_body") || courses.beginner.dialogBody),
+      externalLinkLabel: String(formData.get("beginner_link_label") || courses.beginner.externalLinkLabel),
+      externalLinkUrl: String(formData.get("beginner_link_url") || courses.beginner.externalLinkUrl),
+      imageUrl:
+        String(formData.get("beginner_image_url") || "").trim() ||
+        (await extractUploadedImageDataUrl(formData.get("beginner_image_file"))) ||
+        String((currentSettings?.courses as typeof courses | null)?.beginner?.imageUrl || ""),
       description: parseLines(formData.get("beginner_description")),
       achievements: parseLines(formData.get("beginner_achievements")),
-      details: parseLines(formData.get("beginner_details"))
+      details: parseLines(formData.get("beginner_details")),
+      pricing: (currentSettings?.courses as typeof courses | null)?.beginner?.pricing || courses.beginner.pricing
     },
     advanced: {
       title: String(formData.get("advanced_title") || courses.advanced.title),
+      shortDescription: String(formData.get("advanced_short_description") || courses.advanced.shortDescription),
+      dialogBody: String(formData.get("advanced_dialog_body") || courses.advanced.dialogBody),
+      imageUrl:
+        String(formData.get("advanced_image_url") || "").trim() ||
+        (await extractUploadedImageDataUrl(formData.get("advanced_image_file"))) ||
+        String((currentSettings?.courses as typeof courses | null)?.advanced?.imageUrl || ""),
       description: String(formData.get("advanced_description") || courses.advanced.description),
       includes: parseLines(formData.get("advanced_includes")),
-      outcomes: parseLines(formData.get("advanced_outcomes"))
+      outcomes: parseLines(formData.get("advanced_outcomes")),
+      pricing: (currentSettings?.courses as typeof courses | null)?.advanced?.pricing || courses.advanced.pricing
     },
     liveExperience: {
       title: String(formData.get("live_title") || courses.liveExperience.title),
+      shortDescription: String(formData.get("live_short_description") || courses.liveExperience.shortDescription),
+      dialogBody: String(formData.get("live_dialog_body") || courses.liveExperience.dialogBody),
+      imageUrl:
+        String(formData.get("live_image_url") || "").trim() ||
+        (await extractUploadedImageDataUrl(formData.get("live_image_file"))) ||
+        String((currentSettings?.courses as typeof courses | null)?.liveExperience?.imageUrl || ""),
       description: String(formData.get("live_description") || courses.liveExperience.description),
       includes: parseLines(formData.get("live_includes")),
       outcomes: parseLines(formData.get("live_outcomes")),
-      details: parseLines(formData.get("live_details"))
+      details: parseLines(formData.get("live_details")),
+      pricing: (currentSettings?.courses as typeof courses | null)?.liveExperience?.pricing || courses.liveExperience.pricing
+    }
+  };
+
+  const currentPages = (currentSettings?.pages as typeof sitePages | null) || sitePages;
+  const nextAboutImages = [
+    String(formData.get("about_image_url_1") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_1"))) || currentPages.about.images[0] || "",
+    String(formData.get("about_image_url_2") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_2"))) || currentPages.about.images[1] || "",
+    String(formData.get("about_image_url_3") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_3"))) || currentPages.about.images[2] || "",
+    String(formData.get("about_image_url_4") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_4"))) || currentPages.about.images[3] || ""
+  ].filter(Boolean);
+
+  const nextPages = {
+    about: {
+      title: String(formData.get("about_title") || currentPages.about.title),
+      intro: String(formData.get("about_intro") || currentPages.about.intro),
+      body: parseLines(formData.get("about_body")),
+      images: nextAboutImages
     }
   };
 
@@ -373,17 +449,20 @@ export async function updateSiteSettings(formData: FormData) {
     where: { id: "main" },
     update: {
       subscriptionPlans: nextSubscriptionPlans,
-      courses: nextCourses
+      courses: nextCourses,
+      pages: nextPages
     },
     create: {
       id: "main",
       subscriptionPlans: nextSubscriptionPlans,
-      courses: nextCourses
+      courses: nextCourses,
+      pages: nextPages
     }
   });
 
   revalidatePath("/");
   revalidatePath("/courses");
   revalidatePath("/live");
+  revalidatePath("/about");
   revalidatePath("/admin");
 }

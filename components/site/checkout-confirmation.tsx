@@ -31,7 +31,7 @@ export function CheckoutConfirmation({
           <p className="mt-4 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">{description}</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {compareAtPriceLabel ? <span className="text-sm text-white/35 line-through">{compareAtPriceLabel}</span> : null}
-            <div className="inline-flex rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 px-4 py-2 text-sm text-[#f3dfbf]">
+            <div className="inline-flex rounded-full border border-red-500/30 bg-red-500/15 px-5 py-3 text-base font-semibold text-red-100 shadow-[0_18px_40px_rgba(185,28,28,0.24)]">
               {priceLabel}
             </div>
           </div>

@@ -21,8 +21,11 @@ export type CourseOffer = {
   priceSuffix?: string;
   note: string;
   image: StaticImageData;
+  imageUrl?: string | null;
   description: string;
   dialogBody: string;
+  externalLinkLabel?: string;
+  externalLinkUrl?: string;
   includeTitle?: string;
   include?: string[];
   learnTitle?: string;
@@ -191,6 +194,12 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
 
     return {
       ...course,
+      title: coursesContent?.[course.pricingKey]?.title || course.title,
+      description: coursesContent?.[course.pricingKey]?.shortDescription || course.description,
+      dialogBody: coursesContent?.[course.pricingKey]?.dialogBody || course.dialogBody,
+      imageUrl: coursesContent?.[course.pricingKey]?.imageUrl || null,
+      externalLinkLabel: coursesContent?.[course.pricingKey]?.externalLinkLabel || undefined,
+      externalLinkUrl: coursesContent?.[course.pricingKey]?.externalLinkUrl || undefined,
       priceValue,
       compareAtPriceValue,
       price: buildPriceLabel(priceValue, course.priceSuffix),

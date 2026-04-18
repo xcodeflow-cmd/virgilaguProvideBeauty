@@ -27,6 +27,8 @@ type LiveSessionSummary = {
   price?: number | null;
   compareAtPrice?: number | null;
   visibility?: string;
+  maxParticipants?: number | null;
+  purchasedCount?: number;
 };
 
 type PastLiveSession = {
@@ -38,6 +40,8 @@ type PastLiveSession = {
   price?: number | null;
   compareAtPrice?: number | null;
   visibility?: string;
+  maxParticipants?: number | null;
+  purchasedCount?: number;
 };
 
 type ChatMessage = {
@@ -56,6 +60,8 @@ type LiveRecording = {
   price?: number | null;
   compareAtPrice?: number | null;
   visibility?: string;
+  maxParticipants?: number | null;
+  purchasedCount?: number;
 };
 
 type StreamStatus = "offline" | "connecting" | "joining" | "live" | "reconnecting";
@@ -259,7 +265,9 @@ function areRecordingsEqual(current: LiveRecording[], next: LiveRecording[]) {
       recording.videoUrl === next[index]?.videoUrl &&
       recording.price === next[index]?.price &&
       recording.compareAtPrice === next[index]?.compareAtPrice &&
-      recording.visibility === next[index]?.visibility
+      recording.visibility === next[index]?.visibility &&
+      recording.maxParticipants === next[index]?.maxParticipants &&
+      recording.purchasedCount === next[index]?.purchasedCount
   );
 }
 
@@ -348,7 +356,9 @@ export function LivePageContent({
       videoUrl: item.recordingUrl,
       price: item.price,
       compareAtPrice: item.compareAtPrice,
-      visibility: item.visibility
+      visibility: item.visibility,
+      maxParticipants: item.maxParticipants,
+      purchasedCount: item.purchasedCount
     }))
   );
   const [error, setError] = useState<string | null>(null);
@@ -434,14 +444,28 @@ export function LivePageContent({
   }, [localStream]);
 
   useEffect(() => {
-    const onFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+    document.body.style.overflow = isFullscreen ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    if (!isFullscreen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsFullscreen(false);
+      }
     };
 
-    document.addEventListener("fullscreenchange", onFullscreenChange);
+    window.addEventListener("keydown", handleKeyDown);
 
-    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, []);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
 
   useEffect(() => {
     if (!chatScrollRef.current) {
@@ -1142,14 +1166,14 @@ export function LivePageContent({
         remoteStreamRef.current = new MediaStream();
         setRemoteVideoStream();
 
-        room.on(RoomEvent.TrackSubscribed, (track) => {
+        room.on(RoomEvent.TrackSubscribed, (track: any) => {
           if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
             addRemoteTrack(track as RemoteTrack);
             setStreamStatus("live");
           }
         });
 
-        room.on(RoomEvent.TrackUnsubscribed, (track) => {
+        room.on(RoomEvent.TrackUnsubscribed, (track: any) => {
           if (track.kind === Track.Kind.Video || track.kind === Track.Kind.Audio) {
             removeRemoteTrack(track as RemoteTrack);
 
@@ -1275,6 +1299,8 @@ export function LivePageContent({
           price?: number | null;
           compareAtPrice?: number | null;
           visibility?: string;
+          maxParticipants?: number | null;
+          purchasedCount?: number;
         } | null;
       }>("/api/live/current");
 
@@ -1297,7 +1323,9 @@ export function LivePageContent({
           current.isLive &&
           current.price === live.price &&
           current.compareAtPrice === live.compareAtPrice &&
-          current.visibility === live.visibility
+          current.visibility === live.visibility &&
+          current.maxParticipants === live.maxParticipants &&
+          current.purchasedCount === live.purchasedCount
         ) {
           return current;
         }
@@ -1310,7 +1338,9 @@ export function LivePageContent({
           isLive: true,
           price: live.price,
           compareAtPrice: live.compareAtPrice,
-          visibility: live.visibility
+          visibility: live.visibility,
+          maxParticipants: live.maxParticipants,
+          purchasedCount: live.purchasedCount
         };
       });
     } catch {
@@ -1434,23 +1464,10 @@ export function LivePageContent({
         ? (await navigator.mediaDevices.enumerateDevices()).filter((device) => device.kind === "videoinput")
         : [];
       const currentIndex = videoInputs.findIndex((device) => device.deviceId === currentDeviceId);
-      const nextDeviceId = videoInputs.length > 1
-        ? videoInputs[(currentIndex + 1 + videoInputs.length) % videoInputs.length]?.deviceId || ""
-        : "";
+      const nextDeviceId = videoInputs.length > 1 ? videoInputs[(currentIndex + 1 + videoInputs.length) % videoInputs.length]?.deviceId || "" : "";
       let nextStream: MediaStream | null = null;
 
       try {
-        nextStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { exact: nextFacingMode },
-            width: { ideal: 1920, max: 1920 },
-            height: { ideal: 1080, max: 1080 },
-            frameRate: { ideal: 30, max: 30 },
-            aspectRatio: { ideal: 16 / 9 }
-          },
-          audio: false
-        });
-      } catch {
         if (nextDeviceId) {
           nextStream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -1463,6 +1480,21 @@ export function LivePageContent({
             audio: false
           });
         } else {
+          throw new Error("No alternate device id");
+        }
+      } catch {
+        try {
+          nextStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { exact: nextFacingMode },
+              width: { ideal: 1920, max: 1920 },
+              height: { ideal: 1080, max: 1080 },
+              frameRate: { ideal: 30, max: 30 },
+              aspectRatio: { ideal: 16 / 9 }
+            },
+            audio: false
+          });
+        } catch {
           nextStream = await getSafeBroadcastStream(nextFacingMode, false);
         }
       }
@@ -1481,7 +1513,9 @@ export function LivePageContent({
       const room = liveKitRoomRef.current;
 
       if (room) {
-        const publishedVideoTrack = Array.from(room.localParticipant.videoTrackPublications.values()).find((publication) => publication.track)?.track;
+          const publishedVideoTrack = (Array.from(room.localParticipant.videoTrackPublications.values()) as any[]).find(
+            (publication: any) => publication?.track
+          )?.track as { mediaStreamTrack: MediaStreamTrack } | undefined;
 
         if (publishedVideoTrack) {
           await room.localParticipant.unpublishTrack(publishedVideoTrack.mediaStreamTrack, false);
@@ -1720,16 +1754,7 @@ export function LivePageContent({
   }
 
   async function toggleFullscreen() {
-    if (!videoStageRef.current) {
-      return;
-    }
-
-    if (document.fullscreenElement) {
-      await document.exitFullscreen().catch(() => undefined);
-      return;
-    }
-
-    await videoStageRef.current.requestFullscreen().catch(() => undefined);
+    setIsFullscreen((current) => !current);
   }
 
   const canViewCurrentSession = hasSessionAccess(currentSession);
@@ -1764,6 +1789,11 @@ export function LivePageContent({
       )
     : 0;
   const currentSessionLocked = Boolean(currentSession && !canViewCurrentSession && !isAdmin);
+  const currentSessionSoldOut = Boolean(
+    !canViewCurrentSession &&
+    currentSession?.maxParticipants &&
+    (currentSession?.purchasedCount || 0) >= currentSession.maxParticipants
+  );
   const chatPanel = (
     <div className="flex h-full flex-col">
       <div className="border-b border-white/10 px-4 py-4 sm:px-5">
@@ -1869,6 +1899,11 @@ export function LivePageContent({
                       {sessionScheduleLabel}
                     </div>
                   ) : null}
+                  {isAdmin && currentSession?.maxParticipants ? (
+                    <div className="rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.45]">
+                      Locuri {currentSession.purchasedCount || 0}/{currentSession.maxParticipants}
+                    </div>
+                  ) : null}
                 </div>
                 <h2 className="mt-3 max-w-4xl text-[2rem] leading-[0.94] text-white sm:text-4xl lg:text-[4.2rem]">
                   {currentSession?.title || "LIVE Barber Experience"}
@@ -1878,7 +1913,9 @@ export function LivePageContent({
                     ? "Video-ul si chatul raman vizibile impreuna, inclusiv pe telefon."
                     : countdownParts
                       ? "Urmatoarea sesiune este programata."
-                      : canViewCurrentSession
+                      : currentSessionSoldOut
+                        ? "Locurile pentru sesiunea live au fost ocupate."
+                        : canViewCurrentSession
                         ? "Momentan nu este nici un live activ."
                         : "Live-ul se deblocheaza individual, doar pentru sesiunea pe care o cumperi."}
                 </p>
@@ -1887,11 +1924,11 @@ export function LivePageContent({
                     {currentSessionHasDiscount ? (
                       <span className="text-sm text-white/35 line-through">{formatLei(currentSession.compareAtPrice || 0)}</span>
                     ) : null}
-                    <span className="rounded-full bg-[#d6b98c]/10 px-4 py-2 text-sm text-[#f3dfbf]">
+                    <span className="rounded-full border border-red-500/30 bg-red-500/15 px-5 py-3 text-base font-semibold text-red-100 shadow-[0_18px_40px_rgba(185,28,28,0.28)]">
                       {formatLei(currentSession.price)}
                     </span>
                     {currentSessionHasDiscount ? (
-                      <span className="rounded-full bg-[#d6b98c]/12 px-3 py-2 text-[11px] uppercase tracking-[0.24em] text-[#f3dfbf]">
+                      <span className="rounded-full border border-red-500/30 bg-red-500/12 px-4 py-2 text-[11px] uppercase tracking-[0.24em] text-red-100">
                         Reducere {currentSessionDiscountPercent}%
                       </span>
                     ) : null}
@@ -1922,7 +1959,7 @@ export function LivePageContent({
             </div>
 
             {countdownParts ? (
-              <div className="grid gap-2 border-t border-white/10 px-4 py-4 sm:grid-cols-4 sm:gap-3 sm:px-6">
+              <div className="grid grid-cols-4 gap-2 border-t border-white/10 px-3 py-4 sm:gap-3 sm:px-6">
                 {countdownParts.map((item) => (
                   <div
                     key={item.label}
@@ -1936,16 +1973,20 @@ export function LivePageContent({
               </div>
             ) : null}
 
-              <div ref={videoStageRef} className="relative max-h-[calc(100svh-18rem)] overflow-hidden bg-black sm:max-h-none" onDoubleClick={() => void toggleFullscreen()}>
+              <div
+                ref={videoStageRef}
+                className={`relative overflow-hidden bg-black ${isFullscreen ? "fixed inset-0 z-[90] flex items-center justify-center" : "max-h-[calc(100svh-18rem)] sm:max-h-none"}`}
+                onDoubleClick={() => void toggleFullscreen()}
+              >
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(214,185,140,0.12),transparent_28%)]" />
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
-                <video ref={localVideoRef} autoPlay muted playsInline className="aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] sm:object-cover xl:min-h-[20rem]" />
+                <video ref={localVideoRef} autoPlay muted playsInline className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
               ) : currentSession?.isLive ? (
-                <video ref={remoteVideoRef} autoPlay playsInline controls className="aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] sm:object-cover xl:min-h-[20rem]" />
+                <video ref={remoteVideoRef} autoPlay playsInline controls className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
               ) : (
-                <div className="flex aspect-video max-h-[calc(100svh-18rem)] min-h-0 items-center justify-center bg-black px-6 text-center text-white/60 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]">
-                  {canViewCurrentSession ? "Niciun LIVE activ momentan" : "Cumpara live-ul curent pentru acces instant la video si chat."}
+                <div className={`flex items-center justify-center bg-black px-6 text-center text-white/60 ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
+                  {currentSessionSoldOut ? "Sesiunea live este sold out." : canViewCurrentSession ? "Niciun LIVE activ momentan" : "Cumpara live-ul curent pentru acces instant la video si chat."}
                 </div>
               )}
 
@@ -1958,6 +1999,11 @@ export function LivePageContent({
                     <div className="rounded-full border border-[#d6b98c]/20 bg-black/[0.62] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-[#f3dfbf] backdrop-blur-md">
                       <Lock className="mr-1 inline h-3.5 w-3.5" />
                       Acces blocat
+                    </div>
+                  ) : null}
+                  {isAdmin && currentSession?.isLive ? (
+                    <div className="rounded-full bg-black/[0.62] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white backdrop-blur-md">
+                      Spectatori {debug.viewers}
                     </div>
                   ) : null}
                 </div>
@@ -1992,42 +2038,46 @@ export function LivePageContent({
               </div>
             ) : null}
 
-            <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-              <div className="space-y-2">
-                <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">
-                  {currentSession?.isLive
-                    ? "Broadcasterul publica o singura data catre server, iar spectatorii primesc fluxul prin distributie centralizata."
-                    : countdownParts
-                      ? "Timerul de mai sus inlocuieste mesajul static si afiseaza clar timpul ramas pana la urmatorul LIVE."
-                      : "Cand adminul programeaza o sesiune, countdown-ul apare automat in aceasta zona."}
-                </p>
-                {currentSession?.description ? (
-                  <p className="hidden text-sm leading-7 text-white/[0.44] sm:block">{currentSession.description}</p>
+              <div className="grid gap-3 border-t border-white/10 px-4 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                <div className="space-y-2">
+                  <p className="text-sm leading-6 text-white/[0.58] sm:leading-7">
+                    {currentSession?.isLive
+                      ? currentSession.description
+                      : countdownParts
+                        ? "Timerul de mai sus afiseaza timpul ramas pana la urmatorul LIVE."
+                        : "Cand adminul programeaza o sesiune, countdown-ul apare automat in aceasta zona."}
+                  </p>
+                  {currentSession?.description && !currentSession?.isLive ? (
+                    <p className="hidden text-sm leading-7 text-white/[0.44] sm:block">{currentSession.description}</p>
+                  ) : null}
+                </div>
+                {!canViewCurrentSession && !isAdmin && currentSession?.price && !currentSessionSoldOut ? (
+                  <div className="flex flex-col items-start gap-2">
+                    <Button asChild className="min-h-11">
+                      <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
+                        Cumpara live-ul {formatLei(currentSession.price)}
+                      </a>
+                    </Button>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-white/60">
+                      {currentSessionHasDiscount ? (
+                        <>
+                          <span className="line-through text-white/35">{formatLei(currentSession.compareAtPrice || 0)}</span>
+                          <span className="text-white">{formatLei(currentSession.price)}</span>
+                          <span className="rounded-full border border-red-500/30 bg-red-500/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-red-100">
+                            -{currentSessionDiscountPercent}%
+                          </span>
+                        </>
+                      ) : (
+                        <span>{formatLei(currentSession.price)}</span>
+                      )}
+                    </div>
+                  </div>
+                ) : currentSessionSoldOut ? (
+                  <div className="rounded-full border border-red-500/30 bg-red-500/12 px-4 py-3 text-sm text-red-100">
+                    Locurile live sunt ocupate. Replay-ul poate fi cumparat dupa salvare.
+                  </div>
                 ) : null}
               </div>
-              {!canViewCurrentSession && !isAdmin && currentSession?.price ? (
-                <div className="flex flex-col items-start gap-2">
-                  <Button asChild className="min-h-11">
-                    <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
-                      Cumpara live-ul {formatLei(currentSession.price)}
-                    </a>
-                  </Button>
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-white/60">
-                    {currentSessionHasDiscount ? (
-                      <>
-                        <span className="line-through text-white/35">{formatLei(currentSession.compareAtPrice || 0)}</span>
-                        <span className="text-white">{formatLei(currentSession.price)}</span>
-                        <span className="rounded-full bg-[#d6b98c]/12 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-[#f3dfbf]">
-                          -{currentSessionDiscountPercent}%
-                        </span>
-                      </>
-                    ) : (
-                      <span>{formatLei(currentSession.price)}</span>
-                    )}
-                  </div>
-                </div>
-              ) : null}
-            </div>
 
             {error ? <p className="px-4 pb-4 text-sm text-red-300 sm:px-6">{error}</p> : null}
           </div>
@@ -2044,7 +2094,9 @@ export function LivePageContent({
                 recordingUrl: item.videoUrl,
                 price: item.price,
                 compareAtPrice: item.compareAtPrice,
-                visibility: item.visibility
+                visibility: item.visibility,
+                maxParticipants: item.maxParticipants,
+                purchasedCount: item.purchasedCount
               }))}
             />
           </div>
@@ -2069,7 +2121,9 @@ export function LivePageContent({
             recordingUrl: item.videoUrl,
             price: item.price,
             compareAtPrice: item.compareAtPrice,
-            visibility: item.visibility
+            visibility: item.visibility,
+            maxParticipants: item.maxParticipants,
+            purchasedCount: item.purchasedCount
           }))}
         />
       </div>

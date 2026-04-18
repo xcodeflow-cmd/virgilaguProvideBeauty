@@ -17,7 +17,9 @@ export async function GET() {
       scheduledFor: session.scheduledFor.toISOString(),
       price: session.price,
       compareAtPrice: session.compareAtPrice,
-      visibility: session.visibility
+      visibility: session.visibility,
+      maxParticipants: session.maxParticipants,
+      purchasedCount: session._count.purchases
     }
   });
 }

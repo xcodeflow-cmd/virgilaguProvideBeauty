@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getStripe } from "@/lib/stripe";
+import { isLiveSessionSoldOut } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 import { getManagedCourseOffers } from "@/lib/course-offers";
 import { getSiteSettings } from "@/lib/site-content";
@@ -43,13 +44,17 @@ export async function GET(request: Request) {
     const liveSession = mode === "payment" && liveSessionId
       ? await prisma.liveSession.findUnique({
           where: { id: liveSessionId },
-          select: { id: true, title: true, description: true, price: true, visibility: true }
+          select: { id: true, title: true, description: true, price: true, visibility: true, recordingUrl: true }
         })
       : null;
 
     if (mode === "payment" && liveSessionId) {
       if (!liveSession || liveSession.visibility !== "ONE_TIME" || !liveSession.price) {
         return NextResponse.json({ error: "Selected live session is not available for one-time purchase." }, { status: 400 });
+      }
+
+      if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {
+        return NextResponse.json({ error: "Live session reached the maximum number of participants." }, { status: 409 });
       }
     }
 

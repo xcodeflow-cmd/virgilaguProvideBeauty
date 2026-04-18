@@ -158,6 +158,13 @@ export default async function DashboardPage() {
               <div key={purchase.id} className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-white/[0.68]">
                 <p className="text-lg text-white">{purchase.liveSession?.title || purchase.type}</p>
                 <p className="mt-2 text-sm">Purchased on {formatDate(purchase.createdAt)}</p>
+                {purchase.liveSession ? (
+                  <div className="mt-4">
+                    <Button asChild variant="secondary" className="min-h-11">
+                      <Link href={`/live#replay-${purchase.liveSession.id}`}>Deschide live-ul</Link>
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             )) : <p className="text-sm text-white/50">No purchases yet.</p>}
           </div>

@@ -37,7 +37,9 @@ export default async function LivePage() {
               isLive: isActive,
               price: liveSession.price,
               compareAtPrice: liveSession.compareAtPrice,
-              visibility: liveSession.visibility
+              visibility: liveSession.visibility,
+              maxParticipants: liveSession.maxParticipants,
+              purchasedCount: liveSession._count.purchases
             }
           : null}
         pastSessions={pastSessions.map((item) => ({
@@ -48,7 +50,9 @@ export default async function LivePage() {
           recordingUrl: item.recordingUrl || "",
           price: item.price,
           compareAtPrice: item.compareAtPrice,
-          visibility: item.visibility
+          visibility: item.visibility,
+          maxParticipants: item.maxParticipants,
+          purchasedCount: item._count.purchases
         }))}
       />
     </section>

@@ -191,7 +191,13 @@ export default async function AdminPage() {
   }
 
   let galleryItems: Awaited<ReturnType<typeof prisma.galleryItem.findMany>> = [];
-  let liveSessions: Awaited<ReturnType<typeof prisma.liveSession.findMany>> = [];
+  let liveSessions: Array<
+    Awaited<ReturnType<typeof prisma.liveSession.findMany>>[number] & {
+      _count: {
+        purchases: number;
+      };
+    }
+  > = [];
   let users: Awaited<ReturnType<typeof prisma.user.findMany>> = [];
   const settings = await getSiteSettings();
 
@@ -201,7 +207,14 @@ export default async function AdminPage() {
         orderBy: { createdAt: "desc" }
       }),
       prisma.liveSession.findMany({
-        orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
+        orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }],
+        include: {
+          _count: {
+            select: {
+              purchases: true
+            }
+          }
+        }
       }),
       prisma.user.findMany({
         orderBy: { createdAt: "desc" },
@@ -231,6 +244,8 @@ export default async function AdminPage() {
         visibility: item.visibility,
         price: item.price,
         compareAtPrice: item.compareAtPrice,
+        maxParticipants: item.maxParticipants,
+        purchasedCount: item._count.purchases,
         isLive: item.isLive,
         scheduledFor: item.scheduledFor.toISOString(),
         recordingUrl: item.recordingUrl || ""
@@ -242,6 +257,7 @@ export default async function AdminPage() {
         createdAt: item.createdAt.toISOString()
       }))}
       courseSettings={settings.courses}
+      pagesSettings={settings.pages}
     />
   );
 }

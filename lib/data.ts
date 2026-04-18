@@ -156,6 +156,13 @@ export const aboutMeAchievements = [
 export const courses = {
   beginner: {
     title: "Curs de frizerie pentru incepatori (de la 0)",
+    shortDescription:
+      "Format dedicat celor care vor sa intre corect in industrie, cu baza clara, ritm de lucru si suport practic real.",
+    dialogBody:
+      "Cursul pentru incepatori este construit flexibil, in functie de dinamica grupei si de nivelul real al cursantilor. Obiectivul este sa pleci cu o baza functionala, cu ritm de lucru, control pe unelte si o intelegere clara a modului in care construiesti o tunsoare curata de la zero.",
+    imageUrl: "",
+    externalLinkLabel: "Detalii complete curs",
+    externalLinkUrl: "https://scoalacomerciala.ro/cursuri/cursuri-beauty/cursfrizer-roman/",
     description: [
       "Organizat cu Scoala Comerciala si de Servicii Bacau",
       "Trainer: Virgil Agu",
@@ -178,6 +185,13 @@ export const courses = {
   },
   advanced: {
     title: "Curs de perfectionare 1 la 1",
+    shortDescription:
+      "Experienta intensiva alaturi de Virgil Agu, cu practica directa, corectii in timp real si focus complet pe progres.",
+    dialogBody:
+      "Provibe, alaturi de fondatorul Virgil Agu, organizeaza cursuri de perfectionare dedicate frizerilor care vor sa treaca la urmatorul nivel. Acest curs este conceput in format 1 la 1, oferindu-ti atentie completa si ghidare personalizata pe tot parcursul zilei.",
+    imageUrl: "",
+    externalLinkLabel: "",
+    externalLinkUrl: "",
     description:
       "Experienta intensiva de o zi, personalizata in functie de nivelul, ritmul si obiectivele cursantului.",
     includes: [
@@ -201,6 +215,13 @@ export const courses = {
   },
   liveExperience: {
     title: "LIVE Barber Experience",
+    shortDescription:
+      "Inveti in timp real alaturi de Virgil Agu, urmarind clienti reali, explicatii clare si ritm autentic de salon.",
+    dialogBody:
+      "In fiecare luna, Virgil intra LIVE si tunde clienti reali, explicand pas cu pas fiecare miscare, fiecare tehnica si fiecare detaliu care face diferenta dintre un frizer obisnuit si unul de top.",
+    imageUrl: "",
+    externalLinkLabel: "",
+    externalLinkUrl: "",
     description: "Sesiuni lunare de tuns live, cu explicatii clare si context real de salon.",
     includes: [
       "Tunsori in timp real",
@@ -222,6 +243,20 @@ export const courses = {
       priceValue: 100,
       compareAtPriceValue: null
     }
+  }
+};
+
+export const sitePages = {
+  about: {
+    title: "Despre noi",
+    intro:
+      "Provibe este construit in jurul executiei reale, al disciplinei si al educatiei care ramane utila dupa ce se termina cursul sau live-ul.",
+    body: [
+      "In spatele platformei sta experienta acumulata de Virgil Agu in ani de lucru constant, competitii, workshopuri si sute de interactiuni directe cu oameni care vor rezultate clare, nu informatie cosmetizata. Standardul pe care il vezi in pagina vine din salon, din ore reale de munca si din dorinta de a face educatia usor de aplicat imediat.",
+      "Cursurile sunt gandite practic, cu accent pe control, ritm, claritate in explicatii si adaptare la nivelul celui care invata. Nu urmarim sa incarcam pagina cu promisiuni goale, ci sa aratam exact directia: ce primesti, cum evoluezi si unde poti ajunge daca aplici corect.",
+      "Live-urile si replay-urile completeaza partea fizica a trainingului. Ele sunt gandite pentru cei care vor sa revada tehnica, sa urmareasca executia in ritm real si sa poata intra oricand inapoi in materialul pe care l-au cumparat. Totul este construit astfel incat experienta sa ramana clara, coerenta si utila pe termen lung."
+    ],
+    images: [] as string[]
   }
 };
 

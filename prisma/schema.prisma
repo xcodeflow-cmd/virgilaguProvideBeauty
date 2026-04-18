@@ -52,6 +52,7 @@ model SiteSettings {
   id                String   @id
   subscriptionPlans Json
   courses           Json
+  pages             Json?
   updatedAt         DateTime @updatedAt
 }
 
@@ -133,6 +134,7 @@ model LiveSession {
   recordingData   Bytes?
   price           Int?
   compareAtPrice  Int?
+  maxParticipants Int?
   visibility      SessionVisibility @default(SUBSCRIBERS)
   isLive          Boolean           @default(false)
   isFeatured      Boolean           @default(false)

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { CheckoutConfirmation } from "@/components/site/checkout-confirmation";
 import { getManagedCourseOffers } from "@/lib/course-offers";
+import { isLiveSessionSoldOut } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 import { getSiteSettings } from "@/lib/site-content";
 import { formatLei } from "@/lib/utils";
@@ -52,11 +53,16 @@ export default async function CheckoutPage({
       description: true,
       price: true,
       compareAtPrice: true,
-      visibility: true
+      visibility: true,
+      recordingUrl: true
     }
   });
 
   if (!liveSession || liveSession.visibility !== "ONE_TIME" || !liveSession.price) {
+    notFound();
+  }
+
+  if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {
     notFound();
   }
 

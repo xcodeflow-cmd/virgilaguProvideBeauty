@@ -30,10 +30,10 @@ function getContentType(filename: string) {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ kind: keyof typeof mediaRoots; file: string }> }
+  { params }: { params: Promise<{ kind: string; file: string }> }
 ) {
   const { kind, file } = await params;
-  const root = mediaRoots[kind];
+  const root = mediaRoots[kind as keyof typeof mediaRoots];
 
   if (!root) {
     return new NextResponse("Not found", { status: 404 });

@@ -17,7 +17,13 @@ export async function GET() {
       recordingUrl: true,
       price: true,
       compareAtPrice: true,
-      visibility: true
+      maxParticipants: true,
+      visibility: true,
+      _count: {
+        select: {
+          purchases: true
+        }
+      }
     }
   }).catch(() => []);
 
@@ -30,7 +36,9 @@ export async function GET() {
       videoUrl: item.recordingUrl,
       price: item.price,
       compareAtPrice: item.compareAtPrice,
-      visibility: item.visibility
+      visibility: item.visibility,
+      maxParticipants: item.maxParticipants,
+      purchasedCount: item._count.purchases
     }))
   });
 }
