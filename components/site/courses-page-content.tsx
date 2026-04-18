@@ -37,35 +37,35 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
             <h1 className="mt-6 max-w-5xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
               Programe premium construite pentru progres clar, nu pentru impresie generica.
             </h1>
-            <div className="mt-10 grid max-w-2xl grid-cols-3 gap-2.5 sm:gap-4">
-              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
-                <p className="dashboard-label">Experienta</p>
-                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">10+ ani</p>
+            <div className="mt-10 grid max-w-2xl grid-cols-3 gap-2 sm:gap-4">
+              <div className="min-w-0 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-2.5 sm:rounded-[1.5rem] sm:p-5">
+                <p className="dashboard-label text-[9px] tracking-[0.18em] sm:text-[11px] sm:tracking-[0.32em]">Experienta</p>
+                <p className="mt-2 text-[0.95rem] leading-5 text-white sm:mt-3 sm:text-2xl">10+ ani</p>
               </div>
-              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
-                <p className="dashboard-label">Cursanti</p>
-                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">300+</p>
+              <div className="min-w-0 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-2.5 sm:rounded-[1.5rem] sm:p-5">
+                <p className="dashboard-label text-[9px] tracking-[0.18em] sm:text-[11px] sm:tracking-[0.32em]">Cursanti</p>
+                <p className="mt-2 text-[0.95rem] leading-5 text-white sm:mt-3 sm:text-2xl">300+</p>
               </div>
-              <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-3 sm:rounded-[1.5rem] sm:p-5">
-                <p className="dashboard-label">Format</p>
-                <p className="mt-2 text-base text-white sm:mt-3 sm:text-2xl">Fizic + LIVE</p>
+              <div className="min-w-0 rounded-[1.2rem] border border-white/10 bg-white/[0.03] p-2.5 sm:rounded-[1.5rem] sm:p-5">
+                <p className="dashboard-label text-[9px] tracking-[0.18em] sm:text-[11px] sm:tracking-[0.32em]">Format</p>
+                <p className="mt-2 text-[0.8rem] leading-5 text-white sm:mt-3 sm:text-2xl">Fizic + LIVE</p>
               </div>
             </div>
 
-            <div className="mt-10 grid max-w-3xl grid-cols-3 gap-2.5 sm:gap-3">
-              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
+            <div className="mt-10 grid max-w-3xl grid-cols-3 gap-2 sm:gap-3">
+              <div className="min-w-0 rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-2.5 py-3 text-[10px] leading-4 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm sm:leading-5">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <GraduationCap className="h-4 w-4" />
                 </div>
                 Baza corecta pentru cei care pornesc serios.
               </div>
-              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
+              <div className="min-w-0 rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-2.5 py-3 text-[10px] leading-4 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm sm:leading-5">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <ScissorsLineDashed className="h-4 w-4" />
                 </div>
                 Corectii directe si progres rapid in 1 la 1.
               </div>
-              <div className="rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-3 py-3 text-[11px] leading-5 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm">
+              <div className="min-w-0 rounded-[1.15rem] border border-white/10 bg-white/[0.025] px-2.5 py-3 text-[10px] leading-4 text-white/[0.66] sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm sm:leading-5">
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.05] text-[#d6b98c]">
                   <Award className="h-4 w-4" />
                 </div>

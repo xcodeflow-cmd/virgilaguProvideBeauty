@@ -57,7 +57,7 @@ export default async function RootLayout({
         <div className="fixed inset-0 -z-10 bg-mesh opacity-90" />
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(194,154,92,0.12),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.04),transparent_32%),linear-gradient(180deg,rgba(7,7,7,0.12),rgba(7,7,7,0.9))]" />
         <Navbar session={session} />
-        <main className="relative z-10 min-h-screen overflow-x-hidden pb-[calc(9rem+env(safe-area-inset-bottom))] pt-24 sm:pb-0 sm:pt-32">{children}</main>
+        <main className="relative z-10 min-h-screen overflow-x-hidden pb-[calc(11rem+env(safe-area-inset-bottom))] pt-24 sm:pb-0 sm:pt-32">{children}</main>
         <SiteFooter />
         <ToasterShell />
       </body>

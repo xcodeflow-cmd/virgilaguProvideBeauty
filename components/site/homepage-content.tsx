@@ -79,8 +79,13 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
             <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
-            <div className="absolute left-[10px] top-[10px] z-20 h-36 w-36">
-              <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain" sizes="144px" />
+            <div className="absolute left-[70px] top-[70px] z-20 w-[240px]">
+              <Image
+                src={logoForMainPhoto}
+                alt="Provibe logo"
+                className="h-auto w-full object-contain"
+                sizes="240px"
+              />
             </div>
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.16),transparent_24%),radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.07),transparent_22%)]" />
@@ -136,8 +141,13 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 className="object-cover object-[58%_16%]"
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.7))]" />
-              <div className="absolute left-[10px] top-[10px] z-20 h-28 w-28">
-                <Image src={logoForMainPhoto} alt="Provibe logo" fill className="object-contain" sizes="112px" />
+              <div className="absolute left-5 top-5 z-20 w-28 sm:w-32">
+                <Image
+                  src={logoForMainPhoto}
+                  alt="Provibe logo"
+                  className="h-auto w-full object-contain"
+                  sizes="(min-width: 640px) 128px, 112px"
+                />
               </div>
             </div>
           </div>

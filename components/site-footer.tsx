@@ -21,7 +21,7 @@ const socialLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="pb-8 pt-12 sm:pb-10 sm:pt-16">
+    <footer className="pb-[calc(10rem+env(safe-area-inset-bottom))] pt-12 sm:pb-10 sm:pt-16">
       <div className="section-shell">
         <div className="grid gap-10 border-t border-white/10 pt-8 sm:pt-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-end">
           <div className="space-y-6">
@@ -39,7 +39,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-4 gap-2 pb-2 sm:gap-4 sm:pb-0">
             {socialLinks.map((link) => (
               <Link
                 key={link.href}
