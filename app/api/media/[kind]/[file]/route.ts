@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
 
 const mediaRoots = {
   gallery: path.join(process.cwd(), "assets", "gallery"),
-  videos: path.join(process.cwd(), "assets", "videos")
+  videos: path.join(process.cwd(), "assets", "videos"),
+  showcase: path.join(process.cwd(), "assets")
 } as const;
 
 function getContentType(filename: string) {

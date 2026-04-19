@@ -100,7 +100,7 @@ function splitDateTime(value: string) {
 export function AdminDashboard({
   galleryItems,
   liveSessions,
-  pagesSettings,
+  pagesSettings: _pagesSettings,
   users,
   courseSettings
 }: {
@@ -512,7 +512,7 @@ export function AdminDashboard({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="dashboard-label">Continut site</p>
-                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Cursuri si Despre noi</h2>
+                <h2 className="mt-3 text-2xl text-white sm:text-3xl">Cursuri</h2>
               </div>
             </div>
 
@@ -564,37 +564,6 @@ export function AdminDashboard({
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-lg text-white">{pagesSettings.about.title}</p>
-                <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                  <label className="space-y-2 lg:col-span-2">
-                    <span className="text-sm text-white/60">Titlu pagina</span>
-                    <input name="about_title" defaultValue={pagesSettings.about.title} className="premium-input" />
-                  </label>
-                  <label className="space-y-2 lg:col-span-2">
-                    <span className="text-sm text-white/60">Intro</span>
-                    <textarea name="about_intro" rows={3} defaultValue={pagesSettings.about.intro} className="premium-input" />
-                  </label>
-                  <label className="space-y-2 lg:col-span-2">
-                    <span className="text-sm text-white/60">Paragrafe</span>
-                    <textarea name="about_body" rows={8} defaultValue={pagesSettings.about.body.join("\n")} className="premium-input" />
-                  </label>
-                  {[0, 1, 2, 3].map((index) => (
-                    <div key={index} className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
-                      <label className="space-y-2">
-                        <span className="text-sm text-white/60">URL poza {index + 1}</span>
-                        <input name={`about_image_url_${index + 1}`} defaultValue={pagesSettings.about.images[index] || ""} className="premium-input" />
-                      </label>
-                      <label className="flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-white/[0.03] px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
-                        <Upload className="h-5 w-5" />
-                        Schimba poza
-                        <input type="file" name={`about_image_file_${index + 1}`} accept="image/*" className="hidden" />
-                      </label>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <Button type="submit" className="min-h-12">

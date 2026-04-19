@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 const OVERLAY_TEXT =
-  "Felicitari ca ai ales schimbarea, progresul \u00eencepe c\u00e2nd nu te mai mul\u021bume\u0219ti cu pu\u021bin.";
+  "Voi face tot ceea ce pot cu aceasta viata pentru a-mi lasa amprenta in tot ceea ce fac";
 const TYPE_INTERVAL_MS = 34;
 const AUTO_CLOSE_DELAY_MS = 1520;
 const FADE_DURATION_MS = 400;

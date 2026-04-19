@@ -448,34 +448,19 @@ export async function updateSiteSettings(formData: FormData) {
   };
 
   const currentPages = (currentSettings?.pages as typeof sitePages | null) || sitePages;
-  const nextAboutImages = [
-    String(formData.get("about_image_url_1") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_1"))) || currentPages.about.images[0] || "",
-    String(formData.get("about_image_url_2") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_2"))) || currentPages.about.images[1] || "",
-    String(formData.get("about_image_url_3") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_3"))) || currentPages.about.images[2] || "",
-    String(formData.get("about_image_url_4") || "").trim() || (await extractUploadedImageDataUrl(formData.get("about_image_file_4"))) || currentPages.about.images[3] || ""
-  ].filter(Boolean);
-
-  const nextPages = {
-    about: {
-      title: String(formData.get("about_title") || currentPages.about.title),
-      intro: String(formData.get("about_intro") || currentPages.about.intro),
-      body: parseLines(formData.get("about_body")),
-      images: nextAboutImages
-    }
-  };
 
   await prisma.siteSettings.upsert({
     where: { id: "main" },
     update: {
       subscriptionPlans: nextSubscriptionPlans,
       courses: nextCourses,
-      pages: nextPages
+      pages: currentPages
     },
     create: {
       id: "main",
       subscriptionPlans: nextSubscriptionPlans,
       courses: nextCourses,
-      pages: nextPages
+      pages: currentPages
     }
   });
 

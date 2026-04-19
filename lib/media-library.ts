@@ -2,9 +2,10 @@ import { getManagedGalleryItems } from "@/lib/site-content";
 
 const galleryImageOrder = [23, 24, 22, 21, 20, 19, 18, 17, 16, 9, 10, 11, 12, 13, 14, 15, 4, 5, 6];
 const galleryVideoOrder = ["videoGalerie2.mp4", "videoGalerie3.mp4", "videoGalerie4.mp4", "videoGalerie.mp4"];
+const whiteWorkVideoOrder = ["VopsitAlb1.mp4", "VopsitAlb2.mp4", "VopsitAlb3.mp4", "VopsitAlb4.mp4"];
 const feedbackVideoOrder = ["feedback1.mp4", "feedback2.mp4", "feedback4.mp4", "feedback3.mp4", "feedback5.mp4", "feedback.mp4"];
 
-function assetMediaUrl(kind: "gallery" | "videos", filename: string) {
+function assetMediaUrl(kind: "gallery" | "videos" | "showcase", filename: string) {
   return `/api/media/${kind}/${encodeURIComponent(filename)}`;
 }
 
@@ -39,6 +40,12 @@ export async function getOrderedGalleryMedia() {
       title: titleFromFilename(filename),
       category: "Video Galerie",
       src: assetMediaUrl("videos", filename)
+    })),
+    whiteWorkVideos: whiteWorkVideoOrder.map((filename, index) => ({
+      id: `white-work-video-${index + 1}`,
+      title: titleFromFilename(filename),
+      category: "Lucru cu alb",
+      src: assetMediaUrl("showcase", filename)
     }))
   };
 }

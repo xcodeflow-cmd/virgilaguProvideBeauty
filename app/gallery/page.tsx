@@ -3,7 +3,7 @@ import { GalleryPageContent } from "@/components/site/gallery-page-content";
 import { getOrderedGalleryMedia } from "@/lib/media-library";
 
 export default async function GalleryPage() {
-  const { images, videos } = await getOrderedGalleryMedia();
+  const { images, videos, whiteWorkVideos } = await getOrderedGalleryMedia();
 
   return (
     <section className="section-shell section-space">
@@ -15,7 +15,7 @@ export default async function GalleryPage() {
       </FadeIn>
 
       <div className="mx-auto mt-16 max-w-[92rem]">
-        <GalleryPageContent images={images} videos={videos} />
+        <GalleryPageContent images={images} videos={videos} whiteWorkVideos={whiteWorkVideos} />
       </div>
     </section>
   );
