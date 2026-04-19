@@ -8,7 +8,7 @@ import { ArrowRight, ArrowUpRight, X } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
-import { HeroOverlayEffect, markHeroOverlaySeen, shouldOpenHeroOverlay } from "@/components/site/hero-overlay-effect";
+import { HeroOverlayEffect } from "@/components/site/hero-overlay-effect";
 import { Button } from "@/components/ui/button";
 import siteLogo from "@/assets/logo.png";
 import provibeLogo from "@/assets/provibe.png";
@@ -39,33 +39,35 @@ function PalmaresDialog() {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] w-[94vw] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[2.2rem] border border-white/10 bg-[#070707] p-6 shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+        <Dialog.Content className="fixed left-1/2 top-[max(5.5rem,env(safe-area-inset-top))] z-[70] flex max-h-[calc(100dvh-6.5rem)] w-[94vw] max-w-3xl -translate-x-1/2 flex-col overflow-hidden rounded-[2.2rem] border border-white/10 bg-[#070707] shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:top-[max(6.5rem,env(safe-area-inset-top))] sm:max-h-[calc(100dvh-8rem)]">
+          <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#070707]/96 px-6 py-5 backdrop-blur-md sm:px-8 sm:py-6">
+            <div className="pr-3">
               <p className="text-[10px] uppercase tracking-[0.38em] text-[#d6b98c]">Palmares</p>
               <Dialog.Title className="mt-3 text-4xl leading-tight text-white sm:text-5xl">
                 Rezultate care sustin standardul.
               </Dialog.Title>
             </div>
-            <Dialog.Close className="rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
+            <Dialog.Close className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
               <X className="h-5 w-5" />
             </Dialog.Close>
           </div>
 
-          <div className="mt-8 grid gap-4">
-            {palmaresHighlights.map((item) => (
-              <div key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 text-white/[0.84]">
-                {item}
-              </div>
-            ))}
-          </div>
+          <div className="overflow-y-auto px-6 pb-6 pt-6 sm:px-8 sm:pb-8">
+            <div className="grid gap-4">
+              {palmaresHighlights.map((item) => (
+                <div key={item} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 text-white/[0.84]">
+                  {item}
+                </div>
+              ))}
+            </div>
 
-          <div className="mt-6 space-y-4">
-            {palmaresDetails.map((item) => (
-              <p key={item} className="border-l border-[#d6b98c]/20 pl-4 text-sm leading-7 text-white/[0.72]">
-                {item}
-              </p>
-            ))}
+            <div className="mt-6 space-y-4">
+              {palmaresDetails.map((item) => (
+                <p key={item} className="border-l border-[#d6b98c]/20 pl-4 text-sm leading-7 text-white/[0.72]">
+                  {item}
+                </p>
+              ))}
+            </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -75,6 +77,7 @@ function PalmaresDialog() {
 
 export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffer[] }) {
   const [isHeroOverlayOpen, setIsHeroOverlayOpen] = useState(false);
+  const [heroOverlayRunId, setHeroOverlayRunId] = useState(0);
 
   const closeHeroOverlay = useCallback(() => {
     setIsHeroOverlayOpen(false);
@@ -87,17 +90,13 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
       return;
     }
 
-    if (!shouldOpenHeroOverlay()) {
-      return;
-    }
-
-    markHeroOverlaySeen();
+    setHeroOverlayRunId((value) => value + 1);
     setIsHeroOverlayOpen(true);
   }, []);
 
   return (
     <>
-      <HeroOverlayEffect active={isHeroOverlayOpen} onClose={closeHeroOverlay} />
+      <HeroOverlayEffect active={isHeroOverlayOpen} runId={heroOverlayRunId} onClose={closeHeroOverlay} />
 
       <section className="section-shell section-space pt-8 sm:pt-14 lg:pt-16">
         <div onClick={handleHeroClick} className="relative cursor-pointer">

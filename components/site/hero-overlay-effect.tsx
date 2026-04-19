@@ -5,17 +5,17 @@ import { X } from "lucide-react";
 
 const OVERLAY_TEXT =
   "Felicitari ca ai ales schimbarea, progresul \u00eencepe c\u00e2nd nu te mai mul\u021bume\u0219ti cu pu\u021bin.";
-const STORAGE_KEY = "heroOverlaySeen";
 const TYPE_INTERVAL_MS = 34;
 const AUTO_CLOSE_DELAY_MS = 1520;
 const FADE_DURATION_MS = 400;
 
 type HeroOverlayEffectProps = {
   active: boolean;
+  runId: number;
   onClose: () => void;
 };
 
-export function HeroOverlayEffect({ active, onClose }: HeroOverlayEffectProps) {
+export function HeroOverlayEffect({ active, runId, onClose }: HeroOverlayEffectProps) {
   const [mounted, setMounted] = useState(active);
   const [visible, setVisible] = useState(false);
   const [typedText, setTypedText] = useState("");
@@ -66,7 +66,7 @@ export function HeroOverlayEffect({ active, onClose }: HeroOverlayEffectProps) {
         window.clearTimeout(closeTimeoutRef.current);
       }
     };
-  }, [active, onClose]);
+  }, [active, onClose, runId]);
 
   if (!mounted) {
     return null;
@@ -82,7 +82,7 @@ export function HeroOverlayEffect({ active, onClose }: HeroOverlayEffectProps) {
         type="button"
         aria-label="Inchide overlay"
         onClick={onClose}
-        className="absolute right-5 top-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-white/76 transition hover:scale-[1.04] hover:bg-white/14 hover:text-white sm:right-7 sm:top-7"
+        className="absolute right-5 top-24 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-white/76 transition hover:scale-[1.04] hover:bg-white/14 hover:text-white sm:right-7 sm:top-28"
       >
         <X className="h-5 w-5" />
       </button>
@@ -99,20 +99,4 @@ export function HeroOverlayEffect({ active, onClose }: HeroOverlayEffectProps) {
       </div>
     </div>
   );
-}
-
-export function shouldOpenHeroOverlay() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return window.sessionStorage.getItem(STORAGE_KEY) !== "true";
-}
-
-export function markHeroOverlaySeen() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.sessionStorage.setItem(STORAGE_KEY, "true");
 }
