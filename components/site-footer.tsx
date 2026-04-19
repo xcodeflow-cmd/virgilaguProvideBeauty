@@ -51,7 +51,7 @@ export function SiteFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`Deschide ${link.label}`}
-                className="group flex aspect-square items-center justify-center rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-3 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 sm:rounded-[1.35rem] sm:p-4"
+                className="group flex aspect-square items-center justify-center rounded-[1.1rem] bg-transparent p-3 shadow-none transition hover:-translate-y-1 sm:rounded-[1.35rem] sm:p-4"
               >
                 <Image
                   src={link.icon}
