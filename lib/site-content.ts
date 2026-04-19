@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
 import { courses, liveSessions, sitePages, subscriptionPlans } from "@/lib/data";
 
@@ -20,7 +22,7 @@ export type LiveSessionContent = {
   price: number | null;
 };
 
-export async function getSiteSettings() {
+async function fetchSiteSettings() {
   try {
     const settings = await prisma.siteSettings.findUnique({
       where: { id: "main" }
@@ -46,6 +48,14 @@ export async function getSiteSettings() {
       pages: sitePages
     };
   }
+}
+
+const getCachedSiteSettings = unstable_cache(fetchSiteSettings, ["site-settings-main"], {
+  revalidate: 15
+});
+
+export async function getSiteSettings() {
+  return getCachedSiteSettings();
 }
 
 export async function getManagedGalleryItems() {
