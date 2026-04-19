@@ -37,27 +37,27 @@ type SpotlightCollection = {
 
 const awards: SpotlightCollection[] = [
   {
-    title: "Locul 1 la Fast Fade in Dublin, Irlanda 2023",
+    title: "Locul 1 la Fast Fade, Dublin.",
     category: "Palmares",
     description:
-      "Un rezultat care valideaza executia la nivel de competitie internationala: precizie, control si prezenta pe scena puse cap la cap intr-un moment care a confirmat standardul Provibe.",
+      "Precizie, control și execuție într-un context internațional unde fiecare mișcare este evaluată. Un rezultat care confirmă standardul Provibe.",
     images: [
       { src: dublin1, alt: "Locul 1 Fast Fade Dublin 2023 - moment 1" },
       { src: dublin2, alt: "Locul 1 Fast Fade Dublin 2023 - moment 2" }
     ]
   },
   {
-    title: "Locul 3 la Inspire Battle Bucuresti 2020",
+    title: "Locul 3 la Inspire Battle.",
     category: "Competitie",
     description:
-      "O clasare castigata prin disciplina, ritm si executie curata, intr-un context competitiv in care fiecare detaliu conteaza si fiecare alegere trebuie sustinuta de nivel real.",
+      "Ritm, disciplină și decizii corecte într-un cadru competitiv în care consistența face diferența.",
     images: [{ src: inspireBattle, alt: "Locul 3 Inspire Battle Bucuresti 2020" }]
   },
   {
     title: "Locul 1 Master Barber 2022",
     category: "Titlu",
     description:
-      "Un reper puternic in traseul profesional, construit pe constanta, tehnica si capacitatea de a livra sub presiune exact acel nivel care diferentiaza un barber bun de unul memorabil.",
+      "Un parcurs construit pe consistență, tehnică și capacitatea de a livra sub presiune. Diferența dintre un barber bun și unul memorabil stă în nivelul pe care îl menține în orice context.",
     images: [{ src: masterBarber, alt: "Locul 1 Master Barber 2022" }]
   }
 ];
@@ -67,7 +67,7 @@ const juryHighlights: SpotlightCollection[] = [
     title: "Game of Blades 2025",
     category: "Jurat",
     description:
-      "Prezenta in juriu confirma autoritatea construita in ani de munca, competitii si educatie. Selectia, evaluarea si standardul cerut pe scena reflecta exact directia pe care o vezi in tot ecosistemul Provibe.",
+      "Rolul de jurat reflectă standardul format în ani de competiții, muncă și educație. Selecția și evaluarea pe scenă urmează același principiu: nivel clar, fără compromisuri.",
     images: [
       { src: jurat1, alt: "Jurat Game of Blades 2025 - moment 1" },
       { src: jurat2, alt: "Jurat Game of Blades 2025 - moment 2" },
@@ -79,7 +79,7 @@ const juryHighlights: SpotlightCollection[] = [
     title: "Golden Clippers 2026",
     category: "Invitatie in juriu",
     description:
-      "Participarea ca jurat la Golden Clippers 2026 intareste pozitionarea intr-o zona premium a industriei, acolo unde opinia, ochiul format si experienta practica devin criterii de referinta.",
+      "Participarea ca jurat la Golden Clippers 2026 consolidează poziționarea într-o zonă premium a industriei. Experiența și ochiul format devin criterii de referință.",
     images: [{ src: goldenClippers, alt: "Golden Clippers 2026" }]
   }
 ];
@@ -89,7 +89,7 @@ const salons: SpotlightCollection[] = [
     title: "Provibe Stefan Cel Mare",
     category: "Locatie",
     description:
-      "Spatiul in care atmosfera premium se combina cu ritmul de salon real. Design curat, energie buna si o executie consecventa pentru clientii care cauta standard inalt, nu improvizatie.",
+      "Spațiul unde energia de salon real întâlnește un standard clar. Design curat, atmosferă controlată și o echipă care livrează consecvent pentru clienții care nu caută improvizație, ci nivel.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQCA..i&pvq=Cg0vZy8xMXoxNnl0MHRyIg0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFukgELYmFyYmVyX3Nob3A&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40cabd90fafe8af5:0xaec986683fadd033",
     images: [
@@ -101,7 +101,7 @@ const salons: SpotlightCollection[] = [
     title: "Provibe Anton Pan",
     category: "Locatie",
     description:
-      "O locatie gandita pentru experienta completa: confort, imagine coerenta si acel vibe premium care face fiecare vizita sa para bine construita de la intrare pana la rezultatul final.",
+      "Un salon care arată excelent pe foaie, în poze și mai ales în realitate. Fiecare detaliu este construit pentru a susține experiența completă: imagine coerentă, confort și execuție la același nivel de fiecare dată. Aici, standardul nu este doar vizibil. Este trăit.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQVg..i&pvq=Cg0vZy8xMWxoazVuZjgyIg0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFuSILq6JK-soCACFoVEAAYABgBIg1wcm92aWJlIHJvbWFukgEMYmVhdXR5X3NhbG9u&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40cabd91cb973595:0xdd55bf11b434bb76",
     images: [
@@ -113,7 +113,7 @@ const salons: SpotlightCollection[] = [
     title: "Provibe Piata Mare",
     category: "Locatie",
     description:
-      "Locatia care duce mai departe semnatura vizuala Provibe intr-o formula eleganta si puternica, pregatita pentru clienti care apreciaza atat executia, cat si contextul in care ea este livrata.",
+      "O extensie naturală a identității Provibe. Elegant, echilibrat și construit pentru clienții care înțeleg diferența dintre un serviciu și o experiență. Execuția și contextul în care este livrată merg împreună.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQGQ..i&pvq=Cg0vZy8xMXk1NHo1bmp3Ig0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFuWg8iDXByb3ZpYmUgcm9tYW6SAQtiYXJiZXJfc2hvcA&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40caa3a31e4e6a03:0xcbe81fea4fc1992b",
     images: [
@@ -262,33 +262,33 @@ export default function AboutPage() {
         <div className="overflow-hidden rounded-[2.6rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.07),transparent_20%),linear-gradient(180deg,#0f0f0f,#070707)] px-6 py-8 shadow-[0_42px_140px_rgba(0,0,0,0.34)] sm:px-10 sm:py-12 lg:px-14 lg:py-16">
           <p className="text-xs uppercase tracking-[0.42em] text-[#d6b98c]">Despre noi</p>
           <h1 className="mt-6 max-w-6xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
-            O pagina construita din rezultate reale, prezenta in industrie si locatii care ridica standardul Provibe.
+            Provibe este construit pe rezultate, prezență reală în industrie și spații care duc mai departe același standard premium.
           </h1>
           <p className="mt-6 max-w-4xl text-base leading-8 text-white/70 sm:text-lg">
-            In spatele numelui Provibe stau competitii castigate, invitatii in jurii importante si trei saloane care duc mai departe acelasi standard premium: imagine puternica, executie curata si experienta construita atent pana in ultimul detaliu.
+            Competiții câștigate. Jurii relevante. Saloane care livrează constant. Totul susținut de același principiu: nivelul nu este negociabil.
           </p>
         </div>
 
         <SpotlightSection
           kicker="Premii"
-          title="Palmares care atrage atentia imediat."
-          copy="Fiecare aparitie de mai jos are greutate in imaginea brandului pentru ca vine din competitie, sub presiune reala, in contexte unde doar nivelul sustine rezultatul. Accentul paginii cade aici exact cum ai cerut: mare, clar si imposibil de ignorat."
+          title="Rezultate obținute sub presiune reală, în competiții unde fiecare detaliu contează."
+          copy="Fiecare apariție întărește poziționarea: nivel constant, execuție curată și control în momentele care diferențiază."
           icon={Trophy}
           collections={awards}
         />
 
         <SpotlightSection
           kicker="Jurat"
-          title="Prezenta in juriu la competitii care conteaza."
-          copy="Rolul de jurat nu este doar o aparitie de imagine. Este confirmarea ca experienta, criteriul estetic si autoritatea profesionala sunt recunoscute in evenimente relevante din industrie."
+          title="Prezența în juriu nu este imagine. Este validare."
+          copy="Experiența, criteriul estetic și autoritatea profesională sunt recunoscute în contexte unde nivelul nu se discută, se demonstrează."
           icon={Gavel}
           collections={juryHighlights}
         />
 
         <SpotlightSection
           kicker="Saloane Provibe"
-          title="Trei locatii, aceeasi semnatura premium."
-          copy="Fiecare salon are personalitate proprie, dar toate pastreaza aceeasi directie: spatiu bine gandit, experienta premium si o identitate coerenta care se simte la fel de bine pe telefon, pe hartie si in realitate."
+          title="Trei saloane. O singură semnătură."
+          copy="Sub viziunea lui Virgil Agu, fiecare locație păstrează același standard: spațiu construit atent, execuție fără compromis și o experiență care rămâne constantă indiferent unde intri. Provibe nu înseamnă doar un loc. Înseamnă un nivel."
           icon={Building2}
           collections={salons}
         />
