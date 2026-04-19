@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -7,6 +8,7 @@ import { ArrowRight, ArrowUpRight, X } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { CourseDetailDialog } from "@/components/site/course-detail-dialog";
+import { HeroOverlayEffect, markHeroOverlaySeen, shouldOpenHeroOverlay } from "@/components/site/hero-overlay-effect";
 import { Button } from "@/components/ui/button";
 import siteLogo from "@/assets/logo.png";
 import provibeLogo from "@/assets/provibe.png";
@@ -72,10 +74,34 @@ function PalmaresDialog() {
 }
 
 export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffer[] }) {
+  const [isHeroOverlayOpen, setIsHeroOverlayOpen] = useState(false);
+
+  const closeHeroOverlay = useCallback(() => {
+    setIsHeroOverlayOpen(false);
+  }, []);
+
+  const handleHeroClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+
+    if (target.closest("a, button")) {
+      return;
+    }
+
+    if (!shouldOpenHeroOverlay()) {
+      return;
+    }
+
+    markHeroOverlaySeen();
+    setIsHeroOverlayOpen(true);
+  }, []);
+
   return (
     <>
+      <HeroOverlayEffect active={isHeroOverlayOpen} onClose={closeHeroOverlay} />
+
       <section className="section-shell section-space pt-8 sm:pt-14 lg:pt-16">
-        <FadeIn className="relative overflow-hidden rounded-[2.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] px-7 py-10 shadow-[0_40px_120px_rgba(0,0,0,0.35)] sm:px-10 sm:py-12 lg:min-h-[46rem] lg:px-14 lg:py-16">
+        <div onClick={handleHeroClick} className="relative cursor-pointer">
+          <FadeIn className="relative overflow-hidden rounded-[2.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.005))] px-7 py-10 shadow-[0_40px_120px_rgba(0,0,0,0.35)] sm:px-10 sm:py-12 lg:min-h-[46rem] lg:px-14 lg:py-16">
           <div className="absolute inset-y-0 right-0 hidden w-[43%] lg:block">
             <Image src={brandImages.hero} alt="Virgil Agu" fill priority sizes="43vw" className="object-cover object-center" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#070707_0%,rgba(7,7,7,0.94)_26%,rgba(7,7,7,0.38)_62%,rgba(7,7,7,0.14)_100%)]" />
@@ -151,7 +177,8 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
               </div>
             </div>
           </div>
-        </FadeIn>
+          </FadeIn>
+        </div>
       </section>
 
       <section className="section-shell section-space pt-0">
