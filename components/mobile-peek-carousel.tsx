@@ -9,12 +9,14 @@ export function MobilePeekCarousel({
   items,
   ariaLabel,
   className,
-  itemClassName
+  itemClassName,
+  hideControls = false
 }: {
   items: ReactNode[];
   ariaLabel: string;
   className?: string;
   itemClassName?: string;
+  hideControls?: boolean;
 }) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -97,41 +99,43 @@ export function MobilePeekCarousel({
         ))}
       </div>
 
-      <div className="flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          {items.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              aria-label={`Slide ${index + 1}`}
-              onClick={() => scrollToIndex(index)}
-              className={cn(
-                "h-2.5 rounded-full transition",
-                index === activeIndex ? "w-6 bg-[#d6b98c]" : "w-2.5 bg-white/20"
-              )}
-            />
-          ))}
-        </div>
+      {hideControls ? null : (
+        <div className="flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {items.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                aria-label={`Slide ${index + 1}`}
+                onClick={() => scrollToIndex(index)}
+                className={cn(
+                  "h-2.5 rounded-full transition",
+                  index === activeIndex ? "w-6 bg-[#d6b98c]" : "w-2.5 bg-white/20"
+                )}
+              />
+            ))}
+          </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Anterior"
-            onClick={goPrevious}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.08] hover:text-white"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Urmator"
-            onClick={goNext}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.08] hover:text-white"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Anterior"
+              onClick={goPrevious}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Urmator"
+              onClick={goNext}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

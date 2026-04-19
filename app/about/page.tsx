@@ -127,12 +127,12 @@ function SpotlightDialog({ collection, image, index }: { collection: SpotlightCo
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <button className="group relative aspect-[4/5] w-full shrink-0 snap-start overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/20 text-left shadow-[0_24px_80px_rgba(0,0,0,0.26)] transition duration-500 hover:-translate-y-1 hover:border-[#d6b98c]/40">
+        <button className="group relative aspect-[5/6] w-full shrink-0 snap-start overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/20 text-left shadow-[0_24px_80px_rgba(0,0,0,0.26)] transition duration-500 hover:-translate-y-1 hover:border-[#d6b98c]/40 sm:aspect-[4/5]">
           <Image src={image.src} alt={image.alt} fill className="object-cover transition duration-700 group-hover:scale-[1.04]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.74))]" />
-          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
             <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b98c]">{collection.category}</p>
-            <p className="mt-3 text-lg leading-tight text-white sm:text-xl">{collection.title}</p>
+            <p className="mt-2 text-base leading-tight text-white sm:mt-3 sm:text-xl">{collection.title}</p>
           </div>
         </button>
       </Dialog.Trigger>
@@ -189,6 +189,9 @@ function CollectionRail({ collection }: { collection: SpotlightCollection }) {
       <div className="md:hidden">
         <MobilePeekCarousel
           ariaLabel={collection.title}
+          className="space-y-5"
+          itemClassName="w-[calc(100%-1rem)]"
+          hideControls={collection.images.length <= 1}
           items={collection.images.map((image, index) => (
             <SpotlightDialog key={`${collection.title}-${index}`} collection={collection} image={image} index={index} />
           ))}
@@ -213,14 +216,14 @@ function SpotlightSection({
 }) {
   return (
     <section className="overflow-hidden rounded-[2.2rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.14),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.008))] p-5 shadow-[0_36px_120px_rgba(0,0,0,0.26)] sm:p-7 lg:p-10">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.68fr)_minmax(0,1.32fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.68fr)_minmax(0,1.32fr)] lg:gap-8">
         <div>
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 text-[#ecd4ac]">
-            <Icon className="h-6 w-6" />
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d6b98c]/20 bg-[#d6b98c]/10 text-[#ecd4ac] sm:h-14 sm:w-14">
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <p className="mt-6 text-xs uppercase tracking-[0.38em] text-[#d6b98c]">{kicker}</p>
-          <h2 className="mt-5 text-4xl leading-[0.92] text-white sm:text-5xl">{title}</h2>
-          <p className="mt-6 max-w-xl text-sm leading-8 text-white/68 sm:text-base">{copy}</p>
+          <p className="mt-5 text-[11px] uppercase tracking-[0.32em] text-[#d6b98c] sm:mt-6 sm:text-xs sm:tracking-[0.38em]">{kicker}</p>
+          <h2 className="mt-4 text-[2rem] leading-[0.94] text-white sm:mt-5 sm:text-5xl">{title}</h2>
+          <p className="mt-5 max-w-xl text-sm leading-7 text-white/68 sm:mt-6 sm:text-base sm:leading-8">{copy}</p>
         </div>
 
         <div className="space-y-6">
@@ -229,10 +232,10 @@ function SpotlightSection({
               key={collection.title}
               className="rounded-[1.9rem] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-5"
             >
-              <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="mb-4 flex items-start justify-between gap-4 sm:mb-5">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.32em] text-[#d6b98c]">{collection.category}</p>
-                  <h3 className="mt-3 text-2xl leading-tight text-white sm:text-3xl">{collection.title}</h3>
+                  <h3 className="mt-2 text-[1.4rem] leading-tight text-white sm:mt-3 sm:text-3xl">{collection.title}</h3>
                 </div>
                 {collection.mapUrl ? (
                   <Link
@@ -245,7 +248,7 @@ function SpotlightSection({
                   </Link>
                 ) : null}
               </div>
-              <p className="mb-5 max-w-3xl text-sm leading-7 text-white/64 sm:text-base">{collection.description}</p>
+              <p className="mb-4 max-w-3xl text-sm leading-6 text-white/64 sm:mb-5 sm:text-base sm:leading-7">{collection.description}</p>
               <CollectionRail collection={collection} />
             </article>
           ))}
@@ -261,10 +264,10 @@ export default function AboutPage() {
       <div className="space-y-8 sm:space-y-10">
         <div className="overflow-hidden rounded-[2.6rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(214,185,140,0.18),transparent_24%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.07),transparent_20%),linear-gradient(180deg,#0f0f0f,#070707)] px-6 py-8 shadow-[0_42px_140px_rgba(0,0,0,0.34)] sm:px-10 sm:py-12 lg:px-14 lg:py-16">
           <p className="text-xs uppercase tracking-[0.42em] text-[#d6b98c]">Despre noi</p>
-          <h1 className="mt-6 max-w-6xl text-5xl leading-[0.84] text-white sm:text-6xl lg:text-7xl">
+          <h1 className="mt-5 max-w-6xl text-[2.55rem] leading-[0.88] text-white sm:mt-6 sm:text-6xl lg:text-7xl">
             Provibe este construit pe rezultate, prezență reală în industrie și spații care duc mai departe același standard premium.
           </h1>
-          <p className="mt-6 max-w-4xl text-base leading-8 text-white/70 sm:text-lg">
+          <p className="mt-5 max-w-4xl text-[15px] leading-7 text-white/70 sm:mt-6 sm:text-lg sm:leading-8">
             Competiții câștigate. Jurii relevante. Saloane care livrează constant. Totul susținut de același principiu: nivelul nu este negociabil.
           </p>
         </div>
