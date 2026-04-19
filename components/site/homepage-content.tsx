@@ -126,7 +126,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
 
               <div className="mt-10 flex flex-wrap gap-3">
                 <Button asChild className="px-7">
-                  <Link href="/courses">
+                  <Link href="/courses" onClick={(event) => event.stopPropagation()}>
                     Vezi cursuri
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -136,7 +136,9 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                   variant="secondary"
                   className="border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
                 >
-                  <Link href="/live">Vezi live</Link>
+                  <Link href="/live" onClick={(event) => event.stopPropagation()}>
+                    Vezi live
+                  </Link>
                 </Button>
               </div>
 

@@ -3,6 +3,28 @@ import type { LiveSession } from "@prisma/client";
 import { getLiveSessionStaleAfterMs } from "@/lib/live-config";
 import { prisma } from "@/lib/prisma";
 
+const liveSessionListSelect = {
+  id: true,
+  title: true,
+  description: true,
+  scheduledFor: true,
+  thumbnailUrl: true,
+  recordingUrl: true,
+  price: true,
+  compareAtPrice: true,
+  maxParticipants: true,
+  hasStarted: true,
+  visibility: true,
+  isLive: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: {
+    select: {
+      purchases: true
+    }
+  }
+} as const;
+
 export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updatedAt">, now = new Date()) {
   if (!session.isLive) {
     return false;
@@ -13,29 +35,28 @@ export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updat
 
 export async function getPrimaryLiveSession() {
   try {
-    const sessions = await prisma.liveSession.findMany({
-      include: {
-        _count: {
-          select: {
-            purchases: true
-          }
-        }
-      },
-      orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }]
-    });
-
-    if (!sessions.length) {
-      return null;
-    }
-
     const now = new Date();
-    const activeSession = sessions.find((session) => isLiveSessionActive(session, now));
+    const activeSessions = await prisma.liveSession.findMany({
+      where: {
+        isLive: true
+      },
+      orderBy: [{ updatedAt: "desc" }, { scheduledFor: "asc" }],
+      take: 4,
+      select: liveSessionListSelect
+    });
+    const activeSession = activeSessions.find((session) => isLiveSessionActive(session, now));
 
     if (activeSession) {
       return activeSession;
     }
 
-    const upcomingSession = sessions.find((session) => !session.hasStarted);
+    const upcomingSession = await prisma.liveSession.findFirst({
+      where: {
+        hasStarted: false
+      },
+      orderBy: [{ scheduledFor: "asc" }, { createdAt: "desc" }],
+      select: liveSessionListSelect
+    });
 
     return upcomingSession || null;
   } catch {
@@ -51,27 +72,7 @@ export async function getPastLiveSessions() {
         isLive: false
       },
       orderBy: { scheduledFor: "desc" },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        scheduledFor: true,
-        thumbnailUrl: true,
-        recordingUrl: true,
-        price: true,
-        compareAtPrice: true,
-        maxParticipants: true,
-        hasStarted: true,
-        visibility: true,
-        isLive: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            purchases: true
-          }
-        }
-      }
+      select: liveSessionListSelect
     });
 
     const now = new Date();

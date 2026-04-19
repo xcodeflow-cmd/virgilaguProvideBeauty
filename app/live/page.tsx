@@ -5,9 +5,12 @@ import { canAccessLiveSession, getPurchasedLiveSessionIds } from "@/lib/live-acc
 import { getPastLiveSessions, getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 
 export default async function LivePage() {
-  const session = await auth();
+  const [session, liveSession, pastSessions] = await Promise.all([
+    auth(),
+    getPrimaryLiveSession(),
+    getPastLiveSessions()
+  ]);
   const isAdmin = session?.user?.role === "ADMIN";
-  const liveSession = await getPrimaryLiveSession();
   const [purchasedLiveIds, currentSessionAccess] = await Promise.all([
     getPurchasedLiveSessionIds(session?.user?.id, session?.user?.role),
     liveSession
@@ -19,7 +22,6 @@ export default async function LivePage() {
         })
       : Promise.resolve(false)
   ]);
-  const pastSessions = await getPastLiveSessions();
   const isActive = liveSession ? isLiveSessionActive(liveSession) : false;
 
   return (

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   GraduationCap,
@@ -33,12 +33,18 @@ const navLinks = [
 
 export function Navbar({ session }: { session: Session | null }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const rafRef = useRef<number | null>(null);
-  const visibleLinks = session?.user?.role === "ADMIN"
-    ? [...navLinks, { href: "/admin", label: "Admin", icon: ArrowUpRight, tone: "bg-white/[0.06]" }]
-    : navLinks;
+  const visibleLinks = useMemo(
+    () => (
+      session?.user?.role === "ADMIN"
+        ? [...navLinks, { href: "/admin", label: "Admin", icon: ArrowUpRight, tone: "bg-white/[0.06]" }]
+        : navLinks
+    ),
+    [session?.user?.role]
+  );
 
   useEffect(() => {
     const onScroll = () => {
@@ -90,6 +96,18 @@ export function Navbar({ session }: { session: Session | null }) {
     setIsOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const hrefs = new Set(visibleLinks.map((link) => link.href));
+
+    if (session?.user) {
+      hrefs.add(session.user.role === "ADMIN" ? "/admin" : "/dashboard");
+    } else {
+      hrefs.add("/auth/signin");
+    }
+
+    hrefs.forEach((href) => router.prefetch(href));
+  }, [router, session?.user, visibleLinks]);
+
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="section-shell flex items-start justify-between gap-2 pt-4 sm:gap-3 sm:pt-5">
@@ -125,7 +143,7 @@ export function Navbar({ session }: { session: Session | null }) {
         </div>
       </div>
 
-      {pathname !== "/live" && !pathname.startsWith("/auth") ? (
+      {!pathname.startsWith("/auth") ? (
         <div
           className={cn(
             "pointer-events-none fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 px-4 transition duration-200 md:hidden",
