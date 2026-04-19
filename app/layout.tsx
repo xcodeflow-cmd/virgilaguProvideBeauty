@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 
-import { auth } from "@/auth";
 import { Navbar } from "@/components/navbar";
+import { AuthSessionProvider } from "@/components/auth-session-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { ToasterShell } from "@/components/toaster-shell";
 import { siteConfig } from "@/lib/data";
@@ -48,18 +48,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const session = await auth();
-
   return (
     <html lang="en" className={`${manrope.variable} ${cormorant.variable}`}>
       <body className="overflow-x-hidden bg-background font-sans text-foreground antialiased">
-        <div className="fixed inset-0 -z-10 bg-canvas" />
-        <div className="fixed inset-0 -z-10 bg-mesh opacity-90" />
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(194,154,92,0.12),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.04),transparent_32%),linear-gradient(180deg,rgba(7,7,7,0.12),rgba(7,7,7,0.9))]" />
-        <Navbar session={session} />
-        <main className="relative z-10 min-h-screen overflow-x-hidden pb-[calc(11rem+env(safe-area-inset-bottom))] pt-24 sm:pb-0 sm:pt-32">{children}</main>
-        <SiteFooter />
-        <ToasterShell />
+        <AuthSessionProvider>
+          <div className="fixed inset-0 -z-10 bg-canvas" />
+          <div className="fixed inset-0 -z-10 bg-mesh opacity-90" />
+          <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(194,154,92,0.12),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,255,255,0.04),transparent_32%),linear-gradient(180deg,rgba(7,7,7,0.12),rgba(7,7,7,0.9))]" />
+          <Navbar />
+          <main className="relative z-10 min-h-screen overflow-x-hidden pb-[calc(11rem+env(safe-area-inset-bottom))] pt-24 sm:pb-0 sm:pt-32">{children}</main>
+          <SiteFooter />
+          <ToasterShell />
+        </AuthSessionProvider>
       </body>
     </html>
   );

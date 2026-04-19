@@ -1,4 +1,5 @@
 import type { LiveSession } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 
 import { getLiveSessionStaleAfterMs } from "@/lib/live-config";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +34,7 @@ export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updat
   return now.getTime() - session.updatedAt.getTime() <= getLiveSessionStaleAfterMs();
 }
 
-export async function getPrimaryLiveSession() {
+async function fetchPrimaryLiveSession() {
   try {
     const now = new Date();
     const activeSessions = await prisma.liveSession.findMany({
@@ -64,7 +65,7 @@ export async function getPrimaryLiveSession() {
   }
 }
 
-export async function getPastLiveSessions() {
+async function fetchPastLiveSessions() {
   try {
     const sessions = await prisma.liveSession.findMany({
       where: {
@@ -81,4 +82,20 @@ export async function getPastLiveSessions() {
   } catch {
     return [];
   }
+}
+
+const getCachedPrimaryLiveSession = unstable_cache(fetchPrimaryLiveSession, ["live-primary-session"], {
+  revalidate: 5
+});
+
+const getCachedPastLiveSessions = unstable_cache(fetchPastLiveSessions, ["live-past-sessions"], {
+  revalidate: 10
+});
+
+export async function getPrimaryLiveSession() {
+  return getCachedPrimaryLiveSession();
+}
+
+export async function getPastLiveSessions() {
+  return getCachedPastLiveSessions();
 }

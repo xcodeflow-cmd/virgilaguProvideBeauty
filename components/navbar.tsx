@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   ArrowUpRight,
   GraduationCap,
@@ -14,7 +15,6 @@ import {
   Star,
   X
 } from "lucide-react";
-import type { Session } from "next-auth";
 
 import { AuthButtons } from "@/components/auth-buttons";
 import { Logo } from "@/components/logo";
@@ -31,9 +31,10 @@ const navLinks = [
   { href: "/contact", label: "Contact", icon: MessageCircleMore, tone: "bg-[#d6b98c]/10" }
 ] as const;
 
-export function Navbar({ session }: { session: Session | null }) {
+export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const rafRef = useRef<number | null>(null);
@@ -105,7 +106,9 @@ export function Navbar({ session }: { session: Session | null }) {
       hrefs.add("/auth/signin");
     }
 
-    hrefs.forEach((href) => router.prefetch(href));
+    hrefs.forEach((href) => {
+      void router.prefetch(href);
+    });
   }, [router, session?.user, visibleLinks]);
 
   return (
