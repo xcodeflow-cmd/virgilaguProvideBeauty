@@ -38,8 +38,8 @@ function PalmaresDialog() {
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
-        <Dialog.Content className="fixed left-1/2 top-[max(5.5rem,env(safe-area-inset-top))] z-[70] flex max-h-[calc(100dvh-6.5rem)] w-[94vw] max-w-3xl -translate-x-1/2 flex-col overflow-hidden rounded-[2.2rem] border border-white/10 bg-[#070707] shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:top-[max(6.5rem,env(safe-area-inset-top))] sm:max-h-[calc(100dvh-8rem)]">
+        <Dialog.Overlay className="premium-dialog-overlay fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
+        <Dialog.Content className="premium-dialog-panel-top fixed left-1/2 top-[max(5.5rem,env(safe-area-inset-top))] z-[70] flex max-h-[calc(100dvh-6.5rem)] w-[94vw] max-w-3xl -translate-x-1/2 flex-col overflow-hidden rounded-[2.2rem] border border-white/10 bg-[#070707] shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:top-[max(6.5rem,env(safe-area-inset-top))] sm:max-h-[calc(100dvh-8rem)]">
           <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#070707]/96 px-6 py-5 backdrop-blur-md sm:px-8 sm:py-6">
             <div className="pr-3">
               <p className="text-[10px] uppercase tracking-[0.38em] text-[#d6b98c]">Palmares</p>
@@ -47,7 +47,7 @@ function PalmaresDialog() {
                 Rezultate care sustin standardul.
               </Dialog.Title>
             </div>
-            <Dialog.Close className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
+            <Dialog.Close className="premium-dialog-close shrink-0 rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 hover:bg-white/[0.1] hover:text-white">
               <X className="h-5 w-5" />
             </Dialog.Close>
           </div>
@@ -125,7 +125,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
               </p>
 
               <div className="mt-10 flex flex-wrap gap-3">
-                <Button asChild className="px-7">
+                <Button asChild className="premium-link-motion px-7">
                   <Link href="/courses">
                     Vezi cursuri
                     <ArrowRight className="h-4 w-4" />
@@ -134,7 +134,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 <Button
                   asChild
                   variant="secondary"
-                  className="border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                  className="premium-link-motion border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
                 >
                   <Link href="/live">Vezi live</Link>
                 </Button>
@@ -265,7 +265,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
 
           <div className="md:col-span-2 xl:col-span-3">
             <FadeIn className="mt-8 flex justify-center md:mt-10">
-              <Button asChild className="min-w-[17rem] px-8 py-4 text-base">
+              <Button asChild className="premium-link-motion min-w-[17rem] px-8 py-4 text-base">
                 <Link href="/reviews">
                   Vezi mai multe review-uri
                   <ArrowUpRight className="h-4.5 w-4.5" />

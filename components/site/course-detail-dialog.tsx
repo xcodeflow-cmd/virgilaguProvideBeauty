@@ -115,8 +115,8 @@ export function CourseDetailDialog({
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] max-h-[90vh] w-[94vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[2.3rem] border border-white/10 bg-[#070707] p-5 shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:p-8">
+        <Dialog.Overlay className="premium-dialog-overlay fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
+        <Dialog.Content className="premium-dialog-panel-centered fixed left-1/2 top-1/2 z-[70] max-h-[90vh] w-[94vw] max-w-5xl overflow-auto rounded-[2.3rem] border border-white/10 bg-[#070707] p-5 shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
             <div className="relative min-h-[24rem] overflow-hidden rounded-[1.9rem]">
               <CourseVisual course={course} title={course.title} />
@@ -141,7 +141,7 @@ export function CourseDetailDialog({
                     {course.title}
                   </Dialog.Title>
                 </div>
-                <Dialog.Close className="rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
+                <Dialog.Close className="premium-dialog-close rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 hover:bg-white/[0.1] hover:text-white">
                   <X className="h-5 w-5" />
                 </Dialog.Close>
               </div>
@@ -153,9 +153,10 @@ export function CourseDetailDialog({
                     href={course.externalLinkUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm font-medium text-red-100 underline decoration-red-500/60 underline-offset-4"
+                    className="premium-link-motion inline-flex items-center gap-2 rounded-full border border-red-500/24 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-100 shadow-[0_12px_30px_rgba(185,28,28,0.16)]"
                   >
                     {course.externalLinkLabel || course.externalLinkUrl}
+                    <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               ) : null}
@@ -209,7 +210,7 @@ export function CourseDetailDialog({
                     </p>
                   </div>
                 </div>
-                <Button asChild className="px-7">
+                <Button asChild className="premium-link-motion px-7">
                   <Link href={ctaHref}>{course.purchaseLabel}</Link>
                 </Button>
               </div>
