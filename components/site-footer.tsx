@@ -1,7 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 
 import { Logo } from "@/components/logo";
+import instagramLogo from "@/assets/LogoInstagram.png";
+import tiktokLogo from "@/assets/LogoTikTok.png";
+import meroLogo from "@/assets/MeroLogo.png";
+import whatsappLogo from "@/assets/WhatsappLogo.png";
 import { siteConfig } from "@/lib/data";
 
 const footerLinks = [
@@ -13,10 +17,10 @@ const footerLinks = [
 ];
 
 const socialLinks = [
-  { href: siteConfig.socials.instagram, label: "Instagram" },
-  { href: siteConfig.socials.tiktok, label: "TikTok" },
-  { href: siteConfig.socials.mero, label: "MERO" },
-  { href: siteConfig.socials.whatsapp, label: "WhatsApp" }
+  { href: siteConfig.socials.instagram, label: "Instagram", icon: instagramLogo },
+  { href: siteConfig.socials.tiktok, label: "TikTok", icon: tiktokLogo },
+  { href: siteConfig.socials.mero, label: "Mero", icon: meroLogo },
+  { href: siteConfig.socials.whatsapp, label: "WhatsApp", icon: whatsappLogo }
 ];
 
 export function SiteFooter() {
@@ -46,15 +50,14 @@ export function SiteFooter() {
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] px-2 py-3 text-center text-[11px] text-white/60 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 hover:text-white sm:rounded-[1.35rem] sm:px-4 sm:py-4 sm:text-sm"
+                aria-label={`Deschide ${link.label}`}
+                className="group flex aspect-square items-center justify-center rounded-[1.1rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] p-3 shadow-[0_18px_46px_rgba(0,0,0,0.16)] transition hover:-translate-y-1 hover:border-[#d6b98c]/30 sm:rounded-[1.35rem] sm:p-4"
               >
-                <div className="flex items-center justify-center gap-2 sm:justify-between">
-                  <div>
-                    <p className="hidden text-[10px] uppercase tracking-[0.3em] text-white/35 sm:block">Social</p>
-                    <p className="text-sm text-white sm:mt-2 sm:text-base">{link.label}</p>
-                  </div>
-                  <ArrowUpRight className="hidden h-4 w-4 text-white/[0.28] transition group-hover:text-[#d6b98c] sm:block" />
-                </div>
+                <Image
+                  src={link.icon}
+                  alt={link.label}
+                  className="h-auto max-h-10 w-auto object-contain opacity-90 transition duration-200 group-hover:scale-[1.04] group-hover:opacity-100 sm:max-h-12"
+                />
               </Link>
             ))}
           </div>

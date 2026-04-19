@@ -1871,7 +1871,7 @@ export function LivePageContent({
       <div className="flex-1 px-3 py-3 sm:px-4">
         {canUseChat ? (
           <div className="flex h-full flex-col">
-            <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
+            <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 pb-2">
               {messages.length ? (
                 messages.map((item) => {
                   const isOwnMessage = Boolean(currentUserId && item.userId === currentUserId);
@@ -1917,7 +1917,7 @@ export function LivePageContent({
               )}
             </div>
 
-            <div className="mt-3 flex shrink-0 gap-2 border-t border-white/10 pt-3">
+            <div className="sticky bottom-0 z-10 mt-3 -mx-3 flex shrink-0 gap-2 border-t border-white/10 bg-[linear-gradient(180deg,rgba(10,10,10,0.76),rgba(7,7,7,0.96))] px-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:backdrop-blur-none">
               <input
                 value={chatText}
                 onChange={(event) => setChatText(event.target.value)}
@@ -1929,7 +1929,7 @@ export function LivePageContent({
                 }}
                 maxLength={500}
                 placeholder="Scrie un mesaj"
-                className="premium-input h-12 min-w-0 flex-1"
+                className="premium-input h-12 min-w-0 flex-1 border-white/12 bg-black/30"
               />
               <Button type="button" className="min-h-12 shrink-0 px-4 sm:px-5" onClick={() => void sendMessage()}>
                 Trimite
