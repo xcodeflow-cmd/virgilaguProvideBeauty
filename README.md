@@ -73,12 +73,13 @@ Copy `.env.example` to `.env` and fill in:
 ## Deployment
 - Optimized for Vercel deployment.
 - Add all environment variables in Vercel project settings.
-- Use a managed PostgreSQL database.
+- Works with any PostgreSQL-compatible deployment as long as `DATABASE_URL` points to the target database.
 - Install Command: `npm install`
 - Build Command: `npm run build`
 - Node.js Version: `22.x`
 - Keep `mediasoup` and `ws` isolated to `live-server/`; do not add them to the root app dependencies or Vercel will waste time compiling native modules during deploy.
 - Run `npm run prisma:migrate:deploy` against the production database before first production launch, or add it to the Vercel build command if you explicitly want automatic migrations on each deploy.
+- For a self-hosted PostgreSQL migration on Hetzner, see `deploy/POSTGRES-HETZNER-MIGRATION.md`.
 
 ## Current MVP Boundaries
 - The live player is protected at the app layer and ready for a dedicated streaming provider integration.
