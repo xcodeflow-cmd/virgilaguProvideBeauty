@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { sendVerificationEmail } from "@/lib/auth-email";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     });
     const role = !existingAdmin && adminEmail && email === adminEmail ? "ADMIN" : "USER";
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: payload.data.name || null,
         email,
@@ -44,7 +45,16 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json({ ok: true }, { status: 201 });
+    await sendVerificationEmail({
+      userId: user.id,
+      email,
+      name: user.name
+    });
+
+    return NextResponse.json({
+      ok: true,
+      message: "Contul a fost creat. Verifica emailul pentru confirmare."
+    }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Contul nu a putut fi creat." }, { status: 500 });

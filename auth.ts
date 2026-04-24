@@ -55,6 +55,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        if (!user.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
 
         if (adminEmail && email === adminEmail && user.role !== "ADMIN") {

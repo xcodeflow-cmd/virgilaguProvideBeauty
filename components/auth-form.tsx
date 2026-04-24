@@ -6,14 +6,22 @@ import { signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 
-export function AuthForm({ mode }: { mode: "signin" | "register" }) {
+export function AuthForm({
+  mode,
+  initialMessage,
+  initialError
+}: {
+  mode: "signin" | "register";
+  initialMessage?: string | null;
+  initialError?: string | null;
+}) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(initialMessage || null);
+  const [error, setError] = useState<string | null>(initialError || null);
 
   const submitLabel = mode === "register" ? "Creeaza cont" : "Intra in cont";
   const alternateHref = mode === "register" ? "/auth/signin" : "/auth/register";
@@ -68,6 +76,13 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
                   setError(data.error || "Contul nu a putut fi creat.");
                   return;
                 }
+
+                setMessage("Contul a fost creat. Verifica emailul pentru confirmare.");
+                setName("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+                return;
               }
 
               const result = await signIn("credentials", {
@@ -78,6 +93,11 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
               });
 
               if (result?.error) {
+                if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+                  setError("Contul exista, dar emailul nu este confirmat. Foloseste linkul de retrimitere de mai jos.");
+                  return;
+                }
+
                 setError("Email sau parola incorecta.");
                 return;
               }
@@ -145,7 +165,49 @@ export function AuthForm({ mode }: { mode: "signin" | "register" }) {
           <Link href={alternateHref} className="text-white/60 transition hover:text-white">
             {alternateLabel}
           </Link>
+          {mode === "signin" ? (
+            <Link href="/auth/forgot-password" className="text-white/60 transition hover:text-white">
+              Ai uitat parola?
+            </Link>
+          ) : null}
         </div>
+
+        {mode === "signin" ? (
+          <form
+            className="space-y-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              startTransition(async () => {
+                setError(null);
+                setMessage(null);
+
+                const response = await fetch("/api/auth/resend-verification", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({ email })
+                });
+
+                const data = (await response.json()) as { error?: string; message?: string };
+
+                if (!response.ok) {
+                  setError(data.error || "Nu am putut retrimite emailul de confirmare.");
+                  return;
+                }
+
+                setMessage(data.message || "Am retrimis emailul de confirmare.");
+              });
+            }}
+          >
+            <p className="text-sm leading-7 text-white/60">
+              Nu ai primit confirmarea? Introdu emailul de mai sus si retrimite linkul de activare.
+            </p>
+            <Button type="submit" variant="secondary" className="w-full" disabled={pending || !email.trim()}>
+              {pending ? "Se proceseaza..." : "Retrimite emailul de confirmare"}
+            </Button>
+          </form>
+        ) : null}
 
         {error ? <p className="text-sm text-red-300">{error}</p> : null}
         {message ? <p className="text-sm text-accent">{message}</p> : null}
