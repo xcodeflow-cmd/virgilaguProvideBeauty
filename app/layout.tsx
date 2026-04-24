@@ -24,6 +24,11 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png"
+  },
   title: {
     default: `${siteConfig.name} | Cursuri de Frizerie si LIVE`,
     template: `%s | ${siteConfig.name}`
