@@ -26,7 +26,7 @@ export default function ReviewsPage() {
       <div className="mx-auto mt-16 max-w-[92rem] space-y-10">
         <div className="overflow-hidden rounded-[2.6rem] border border-[#f0b35b]/18 bg-[radial-gradient(circle_at_top_left,rgba(240,179,91,0.16),transparent_26%),linear-gradient(180deg,#120d06,#070707)] p-7 shadow-[0_36px_120px_rgba(0,0,0,0.34)] sm:p-10">
           <div className="grid gap-8">
-            <MobileReviewsCarousel items={visibleReviews} />
+            <MobileReviewsCarousel items={visibleReviews} moreHref={siteConfig.socials.mero} />
             <div className="hidden gap-5 md:grid md:grid-cols-3 xl:grid-cols-[1.08fr_0.92fr_0.92fr]">
               {visibleReviews.map((review) => (
                 <div
@@ -57,8 +57,8 @@ export default function ReviewsPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-center">
-              <Button asChild className="w-full max-w-[20rem] px-6 py-4 text-base md:w-auto md:min-w-[17rem] md:px-8">
+            <div className="hidden justify-center md:flex">
+              <Button asChild className="md:min-w-[17rem] md:px-8 py-4 text-base">
                 <Link href={siteConfig.socials.mero} target="_blank" rel="noreferrer">
                   Vezi 3000+ pe MERO
                   <ArrowUpRight className="h-4.5 w-4.5" />

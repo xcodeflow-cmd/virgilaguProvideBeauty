@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type TouchEvent } from "react";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 type ReviewItem = {
   id: string;
@@ -12,10 +15,16 @@ type ReviewItem = {
 };
 
 const SWIPE_THRESHOLD = 36;
-const CARD_WIDTH = "78%";
-const CARD_GAP = "0.875rem";
+const CARD_WIDTH = "min(84vw, 18.5rem)";
+const CARD_GAP = "0.75rem";
 
-export function MobileReviewsCarousel({ items }: { items: ReviewItem[] }) {
+export function MobileReviewsCarousel({
+  items,
+  moreHref
+}: {
+  items: ReviewItem[];
+  moreHref: string;
+}) {
   const [activeIndex, setActiveIndex] = useState(1);
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
   const touchStartX = useRef<number | null>(null);
@@ -97,19 +106,19 @@ export function MobileReviewsCarousel({ items }: { items: ReviewItem[] }) {
           {loopedItems.map((review, index) => (
             <div
               key={`${review.id}-${index}`}
-              className="group relative shrink-0 overflow-hidden rounded-[1.55rem] border border-[#f0b35b]/16 bg-[radial-gradient(circle_at_top_right,rgba(240,179,91,0.14),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))] px-4 pb-4 pt-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-[2px]"
+              className="group relative shrink-0 overflow-hidden rounded-[1.45rem] border border-[#f0b35b]/16 bg-[radial-gradient(circle_at_top_right,rgba(240,179,91,0.14),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))] px-4 pb-4 pt-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-[2px]"
               style={{ flexBasis: CARD_WIDTH }}
             >
               <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-[#d6b98c]/[0.08] blur-3xl" />
               <div className="absolute left-4 top-3 text-[2.6rem] font-display leading-none text-white/[0.045]">
                 &ldquo;
               </div>
-              <div className="relative flex items-start justify-between gap-3">
-                <div>
+              <div className="relative flex items-start justify-between gap-2.5">
+                <div className="min-w-0">
                   <p className="text-[9px] uppercase tracking-[0.22em] text-white/[0.42]">Verified review</p>
-                  <p className="mt-1.5 text-[1.05rem] leading-none text-white">{review.name}</p>
+                  <p className="mt-1.5 truncate pr-2 text-[0.98rem] leading-none text-white">{review.name}</p>
                 </div>
-                <span className="rounded-full border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[8px] uppercase tracking-[0.18em] text-accent/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <span className="shrink-0 rounded-full border border-white/8 bg-white/[0.04] px-2 py-1 text-[7px] uppercase tracking-[0.16em] text-accent/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   {review.source}
                 </span>
               </div>
@@ -118,7 +127,7 @@ export function MobileReviewsCarousel({ items }: { items: ReviewItem[] }) {
                   <Star key={`${review.id}-${index}-${starIndex}`} className="h-3.5 w-3.5 fill-current" />
                 ))}
               </div>
-              <p className="relative mt-3 text-[0.93rem] leading-6 text-white/[0.78]">
+              <p className="relative mt-3 text-[0.88rem] leading-5 text-white/[0.78]">
                 &ldquo;{review.text}&rdquo;
               </p>
             </div>
@@ -142,6 +151,15 @@ export function MobileReviewsCarousel({ items }: { items: ReviewItem[] }) {
           >
             <ChevronRight className="h-4.5 w-4.5" />
           </button>
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <Button asChild className="w-full max-w-[18.5rem] px-5 py-3.5 text-[0.95rem]">
+            <Link href={moreHref} target="_blank" rel="noreferrer">
+              Vezi 3000+ pe MERO
+              <ArrowUpRight className="h-4.5 w-4.5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
