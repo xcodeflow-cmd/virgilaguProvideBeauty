@@ -58,7 +58,7 @@ export default function ReviewsPage() {
               ))}
             </div>
             <div className="flex justify-center">
-              <Button asChild className="min-w-[17rem] px-8 py-4 text-base">
+              <Button asChild className="w-full max-w-[20rem] px-6 py-4 text-base md:w-auto md:min-w-[17rem] md:px-8">
                 <Link href={siteConfig.socials.mero} target="_blank" rel="noreferrer">
                   Vezi 3000+ pe MERO
                   <ArrowUpRight className="h-4.5 w-4.5" />
