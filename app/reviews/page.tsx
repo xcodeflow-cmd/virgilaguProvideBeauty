@@ -23,9 +23,9 @@ export default function ReviewsPage() {
         </p>
       </FadeIn>
 
-      <div className="mx-auto mt-16 max-w-[92rem] space-y-10">
-        <div className="overflow-hidden rounded-[2.6rem] border border-[#f0b35b]/18 bg-[radial-gradient(circle_at_top_left,rgba(240,179,91,0.16),transparent_26%),linear-gradient(180deg,#120d06,#070707)] p-7 shadow-[0_36px_120px_rgba(0,0,0,0.34)] sm:p-10">
-          <div className="grid gap-8">
+      <div className="mx-auto mt-12 max-w-[92rem] space-y-10 sm:mt-16">
+        <div className="overflow-hidden rounded-[2.2rem] border border-[#f0b35b]/18 bg-[radial-gradient(circle_at_top_left,rgba(240,179,91,0.16),transparent_26%),linear-gradient(180deg,#120d06,#070707)] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.3)] sm:rounded-[2.6rem] sm:p-10 sm:shadow-[0_36px_120px_rgba(0,0,0,0.34)]">
+          <div className="grid gap-5 sm:gap-8">
             <MobileReviewsCarousel items={visibleReviews} moreHref={siteConfig.socials.mero} />
             <div className="hidden gap-5 md:grid md:grid-cols-3 xl:grid-cols-[1.08fr_0.92fr_0.92fr]">
               {visibleReviews.map((review) => (

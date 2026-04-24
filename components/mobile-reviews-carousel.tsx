@@ -17,6 +17,7 @@ type ReviewItem = {
 const SWIPE_THRESHOLD = 36;
 const CARD_WIDTH = "min(84vw, 18.5rem)";
 const CARD_GAP = "0.75rem";
+const TRACK_SIDE_PADDING = "calc((100% - min(84vw, 18.5rem)) / 2)";
 
 export function MobileReviewsCarousel({
   items,
@@ -93,7 +94,12 @@ export function MobileReviewsCarousel({
 
   return (
     <div className="md:hidden">
-      <div className="relative overflow-hidden px-1" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div
+        className="relative overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        style={{ paddingInline: TRACK_SIDE_PADDING }}
+      >
         <div
           className="flex"
           style={{
@@ -133,34 +139,34 @@ export function MobileReviewsCarousel({
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="mt-4 flex items-center justify-center gap-2.5">
-          <button
-            type="button"
-            aria-label="Review anterior"
-            onClick={goToPrevious}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
-          >
-            <ChevronLeft className="h-4.5 w-4.5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Review urmator"
-            onClick={goToNext}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
-          >
-            <ChevronRight className="h-4.5 w-4.5" />
-          </button>
-        </div>
+      <div className="mt-4 flex items-center justify-center gap-2.5">
+        <button
+          type="button"
+          aria-label="Review anterior"
+          onClick={goToPrevious}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
+        >
+          <ChevronLeft className="h-4.5 w-4.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Review urmator"
+          onClick={goToNext}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
+        >
+          <ChevronRight className="h-4.5 w-4.5" />
+        </button>
+      </div>
 
-        <div className="mt-4 flex justify-center">
-          <Button asChild className="w-full max-w-[18.5rem] px-5 py-3.5 text-[0.95rem]">
-            <Link href={moreHref} target="_blank" rel="noreferrer">
-              Vezi 3000+ pe MERO
-              <ArrowUpRight className="h-4.5 w-4.5" />
-            </Link>
-          </Button>
-        </div>
+      <div className="mt-4 flex justify-center px-1">
+        <Button asChild className="w-full max-w-[18.5rem] px-5 py-3.5 text-[0.95rem]">
+          <Link href={moreHref} target="_blank" rel="noreferrer">
+            Vezi 3000+ pe MERO
+            <ArrowUpRight className="h-4.5 w-4.5" />
+          </Link>
+        </Button>
       </div>
     </div>
   );
