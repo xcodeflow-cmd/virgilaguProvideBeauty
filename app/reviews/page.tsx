@@ -5,6 +5,7 @@ import { ArrowUpRight, Star } from "lucide-react";
 import { VideoGalleryGrid } from "@/components/video-gallery-grid";
 import { reviews, siteConfig } from "@/lib/data";
 import { getOrderedFeedbackVideos } from "@/lib/media-library";
+import { MobileReviewsCarousel } from "@/components/mobile-reviews-carousel";
 
 export default function ReviewsPage() {
   const videos = getOrderedFeedbackVideos();
@@ -25,7 +26,8 @@ export default function ReviewsPage() {
       <div className="mx-auto mt-16 max-w-[92rem] space-y-10">
         <div className="overflow-hidden rounded-[2.6rem] border border-[#f0b35b]/18 bg-[radial-gradient(circle_at_top_left,rgba(240,179,91,0.16),transparent_26%),linear-gradient(180deg,#120d06,#070707)] p-7 shadow-[0_36px_120px_rgba(0,0,0,0.34)] sm:p-10">
           <div className="grid gap-8">
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-5 xl:grid-cols-[1.08fr_0.92fr_0.92fr]">
+            <MobileReviewsCarousel items={visibleReviews} />
+            <div className="hidden gap-5 md:grid md:grid-cols-3 xl:grid-cols-[1.08fr_0.92fr_0.92fr]">
               {visibleReviews.map((review) => (
                 <div
                   key={review.id}
