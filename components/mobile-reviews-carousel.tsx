@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type TouchEvent } from "react";
+import { useRef, useState, type TouchEvent } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ReviewItem = {
   id: string;
@@ -15,9 +17,6 @@ type ReviewItem = {
 };
 
 const SWIPE_THRESHOLD = 36;
-const CARD_WIDTH = "min(84vw, 18.5rem)";
-const CARD_GAP = "0.75rem";
-const TRACK_SIDE_PADDING = "calc((100% - min(84vw, 18.5rem)) / 2)";
 
 export function MobileReviewsCarousel({
   items,
@@ -26,32 +25,16 @@ export function MobileReviewsCarousel({
   items: ReviewItem[];
   moreHref: string;
 }) {
-  const [activeIndex, setActiveIndex] = useState(1);
-  const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const touchStartX = useRef<number | null>(null);
 
-  const loopedItems = [items[items.length - 1], ...items, items[0]];
+  const activeReview = items[activeIndex];
+  const nextReview = items[(activeIndex + 1) % items.length];
 
-  useEffect(() => {
-    if (isTransitionEnabled) {
-      return;
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      setIsTransitionEnabled(true);
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [isTransitionEnabled]);
-
-  const goToNext = () => {
-    setIsTransitionEnabled(true);
-    setActiveIndex((current) => current + 1);
-  };
-
-  const goToPrevious = () => {
-    setIsTransitionEnabled(true);
-    setActiveIndex((current) => current - 1);
+  const shiftReview = (nextDirection: 1 | -1) => {
+    setDirection(nextDirection);
+    setActiveIndex((current) => (current + nextDirection + items.length) % items.length);
   };
 
   const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
@@ -71,81 +54,74 @@ export function MobileReviewsCarousel({
       return;
     }
 
-    if (deltaX < 0) {
-      goToNext();
-      return;
-    }
-
-    goToPrevious();
-  };
-
-  const handleTransitionEnd = () => {
-    if (activeIndex === 0) {
-      setIsTransitionEnabled(false);
-      setActiveIndex(items.length);
-      return;
-    }
-
-    if (activeIndex === items.length + 1) {
-      setIsTransitionEnabled(false);
-      setActiveIndex(1);
-    }
+    shiftReview(deltaX < 0 ? 1 : -1);
   };
 
   return (
-    <div className="md:hidden">
-      <div
-        className="relative overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        style={{ paddingInline: TRACK_SIDE_PADDING }}
-      >
-        <div
-          className="flex"
-          style={{
-            transform: `translateX(calc(-${activeIndex} * (${CARD_WIDTH} + ${CARD_GAP})))`,
-            transition: isTransitionEnabled ? "transform 420ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
-            columnGap: CARD_GAP
-          }}
-          onTransitionEnd={handleTransitionEnd}
-        >
-          {loopedItems.map((review, index) => (
-            <div
-              key={`${review.id}-${index}`}
-              className="group relative shrink-0 overflow-hidden rounded-[1.45rem] border border-[#f0b35b]/16 bg-[radial-gradient(circle_at_top_right,rgba(240,179,91,0.14),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))] px-4 pb-4 pt-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-[2px]"
-              style={{ flexBasis: CARD_WIDTH }}
-            >
-              <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-[#d6b98c]/[0.08] blur-3xl" />
-              <div className="absolute left-4 top-3 text-[2.6rem] font-display leading-none text-white/[0.045]">
-                &ldquo;
+    <div className="space-y-4 md:hidden">
+      <div className="relative overflow-hidden rounded-[1.9rem]" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        <div className="pointer-events-none absolute inset-y-0 right-[-18%] z-0 w-[42%] rounded-[1.5rem] border border-[#f0b35b]/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.012))] shadow-[0_22px_55px_rgba(0,0,0,0.18)]" />
+
+        <AnimatePresence custom={direction} initial={false} mode="wait">
+          <motion.div
+            key={activeReview.id}
+            custom={direction}
+            initial={{ opacity: 0, x: direction > 0 ? 44 : -44 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -44 : 44 }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 mr-[16%] overflow-hidden rounded-[1.55rem] border border-[#f0b35b]/16 bg-[radial-gradient(circle_at_top_right,rgba(240,179,91,0.14),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))] px-4 pb-4 pt-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-[2px]"
+          >
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-[#d6b98c]/[0.08] blur-3xl" />
+            <div className="absolute left-4 top-3 text-[2.6rem] font-display leading-none text-white/[0.045]">&ldquo;</div>
+
+            <div className="relative flex items-start justify-between gap-2.5">
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-[0.22em] text-white/[0.42]">Verified review</p>
+                <p className="mt-1.5 truncate pr-2 text-[0.98rem] leading-none text-white">{activeReview.name}</p>
               </div>
-              <div className="relative flex items-start justify-between gap-2.5">
-                <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-[0.22em] text-white/[0.42]">Verified review</p>
-                  <p className="mt-1.5 truncate pr-2 text-[0.98rem] leading-none text-white">{review.name}</p>
-                </div>
-                <span className="shrink-0 rounded-full border border-white/8 bg-white/[0.04] px-2 py-1 text-[7px] uppercase tracking-[0.16em] text-accent/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                  {review.source}
-                </span>
-              </div>
-              <div className="relative mt-3 flex gap-1 text-accent">
-                {Array.from({ length: review.rating }).map((_, starIndex) => (
-                  <Star key={`${review.id}-${index}-${starIndex}`} className="h-3.5 w-3.5 fill-current" />
-                ))}
-              </div>
-              <p className="relative mt-3 text-[0.88rem] leading-5 text-white/[0.78]">
-                &ldquo;{review.text}&rdquo;
-              </p>
+              <span className="shrink-0 rounded-full border border-white/8 bg-white/[0.04] px-2 py-1 text-[7px] uppercase tracking-[0.16em] text-accent/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                {activeReview.source}
+              </span>
             </div>
-          ))}
-        </div>
+
+            <div className="relative mt-3 flex gap-1 text-accent">
+              {Array.from({ length: activeReview.rating }).map((_, starIndex) => (
+                <Star key={`${activeReview.id}-${starIndex}`} className="h-3.5 w-3.5 fill-current" />
+              ))}
+            </div>
+
+            <p className="relative mt-3 text-[0.88rem] leading-5 text-white/[0.78]">&ldquo;{activeReview.text}&rdquo;</p>
+          </motion.div>
+        </AnimatePresence>
+
+        <AnimatePresence custom={direction} initial={false} mode="wait">
+          <motion.div
+            key={`${nextReview.id}-preview`}
+            custom={direction}
+            initial={{ opacity: 0, x: direction > 0 ? 26 : -26 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -26 : 26 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute inset-y-3 right-[-18%] z-0 w-[42%] overflow-hidden rounded-[1.3rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))] px-3 py-3"
+          >
+            <div className="text-[8px] uppercase tracking-[0.18em] text-white/[0.35]">Next</div>
+            <p className="mt-2 truncate text-sm text-white/[0.88]">{nextReview.name}</p>
+            <div className="mt-2 flex gap-1 text-accent/85">
+              {Array.from({ length: nextReview.rating }).map((_, starIndex) => (
+                <Star key={`${nextReview.id}-preview-${starIndex}`} className="h-3 w-3 fill-current" />
+              ))}
+            </div>
+            <p className="mt-3 line-clamp-4 text-[0.76rem] leading-5 text-white/[0.46]">&ldquo;{nextReview.text}&rdquo;</p>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2.5">
+      <div className="flex items-center justify-center gap-2.5">
         <button
           type="button"
           aria-label="Review anterior"
-          onClick={goToPrevious}
+          onClick={() => shiftReview(-1)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
         >
           <ChevronLeft className="h-4.5 w-4.5" />
@@ -153,20 +129,23 @@ export function MobileReviewsCarousel({
         <button
           type="button"
           aria-label="Review urmator"
-          onClick={goToNext}
+          onClick={() => shiftReview(1)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#f0b35b]/18 bg-white/[0.04] text-white transition hover:bg-white/[0.08]"
         >
           <ChevronRight className="h-4.5 w-4.5" />
         </button>
       </div>
 
-      <div className="mt-4 flex justify-center px-1">
-        <Button asChild className="w-full max-w-[18.5rem] px-5 py-3.5 text-[0.95rem]">
-          <Link href={moreHref} target="_blank" rel="noreferrer">
-            Vezi 3000+ pe MERO
-            <ArrowUpRight className="h-4.5 w-4.5" />
-          </Link>
-        </Button>
+      <div className="flex justify-center">
+        <Link
+          href={moreHref}
+          target="_blank"
+          rel="noreferrer"
+          className={cn(buttonVariants(), "min-w-[16rem] max-w-full whitespace-nowrap px-5 py-3.5 text-[0.95rem]")}
+        >
+          Vezi 3000+ pe MERO
+          <ArrowUpRight className="h-4.5 w-4.5" />
+        </Link>
       </div>
     </div>
   );
