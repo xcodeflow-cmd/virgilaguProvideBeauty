@@ -1,6 +1,7 @@
 import type { LiveSession } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 
+import { asDate } from "@/lib/date";
 import { getLiveSessionStaleAfterMs } from "@/lib/live-config";
 import { prisma } from "@/lib/prisma";
 
@@ -31,7 +32,13 @@ export function isLiveSessionActive(session: Pick<LiveSession, "isLive" | "updat
     return false;
   }
 
-  return now.getTime() - session.updatedAt.getTime() <= getLiveSessionStaleAfterMs();
+  const updatedAt = asDate(session.updatedAt);
+
+  if (!updatedAt) {
+    return false;
+  }
+
+  return now.getTime() - updatedAt.getTime() <= getLiveSessionStaleAfterMs();
 }
 
 async function fetchPrimaryLiveSession() {

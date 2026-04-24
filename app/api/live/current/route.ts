@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { toIsoDateString } from "@/lib/date";
 import { getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 
 export async function GET() {
@@ -16,7 +17,7 @@ export async function GET() {
       id: session.id,
       title: session.title,
       description: session.description,
-      scheduledFor: session.scheduledFor.toISOString(),
+      scheduledFor: toIsoDateString(session.scheduledFor),
       isLive,
       thumbnailUrl: session.thumbnailUrl,
       price: session.price,

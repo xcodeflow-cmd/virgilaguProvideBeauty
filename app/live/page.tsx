@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 
 import { LivePageContent } from "@/components/site/live-page-content";
+import { toIsoDateString } from "@/lib/date";
 import { canAccessLiveSession, getPurchasedLiveSessionIds } from "@/lib/live-access";
 import { getPastLiveSessions, getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
 
@@ -36,7 +37,7 @@ export default async function LivePage() {
               id: liveSession.id,
               title: liveSession.title,
               description: liveSession.description,
-              scheduledFor: liveSession.scheduledFor.toISOString(),
+              scheduledFor: toIsoDateString(liveSession.scheduledFor),
               isLive: isActive,
               thumbnailUrl: liveSession.thumbnailUrl,
               price: liveSession.price,
@@ -50,7 +51,7 @@ export default async function LivePage() {
           id: item.id,
           title: item.title,
           description: item.description,
-          scheduledFor: item.scheduledFor.toISOString(),
+          scheduledFor: toIsoDateString(item.scheduledFor),
           thumbnailUrl: item.thumbnailUrl,
           recordingUrl: item.recordingUrl || "",
           price: item.price,

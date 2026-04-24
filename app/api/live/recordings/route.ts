@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { toIsoDateString } from "@/lib/date";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -35,7 +36,7 @@ export async function GET() {
       id: item.id,
       title: item.title,
       description: item.description,
-      createdAt: item.scheduledFor.toISOString(),
+      createdAt: toIsoDateString(item.scheduledFor),
       thumbnailUrl: item.thumbnailUrl,
       videoUrl: item.recordingUrl || "",
       price: item.price,
