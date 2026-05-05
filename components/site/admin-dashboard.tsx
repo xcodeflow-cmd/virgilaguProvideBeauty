@@ -740,7 +740,7 @@ export function AdminDashboard({
                           </label>
                           <div className="grid gap-4 sm:grid-cols-2">
                             <label className="space-y-2">
-                              <span className="text-sm text-white/60">Text buton cumparare</span>
+                              <span className="text-sm text-white/60">Text buton</span>
                               <input name={course.purchaseLabelName} defaultValue={course.data.purchaseLabel || ""} className="premium-input" />
                             </label>
                           </div>
