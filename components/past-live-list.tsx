@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,8 +33,10 @@ export function PastLiveList({
   isAdmin?: boolean;
   sessions: PastLiveSession[];
 }) {
+  const [notice, setNotice] = useState<string | null>(null);
+
   function handleUnauthenticatedReplayClick() {
-    window.alert("Trebuie sa fii autentificat pentru a vedea replay-ul.");
+    setNotice("Trebuie sa fii autentificat pentru a vedea replay-ul.");
   }
 
   return (
@@ -48,10 +51,17 @@ export function PastLiveList({
         </div>
       </div>
 
+      {notice ? (
+        <div className="mt-4 rounded-[1.2rem] border border-red-500/30 bg-red-500/12 px-4 py-3 text-sm text-red-100">
+          {notice}
+        </div>
+      ) : null}
+
       <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 2xl:grid-cols-3">
         {sessions.length ? (
           sessions.map((session) => {
             const hasAccess = isAdmin || session.visibility === "PUBLIC" || accessibleLiveIds.includes(session.id);
+            const canOpenReplay = isAdmin || accessibleLiveIds.includes(session.id) || (session.visibility === "PUBLIC" && isAuthenticated);
             const hasDiscount = Boolean(session.compareAtPrice && session.price && session.compareAtPrice > session.price);
             const discountPercent = hasDiscount
               ? Math.round((((session.compareAtPrice || 0) - (session.price || 0)) / (session.compareAtPrice || 1)) * 100)
@@ -107,16 +117,22 @@ export function PastLiveList({
                   </div>
                 ) : null}
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  {hasAccess && session.recordingUrl ? (
+                  {canOpenReplay && session.recordingUrl ? (
                     <Button asChild className="min-h-11">
                       <Link href={session.recordingUrl} target="_blank" rel="noreferrer">
                         Vezi replay
                       </Link>
                     </Button>
                   ) : hasAccess ? (
+                    !isAuthenticated && session.visibility === "PUBLIC" ? (
+                      <Button type="button" className="min-h-11" onClick={handleUnauthenticatedReplayClick}>
+                        Vezi replay
+                      </Button>
+                    ) : (
                     <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
                       Replay in curs de salvare
                     </div>
+                    )
                   ) : !isAuthenticated ? (
                     <Button type="button" className="min-h-11" onClick={handleUnauthenticatedReplayClick}>
                       Vezi replay

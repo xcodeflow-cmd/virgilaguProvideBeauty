@@ -270,15 +270,45 @@ export function AdminDashboard({
                     className="premium-input min-h-[3.5rem] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-                <select
-                  name="visibility"
-                  value={newLiveVisibility}
-                  onChange={(event) => setNewLiveVisibility(event.target.value === "ONE_TIME" ? "ONE_TIME" : "PUBLIC")}
-                  className="premium-input"
-                >
-                  <option value="PUBLIC">Public</option>
-                  <option value="ONE_TIME">One time</option>
-                </select>
+                <div className="space-y-2">
+                  <span className="text-sm text-white/60">Tip acces</span>
+                  <input type="hidden" name="visibility" value={newLiveVisibility} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      {
+                        value: "PUBLIC" as const,
+                        title: "Public",
+                        description: "Fara plata. Live-ul si replay-ul sunt libere."
+                      },
+                      {
+                        value: "ONE_TIME" as const,
+                        title: "One time",
+                        description: "Necesita plata. Replay doar pentru cumparator."
+                      }
+                    ].map((option) => {
+                      const active = newLiveVisibility === option.value;
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setNewLiveVisibility(option.value)}
+                          className={`rounded-[1.35rem] border px-4 py-4 text-left transition ${
+                            active
+                              ? "border-[#d6b98c]/45 bg-[linear-gradient(180deg,rgba(214,185,140,0.18),rgba(214,185,140,0.08))] shadow-[0_18px_40px_rgba(214,185,140,0.12)]"
+                              : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-base text-white">{option.title}</span>
+                            <span className={`h-3.5 w-3.5 rounded-full border ${active ? "border-[#d6b98c] bg-[#d6b98c]" : "border-white/30 bg-transparent"}`} />
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-white/55">{option.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <input name="thumbnailUrl" placeholder="URL thumbnail optional" className="premium-input" />
                 <label className="flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
                   <Upload className="h-5 w-5" />
@@ -376,15 +406,42 @@ export function AdminDashboard({
                     </div>
                     <label className="space-y-2">
                       <span className="text-sm text-white/60">Tip acces</span>
-                      <select
-                        name="visibility"
-                        value={editLiveVisibility}
-                        onChange={(event) => setEditLiveVisibility(event.target.value === "ONE_TIME" ? "ONE_TIME" : "PUBLIC")}
-                        className="premium-input"
-                      >
-                        <option value="ONE_TIME">One time</option>
-                        <option value="PUBLIC">Public</option>
-                      </select>
+                      <input type="hidden" name="visibility" value={editLiveVisibility} />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {[
+                          {
+                            value: "PUBLIC" as const,
+                            title: "Public",
+                            description: "Fara plata. Live-ul si replay-ul sunt libere."
+                          },
+                          {
+                            value: "ONE_TIME" as const,
+                            title: "One time",
+                            description: "Necesita plata. Replay doar pentru cumparator."
+                          }
+                        ].map((option) => {
+                          const active = editLiveVisibility === option.value;
+
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setEditLiveVisibility(option.value)}
+                              className={`rounded-[1.35rem] border px-4 py-4 text-left transition ${
+                                active
+                                  ? "border-[#d6b98c]/45 bg-[linear-gradient(180deg,rgba(214,185,140,0.18),rgba(214,185,140,0.08))] shadow-[0_18px_40px_rgba(214,185,140,0.12)]"
+                                  : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-base text-white">{option.title}</span>
+                                <span className={`h-3.5 w-3.5 rounded-full border ${active ? "border-[#d6b98c] bg-[#d6b98c]" : "border-white/30 bg-transparent"}`} />
+                              </div>
+                              <p className="mt-2 text-sm leading-6 text-white/55">{option.description}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </label>
                     <label className="space-y-2">
                       <span className="text-sm text-white/60">URL thumbnail</span>

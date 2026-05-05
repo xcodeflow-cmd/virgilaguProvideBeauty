@@ -31,6 +31,10 @@ export async function GET(
     return Response.json({ error: "Recording not found." }, { status: 404 });
   }
 
+  if (!session?.user?.id) {
+    return Response.json({ error: "Authentication required." }, { status: 401 });
+  }
+
   const hasAccess = await canAccessLiveSession({
     userId: session?.user?.id,
     role: session?.user?.role,
