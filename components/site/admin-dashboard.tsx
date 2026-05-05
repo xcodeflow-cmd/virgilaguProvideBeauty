@@ -743,15 +743,19 @@ export function AdminDashboard({
                               <span className="text-sm text-white/60">Text buton cumparare</span>
                               <input name={course.purchaseLabelName} defaultValue={course.data.purchaseLabel || ""} className="premium-input" />
                             </label>
-                            <label className="space-y-2">
-                              <span className="text-sm text-white/60">Text cere info</span>
-                              <input name={course.inquiryLabelName} defaultValue={course.data.inquiryLabel || ""} className="premium-input" />
-                            </label>
                           </div>
-                          <label className="space-y-2">
-                            <span className="text-sm text-white/60">Text buton card</span>
-                            <input name={course.cardActionLabelName} defaultValue={course.data.cardActionLabel || ""} className="premium-input" />
-                          </label>
+                          {course.key === "advanced" ? (
+                            <>
+                              <label className="space-y-2">
+                                <span className="text-sm text-white/60">Text cere info</span>
+                                <input name={course.inquiryLabelName} defaultValue={course.data.inquiryLabel || ""} className="premium-input" />
+                              </label>
+                              <label className="space-y-2">
+                                <span className="text-sm text-white/60">Text buton card</span>
+                                <input name={course.cardActionLabelName} defaultValue={course.data.cardActionLabel || ""} className="premium-input" />
+                              </label>
+                            </>
+                          ) : null}
                         </>
                       ) : null}
                       {course.extra.map((field) => (
