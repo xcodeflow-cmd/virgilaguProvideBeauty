@@ -159,7 +159,6 @@ function CourseCardContent({
                   Vezi live
                 </Link>
               </div>
-              <p className="text-[10px] uppercase tracking-[0.34em] text-white/40">Acces lunar</p>
             </div>
           ) : course.cardHref && course.hidePriceInCard ? (
             <Link
@@ -224,8 +223,8 @@ export function CourseDetailDialog({
                 <div className="absolute inset-x-0 bottom-0 p-6">
                   <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
                   <p className="mt-3 text-4xl leading-[0.92] text-white">{course.title}</p>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-7 text-white/[0.82]">
-                    <span>{course.price}</span>
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-7 text-white/[0.82]">
+                    <span>{course.cardActionLabel || "Vezi live"}</span>
                   </div>
                 </div>
               </div>
@@ -280,11 +279,7 @@ export function CourseDetailDialog({
                   </div>
                 ) : null}
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="rounded-[1.6rem] border border-red-500/35 bg-red-500/15 px-5 py-4 text-white shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
-                    <p className="text-[10px] uppercase tracking-[0.34em] text-white/70">Acces</p>
-                    <p className="mt-2 text-xl font-semibold text-white">{course.price}</p>
-                  </div>
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-end">
                   <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
                     <Button asChild className="w-full px-7 sm:w-auto">
                       <Link href="/live">Vezi live</Link>

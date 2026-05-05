@@ -133,10 +133,10 @@ const baseCourseOffers: BaseCourseOffer[] = [
     pricingKey: "liveExperience",
     label: "LIVE",
     title: "LIVE Barber Experience",
-    shortTitle: "Lunar",
+    shortTitle: "LIVE",
     defaultPriceValue: 100,
-    priceSuffix: "/ sesiune LIVE",
-    note: "sesiune lunara",
+    priceSuffix: undefined,
+    note: "LIVE",
     image: courseImage03,
     description:
       "Inveti in timp real alaturi de Virgil Agu, urmarind clienti reali, explicatii clare si ritm real de salon.",
