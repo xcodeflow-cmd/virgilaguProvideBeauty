@@ -21,6 +21,7 @@ export const siteConfig = {
   socials: {
     instagram: "https://www.instagram.com/virgil.agu/",
     tiktok: "https://www.tiktok.com/@virgilagu",
+    facebook: "https://www.facebook.com/share/1BQsCYciX5/",
     whatsapp: "https://wa.me/40785571176",
     phone: "tel:+40785571176",
     mero: "https://mero.ro/p/provide-beauty"

@@ -6,6 +6,7 @@ import instagramLogo from "@/assets/LogoInstagram.png";
 import tiktokLogo from "@/assets/LogoTikTok.png";
 import meroLogo from "@/assets/MeroLogo.png";
 import whatsappLogo from "@/assets/WhatsappLogo.png";
+import facebookLogo from "@/assets/facebookLogo.png";
 import { siteConfig } from "@/lib/data";
 
 const footerLinks = [
@@ -19,6 +20,7 @@ const footerLinks = [
 const socialLinks = [
   { href: siteConfig.socials.instagram, label: "Instagram", icon: instagramLogo },
   { href: siteConfig.socials.tiktok, label: "TikTok", icon: tiktokLogo },
+  { href: siteConfig.socials.facebook, label: "Facebook", icon: facebookLogo },
   { href: siteConfig.socials.mero, label: "Mero", icon: meroLogo },
   { href: siteConfig.socials.whatsapp, label: "WhatsApp", icon: whatsappLogo }
 ];
@@ -43,7 +45,7 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 pb-2 sm:gap-4 sm:pb-0">
+          <div className="grid grid-cols-3 gap-2 pb-2 sm:grid-cols-5 sm:gap-4 sm:pb-0">
             {socialLinks.map((link) => (
               <Link
                 key={link.href}

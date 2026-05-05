@@ -3,7 +3,7 @@ import type { StaticImageData } from "next/image";
 import courseImage01 from "@/assets/about me/curs1.jpeg";
 import courseImage02 from "@/assets/about me/curs2.jpeg";
 import courseImage03 from "@/assets/about me/curs3.jpeg";
-import { courses as defaultCourses } from "@/lib/data";
+import { courses as defaultCourses, siteConfig } from "@/lib/data";
 import { formatLei } from "@/lib/utils";
 
 type CoursePricingKey = "beginner" | "advanced" | "liveExperience";
@@ -32,6 +32,11 @@ export type CourseOffer = {
   learn?: string[];
   advantage?: string;
   purchaseLabel: string;
+  inquiryLabel?: string;
+  inquiryHref?: string;
+  cardHref?: string;
+  cardTarget?: "_blank" | "_self";
+  purchaseDisabled?: boolean;
 };
 
 type BaseCourseOffer = Omit<CourseOffer, "price" | "priceValue" | "compareAtPrice" | "compareAtPriceValue"> & {
@@ -76,7 +81,12 @@ const baseCourseOffers: BaseCourseOffer[] = [
       "Primele fade-uri curate si primele tranzitii controlate",
       "Ritmul de lucru care te scoate din faza de incepator nesigur"
     ],
-    purchaseLabel: "Achizitioneaza cursul"
+    purchaseLabel: "Achizitioneaza cursul",
+    inquiryLabel: "Cere informatii despre curs",
+    inquiryHref: siteConfig.socials.whatsapp,
+    cardHref: defaultCourses.beginner.externalLinkUrl,
+    cardTarget: "_blank",
+    purchaseDisabled: true
   },
   {
     id: "advanced-one-to-one",
@@ -111,7 +121,9 @@ const baseCourseOffers: BaseCourseOffer[] = [
     ],
     advantage:
       "Ai acces la informatie nelimitata, intr-un cadru dedicat exclusiv tie, unde poti intreba si aprofunda orice detaliu.",
-    purchaseLabel: "Rezerva ziua de curs"
+    purchaseLabel: "Rezerva ziua de curs",
+    inquiryLabel: "Cere informatii despre curs",
+    inquiryHref: siteConfig.socials.whatsapp
   },
   {
     id: "live-barber-experience",
@@ -200,6 +212,10 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
       imageUrl: coursesContent?.[course.pricingKey]?.imageUrl || null,
       externalLinkLabel: coursesContent?.[course.pricingKey]?.externalLinkLabel || undefined,
       externalLinkUrl: coursesContent?.[course.pricingKey]?.externalLinkUrl || undefined,
+      cardHref:
+        course.pricingKey === "beginner"
+          ? coursesContent?.beginner?.externalLinkUrl || course.cardHref
+          : course.cardHref,
       priceValue,
       compareAtPriceValue,
       price: buildPriceLabel(priceValue, course.priceSuffix),
@@ -212,4 +228,8 @@ export const courseOffers: CourseOffer[] = getManagedCourseOffers();
 
 export function getCourseCheckoutHref(courseId: string) {
   return `/checkout?mode=payment&courseId=${courseId}`;
+}
+
+export function findCourseOfferById(courseId: string, coursesContent?: typeof defaultCourses) {
+  return getManagedCourseOffers(coursesContent).find((course) => course.id === courseId) || null;
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { CheckoutConfirmation } from "@/components/site/checkout-confirmation";
-import { getManagedCourseOffers } from "@/lib/course-offers";
+import { findCourseOfferById } from "@/lib/course-offers";
 import { isLiveSessionSoldOut } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 import { getSiteSettings } from "@/lib/site-content";
@@ -23,10 +23,9 @@ export default async function CheckoutPage({
 
   if (courseId) {
     const settings = await getSiteSettings();
-    const offers = getManagedCourseOffers(settings.courses);
-    const course = offers.find((item) => item.id === courseId);
+    const course = findCourseOfferById(courseId, settings.courses);
 
-    if (!course) {
+    if (!course || course.purchaseDisabled) {
       notFound();
     }
 

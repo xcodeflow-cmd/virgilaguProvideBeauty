@@ -12,7 +12,7 @@ import siteLogo from "@/assets/logo.png";
 import provibeLogo from "@/assets/provibe.png";
 import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref } from "@/lib/course-offers";
-import { brandImages, compactReviews } from "@/lib/data";
+import { brandImages, compactReviews, siteConfig } from "@/lib/data";
 
 const HeroOverlayEffect = dynamic(
   () => import("@/components/site/hero-overlay-effect").then((module) => module.HeroOverlayEffect),
@@ -104,8 +104,8 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 Aici incepe diferenta.
               </p>
 
-              <div className="mt-10 flex flex-wrap gap-3">
-                <Button asChild className="px-7">
+              <div className="mt-10 grid gap-3 sm:flex sm:flex-wrap">
+                <Button asChild className="w-full px-7 sm:w-auto">
                   <Link href="/courses" prefetch onClick={(event) => event.stopPropagation()}>
                     Vezi cursuri
                     <ArrowRight className="h-4 w-4" />
@@ -114,10 +114,19 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                 <Button
                   asChild
                   variant="secondary"
-                  className="border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                  className="w-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)] sm:w-auto"
                 >
                   <Link href="/live" prefetch onClick={(event) => event.stopPropagation()}>
                     Vezi live
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="w-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-7 text-[#f2ddbb] hover:-translate-y-1 hover:border-[#d6b98c]/55 hover:bg-[#d6b98c]/16 sm:w-auto"
+                >
+                  <Link href={siteConfig.socials.mero} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>
+                    Programeaza-te
                   </Link>
                 </Button>
               </div>

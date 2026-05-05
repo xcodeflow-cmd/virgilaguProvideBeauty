@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getStripe } from "@/lib/stripe";
 import { isLiveSessionSoldOut } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
-import { getManagedCourseOffers } from "@/lib/course-offers";
+import { findCourseOfferById } from "@/lib/course-offers";
 import { getSiteSettings } from "@/lib/site-content";
 
 const subscriptionPriceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID || "price_subscription_placeholder";
@@ -31,11 +31,14 @@ export async function GET(request: Request) {
   const liveSessionId = searchParams.get("liveSessionId");
   const courseId = searchParams.get("courseId");
   const settings = courseId ? await getSiteSettings() : null;
-  const managedCourseOffers = settings ? getManagedCourseOffers(settings.courses) : [];
-  const courseOffer = courseId ? managedCourseOffers.find((item) => item.id === courseId) : null;
+  const courseOffer = courseId && settings ? findCourseOfferById(courseId, settings.courses) : null;
 
   if (mode === "payment" && !liveSessionId && !courseOffer) {
     return NextResponse.json({ error: "Missing item for one-time checkout." }, { status: 400 });
+  }
+
+  if (courseOffer?.purchaseDisabled) {
+    return NextResponse.json({ error: "Selected course is not available for checkout from this page." }, { status: 400 });
   }
 
   try {

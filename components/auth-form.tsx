@@ -172,43 +172,6 @@ export function AuthForm({
           ) : null}
         </div>
 
-        {mode === "signin" ? (
-          <form
-            className="space-y-3 rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              startTransition(async () => {
-                setError(null);
-                setMessage(null);
-
-                const response = await fetch("/api/auth/resend-verification", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({ email })
-                });
-
-                const data = (await response.json()) as { error?: string; message?: string };
-
-                if (!response.ok) {
-                  setError(data.error || "Nu am putut retrimite emailul de confirmare.");
-                  return;
-                }
-
-                setMessage(data.message || "Am retrimis emailul de confirmare.");
-              });
-            }}
-          >
-            <p className="text-sm leading-7 text-white/60">
-              Nu ai primit confirmarea? Introdu emailul de mai sus si retrimite linkul de activare.
-            </p>
-            <Button type="submit" variant="secondary" className="w-full" disabled={pending || !email.trim()}>
-              {pending ? "Se proceseaza..." : "Retrimite emailul de confirmare"}
-            </Button>
-          </form>
-        ) : null}
-
         {error ? <p className="text-sm text-red-300">{error}</p> : null}
         {message ? <p className="text-sm text-accent">{message}</p> : null}
       </div>

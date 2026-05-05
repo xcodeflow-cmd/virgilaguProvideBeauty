@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, GraduationCap, Radio, Scissors, X } from "lucide-react";
+import type { MouseEvent } from "react";
 
 import type { CourseOffer } from "@/lib/course-offers";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,123 @@ function CourseIcon({ label }: { label: string }) {
 
 function CourseVisual({ course, title }: { course: CourseOffer; title: string }) {
   if (course.imageUrl) {
-    return <Image src={course.imageUrl} alt={title} fill className="object-cover transition duration-700 group-hover:scale-[1.05]" unoptimized />;
+    return (
+      <Image
+        src={course.imageUrl}
+        alt={title}
+        fill
+        className="object-cover transition duration-700 group-hover:scale-[1.05]"
+        unoptimized
+      />
+    );
   }
 
   return <CourseImage image={course.image} title={title} />;
+}
+
+function InquiryButton({
+  href,
+  label,
+  onClick
+}: {
+  href?: string;
+  label?: string;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+}) {
+  if (!href || !label) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={onClick}
+      className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-4 py-3 text-center text-[11px] font-medium uppercase tracking-[0.24em] text-[#f4dfbe] transition hover:-translate-y-0.5 hover:border-[#d6b98c]/55 hover:bg-[#d6b98c]/16"
+    >
+      {label}
+    </Link>
+  );
+}
+
+function CourseCardContent({
+  course,
+  compact = false,
+  showInlineInquiry = false
+}: {
+  course: CourseOffer;
+  compact?: boolean;
+  showInlineInquiry?: boolean;
+}) {
+  const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
+  const discountPercent = hasDiscount
+    ? Math.round((((course.compareAtPriceValue || 0) - course.priceValue) / (course.compareAtPriceValue || 1)) * 100)
+    : 0;
+  return (
+    <>
+      <div className={cn("relative overflow-hidden", compact ? "aspect-[16/12]" : "aspect-[16/11]")}>
+        <CourseVisual course={course} title={course.title} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.78))]" />
+        <div className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/[0.35] text-white backdrop-blur-md">
+          <CourseIcon label={course.label} />
+        </div>
+        <div className="absolute inset-x-5 bottom-5 z-10">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {hasDiscount ? (
+                <span className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-red-100 shadow-[0_16px_32px_rgba(185,28,28,0.22)]">
+                  Reducere {discountPercent}%
+                </span>
+              ) : null}
+              <span className="rounded-full bg-black/[0.35] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-white/[0.64]">
+                {course.note}
+              </span>
+            </div>
+          </div>
+          <p className="mt-3 text-3xl leading-tight text-white">{course.shortTitle}</p>
+        </div>
+      </div>
+
+      <div className={cn("p-5 sm:p-6", compact ? "space-y-5" : "space-y-6")}>
+        <div>
+          <p className={cn("leading-tight text-white", compact ? "text-2xl sm:text-[2rem]" : "text-3xl")}>
+            {course.title}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-white/[0.62] sm:text-[15px]">{course.description}</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {hasDiscount && course.compareAtPrice ? (
+                  <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
+                ) : null}
+                <p className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:text-2xl">
+                  {course.price}
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
+              {course.cardHref ? "Deschide" : "Detalii"}
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </span>
+          </div>
+
+          {showInlineInquiry && course.inquiryHref && course.inquiryLabel ? (
+            <InquiryButton
+              href={course.inquiryHref}
+              label={course.inquiryLabel}
+              onClick={(event) => event.stopPropagation()}
+            />
+          ) : null}
+        </div>
+      </div>
+    </>
+  );
 }
 
 export function CourseDetailDialog({
@@ -45,14 +159,52 @@ export function CourseDetailDialog({
   className?: string;
 }) {
   const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
-  const discountPercent = hasDiscount
-    ? Math.round((((course.compareAtPriceValue || 0) - course.priceValue) / (course.compareAtPriceValue || 1)) * 100)
-    : 0;
+  const cardHref = course.cardHref;
+
+  if (cardHref) {
+    return (
+      <div
+        role="link"
+        tabIndex={0}
+        className={cn(
+          "group overflow-hidden text-left transition duration-500 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+          compact
+            ? "premium-card h-full rounded-[1.9rem]"
+            : "rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] shadow-[0_22px_70px_rgba(0,0,0,0.2)]",
+          className
+        )}
+        onClick={() => {
+          if (course.cardTarget === "_blank") {
+            window.open(cardHref, "_blank", "noopener,noreferrer");
+            return;
+          }
+
+          window.location.href = cardHref;
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") {
+            return;
+          }
+
+          event.preventDefault();
+
+          if (course.cardTarget === "_blank") {
+            window.open(cardHref, "_blank", "noopener,noreferrer");
+            return;
+          }
+
+          window.location.href = cardHref;
+        }}
+      >
+        <CourseCardContent course={course} compact={compact} showInlineInquiry />
+      </div>
+    );
+  }
 
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <button
+        <div
           className={cn(
             "group overflow-hidden text-left transition duration-500 hover:-translate-y-1.5",
             compact
@@ -61,57 +213,8 @@ export function CourseDetailDialog({
             className
           )}
         >
-          <div className={cn("relative overflow-hidden", compact ? "aspect-[16/12]" : "aspect-[16/11]")}>
-            <CourseVisual course={course} title={course.title} />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.78))]" />
-            <div className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/[0.35] text-white backdrop-blur-md">
-              <CourseIcon label={course.label} />
-            </div>
-            <div className="absolute inset-x-5 bottom-5 z-10">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  {hasDiscount ? (
-                    <span className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-red-100 shadow-[0_16px_32px_rgba(185,28,28,0.22)]">
-                      Reducere {discountPercent}%
-                    </span>
-                  ) : null}
-                  <span className="rounded-full bg-black/[0.35] px-3 py-1.5 text-[10px] uppercase tracking-[0.26em] text-white/[0.64]">
-                    {course.note}
-                  </span>
-                </div>
-              </div>
-              <p className="mt-3 text-3xl leading-tight text-white">{course.shortTitle}</p>
-            </div>
-          </div>
-
-          <div className={cn("p-5 sm:p-6", compact ? "space-y-5" : "space-y-6")}>
-            <div>
-              <p className={cn("leading-tight text-white", compact ? "text-2xl sm:text-[2rem]" : "text-3xl")}>
-                {course.title}
-              </p>
-              <p className="mt-3 text-sm leading-7 text-white/[0.62] sm:text-[15px]">{course.description}</p>
-            </div>
-
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {hasDiscount && course.compareAtPrice ? (
-                    <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
-                  ) : null}
-                  <p className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:text-2xl">
-                    {course.price}
-                  </p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
-                Detalii
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </span>
-            </div>
-          </div>
-        </button>
+          <CourseCardContent course={course} compact={compact} />
+        </div>
       </Dialog.Trigger>
 
       <Dialog.Portal>
@@ -197,7 +300,7 @@ export function CourseDetailDialog({
                 </div>
               ) : null}
 
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret final</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -209,9 +312,14 @@ export function CourseDetailDialog({
                     </p>
                   </div>
                 </div>
-                <Button asChild className="px-7">
-                  <Link href={ctaHref}>{course.purchaseLabel}</Link>
-                </Button>
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
+                  <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
+                  {!course.purchaseDisabled ? (
+                    <Button asChild className="w-full px-7 sm:w-auto">
+                      <Link href={ctaHref}>{course.purchaseLabel}</Link>
+                    </Button>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
@@ -220,5 +328,3 @@ export function CourseDetailDialog({
     </Dialog.Root>
   );
 }
-
-

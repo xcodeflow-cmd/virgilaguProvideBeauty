@@ -33,6 +33,9 @@ type SpotlightCollection = {
   description: string;
   images: SpotlightImage[];
   mapUrl?: string;
+  bookingUrl?: string;
+  bookingLabel?: string;
+  bookingDisabledLabel?: string;
 };
 
 const awards: SpotlightCollection[] = [
@@ -92,6 +95,8 @@ const salons: SpotlightCollection[] = [
       "Spațiul unde energia de salon real întâlnește un standard clar. Design curat, atmosferă controlată și o echipă care livrează consecvent pentru clienții care nu caută improvizație, ci nivel.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQCA..i&pvq=Cg0vZy8xMXoxNnl0MHRyIg0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFukgELYmFyYmVyX3Nob3A&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40cabd90fafe8af5:0xaec986683fadd033",
+    bookingUrl: "https://mero.ro/p/provibe-stefan-cel-mare-roman?absp=search_results&query=provibe",
+    bookingLabel: "Programeaza-te",
     images: [
       { src: provibeStefanCelMare1, alt: "Provibe Stefan Cel Mare - interior 1" },
       { src: provibeStefanCelMare2, alt: "Provibe Stefan Cel Mare - interior 2" }
@@ -104,6 +109,8 @@ const salons: SpotlightCollection[] = [
       "Un salon care arată excelent pe foaie, în poze și mai ales în realitate. Fiecare detaliu este construit pentru a susține experiența completă: imagine coerentă, confort și execuție la același nivel de fiecare dată. Aici, standardul nu este doar vizibil. Este trăit.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQVg..i&pvq=Cg0vZy8xMWxoazVuZjgyIg0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFuSILq6JK-soCACFoVEAAYABgBIg1wcm92aWJlIHJvbWFukgEMYmVhdXR5X3NhbG9u&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40cabd91cb973595:0xdd55bf11b434bb76",
+    bookingUrl: "https://mero.ro/p/provide-beauty?absp=search_results&query=provibe",
+    bookingLabel: "Programeaza-te",
     images: [
       { src: provibeAntonPan1, alt: "Provibe Anton Pan - interior 1" },
       { src: provibeAntonPan2, alt: "Provibe Anton Pan - interior 2" }
@@ -116,6 +123,7 @@ const salons: SpotlightCollection[] = [
       "O extensie naturală a identității Provibe. Elegant, echilibrat și construit pentru clienții care înțeleg diferența dintre un serviciu și o experiență. Execuția și contextul în care este livrată merg împreună.",
     mapUrl:
       "https://www.google.com/maps?vet=10CAAQoqAOahcKEwiArcX7qPqTAxUAAAAAHQAAAAAQGQ..i&pvq=Cg0vZy8xMXk1NHo1bmp3Ig0KB3Byb3ZpYmUQAhgD&lqi=Cg1wcm92aWJlIHJvbWFuWg8iDXByb3ZpYmUgcm9tYW6SAQtiYXJiZXJfc2hvcA&fvr=1&cs=1&um=1&ie=UTF-8&fb=1&gl=ro&sa=X&ftid=0x40caa3a31e4e6a03:0xcbe81fea4fc1992b",
+    bookingDisabledLabel: "Fara programare",
     images: [
       { src: provibePiataMare2, alt: "Provibe Piata Mare - interior 1" },
       { src: provibePiataMare1, alt: "Provibe Piata Mare - interior 2" }
@@ -232,21 +240,38 @@ function SpotlightSection({
               key={collection.title}
               className="rounded-[1.9rem] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-5"
             >
-              <div className="mb-4 flex items-start justify-between gap-4 sm:mb-5">
-                <div>
+              <div className="mb-4 flex flex-col gap-4 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.32em] text-[#d6b98c]">{collection.category}</p>
                   <h3 className="mt-2 text-[1.4rem] leading-tight text-white sm:mt-3 sm:text-3xl">{collection.title}</h3>
                 </div>
-                {collection.mapUrl ? (
-                  <Link
-                    href={collection.mapUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hidden shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 transition hover:border-[#d6b98c]/35 hover:text-white sm:inline-flex"
-                  >
-                    Maps
-                  </Link>
-                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  {collection.bookingUrl && collection.bookingLabel ? (
+                    <Link
+                      href={collection.bookingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-[#f2ddbb] transition hover:-translate-y-0.5 hover:border-[#d6b98c]/55 hover:bg-[#d6b98c]/16"
+                    >
+                      {collection.bookingLabel}
+                    </Link>
+                  ) : null}
+                  {collection.bookingDisabledLabel ? (
+                    <span className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70">
+                      {collection.bookingDisabledLabel}
+                    </span>
+                  ) : null}
+                  {collection.mapUrl ? (
+                    <Link
+                      href={collection.mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 transition hover:border-[#d6b98c]/35 hover:text-white"
+                    >
+                      Maps
+                    </Link>
+                  ) : null}
+                </div>
               </div>
               <p className="mb-4 max-w-3xl text-sm leading-6 text-white/64 sm:mb-5 sm:text-base sm:leading-7">{collection.description}</p>
               <CollectionRail collection={collection} />
