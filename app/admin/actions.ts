@@ -191,6 +191,8 @@ export async function addLiveSession(formData: FormData) {
     throw new Error("Live-ul one time trebuie sa aiba pret.");
   }
 
+  const normalizedPrice = visibilityValue === SessionVisibility.ONE_TIME ? price : null;
+
   await prisma.liveSession.create({
     data: {
       title,
@@ -204,7 +206,7 @@ export async function addLiveSession(formData: FormData) {
       isLive: false,
       isFeatured: false,
       hasStarted: false,
-      price,
+      price: normalizedPrice,
       compareAtPrice: null,
       maxParticipants
     }
@@ -264,6 +266,8 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     throw new Error("Live-ul one time trebuie sa aiba pret.");
   }
 
+  const normalizedPrice = visibilityValue === SessionVisibility.ONE_TIME ? price : null;
+
   const existingSession = await prisma.liveSession.findUnique({
     where: { id },
     select: {
@@ -281,6 +285,10 @@ export async function updateLiveSessionSchedule(formData: FormData) {
     existingSession.compareAtPrice || 0
   );
   const compareAtPrice = price && previousReferencePrice > price ? previousReferencePrice : null;
+  const normalizedCompareAtPrice =
+    visibilityValue === SessionVisibility.ONE_TIME && normalizedPrice
+      ? compareAtPrice
+      : null;
 
   await prisma.liveSession.update({
     where: { id },
@@ -288,8 +296,8 @@ export async function updateLiveSessionSchedule(formData: FormData) {
       title,
       description,
       scheduledFor,
-      price,
-      compareAtPrice,
+      price: normalizedPrice,
+      compareAtPrice: normalizedCompareAtPrice,
       visibility: visibilityValue,
       maxParticipants,
       ...(thumbnailUrl ? { thumbnailUrl } : {})

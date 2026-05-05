@@ -111,7 +111,11 @@ export function AdminDashboard({
   courseSettings: AdminCourseSettings;
 }) {
   const [liveStartMode, setLiveStartMode] = useState<"NOW" | "SCHEDULE">("NOW");
+  const [newLiveVisibility, setNewLiveVisibility] = useState<"PUBLIC" | "ONE_TIME">("PUBLIC");
   const [selectedLiveId, setSelectedLiveId] = useState<string | null>(liveSessions[0]?.id || null);
+  const [editLiveVisibility, setEditLiveVisibility] = useState<"PUBLIC" | "ONE_TIME">(
+    liveSessions[0]?.visibility === "ONE_TIME" ? "ONE_TIME" : "PUBLIC"
+  );
   const liveEditorRef = useRef<HTMLDivElement | null>(null);
 
   const selectedLiveSession = useMemo(
@@ -127,6 +131,10 @@ export function AdminDashboard({
 
     setSelectedLiveId((current) => (current && liveSessions.some((session) => session.id === current) ? current : liveSessions[0].id));
   }, [liveSessions]);
+
+  useEffect(() => {
+    setEditLiveVisibility(selectedLiveSession?.visibility === "ONE_TIME" ? "ONE_TIME" : "PUBLIC");
+  }, [selectedLiveSession?.id, selectedLiveSession?.visibility]);
 
   const courseCards = [
     {
@@ -262,7 +270,12 @@ export function AdminDashboard({
                     className="premium-input min-h-[3.5rem] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-                <select name="visibility" defaultValue="PUBLIC" className="premium-input">
+                <select
+                  name="visibility"
+                  value={newLiveVisibility}
+                  onChange={(event) => setNewLiveVisibility(event.target.value === "ONE_TIME" ? "ONE_TIME" : "PUBLIC")}
+                  className="premium-input"
+                >
                   <option value="PUBLIC">Public</option>
                   <option value="ONE_TIME">One time</option>
                 </select>
@@ -272,7 +285,16 @@ export function AdminDashboard({
                   Adauga poza optionala pentru live
                   <input type="file" name="thumbnailFile" accept="image/*" className="hidden" />
                 </label>
-                <input name="price" type="number" min="1" step="1" placeholder="Pret optional in lei" className="premium-input" />
+                <input
+                  name="price"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required={newLiveVisibility === "ONE_TIME"}
+                  disabled={newLiveVisibility !== "ONE_TIME"}
+                  placeholder={newLiveVisibility === "ONE_TIME" ? "Pret obligatoriu in lei" : "Pret disponibil doar pentru one time"}
+                  className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
+                />
                 <input name="maxParticipants" type="number" min="1" step="1" placeholder="Participanti maximi" className="premium-input" />
                 <Button type="submit" className="min-h-12 w-full sm:w-auto">
                   Adauga sesiune live
@@ -328,7 +350,17 @@ export function AdminDashboard({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Pret live</span>
-                        <input name="price" type="number" min="1" step="1" defaultValue={selectedLiveSession.price || ""} className="premium-input" />
+                        <input
+                          name="price"
+                          type="number"
+                          min="1"
+                          step="1"
+                          required={editLiveVisibility === "ONE_TIME"}
+                          disabled={editLiveVisibility !== "ONE_TIME"}
+                          defaultValue={selectedLiveSession.price || ""}
+                          placeholder={editLiveVisibility === "ONE_TIME" ? "Pret obligatoriu in lei" : "Pret indisponibil pentru public"}
+                          className="premium-input disabled:cursor-not-allowed disabled:opacity-50"
+                        />
                       </label>
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Participanti maximi</span>
@@ -344,7 +376,12 @@ export function AdminDashboard({
                     </div>
                     <label className="space-y-2">
                       <span className="text-sm text-white/60">Tip acces</span>
-                      <select name="visibility" defaultValue={selectedLiveSession.visibility} className="premium-input">
+                      <select
+                        name="visibility"
+                        value={editLiveVisibility}
+                        onChange={(event) => setEditLiveVisibility(event.target.value === "ONE_TIME" ? "ONE_TIME" : "PUBLIC")}
+                        className="premium-input"
+                      >
                         <option value="ONE_TIME">One time</option>
                         <option value="PUBLIC">Public</option>
                       </select>
