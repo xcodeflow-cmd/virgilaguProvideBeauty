@@ -81,12 +81,13 @@ function CourseCardContent({
   const discountPercent = hasDiscount
     ? Math.round((((course.compareAtPriceValue || 0) - course.priceValue) / (course.compareAtPriceValue || 1)) * 100)
     : 0;
+  const actionLabel = course.cardActionLabel || (course.cardHref ? "Deschide" : "Detalii");
   return (
     <>
       <div className={cn("relative overflow-hidden", compact ? "aspect-[16/12]" : "aspect-[16/11]")}>
         <CourseVisual course={course} title={course.title} />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.78))]" />
-        <div className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/[0.35] text-white backdrop-blur-md">
+        <div className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-black/[0.35] text-white/95 backdrop-blur-md">
           <CourseIcon label={course.label} />
         </div>
         <div className="absolute inset-x-5 bottom-5 z-10">
@@ -107,7 +108,7 @@ function CourseCardContent({
         </div>
       </div>
 
-      <div className={cn("p-5 sm:p-6", compact ? "space-y-5" : "space-y-6")}>
+      <div className={cn("p-5 sm:p-6", compact ? "space-y-4 sm:space-y-5" : "space-y-5 sm:space-y-6")}>
         <div>
           <p className={cn("leading-tight text-white", compact ? "text-2xl sm:text-[2rem]" : "text-3xl")}>
             {course.title}
@@ -115,24 +116,39 @@ function CourseCardContent({
           <p className="mt-3 text-sm leading-7 text-white/[0.62] sm:text-[15px]">{course.description}</p>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {hasDiscount && course.compareAtPrice ? (
-                  <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
-                ) : null}
-                <p className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:text-2xl">
-                  {course.price}
-                </p>
+        <div className="space-y-3">
+          {course.hidePriceInCard ? null : (
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {hasDiscount && course.compareAtPrice ? (
+                    <p className="text-base text-white/35 line-through sm:text-lg">{course.compareAtPrice}</p>
+                  ) : null}
+                  <p className="rounded-full border border-red-500/35 bg-red-500/15 px-4 py-2 text-xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:text-2xl">
+                    {course.price}
+                  </p>
+                </div>
               </div>
+              {course.cardHref ? (
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
+                  {actionLabel}
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </span>
+              ) : null}
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-white/[0.72]">
-              {course.cardHref ? "Deschide" : "Detalii"}
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </span>
-          </div>
+          )}
+
+          {course.cardHref && course.hidePriceInCard ? (
+            <Link
+              href={course.cardHref}
+              target={course.cardTarget || "_self"}
+              rel={course.cardTarget === "_blank" ? "noreferrer" : undefined}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+            >
+              {actionLabel}
+            </Link>
+          ) : null}
 
           {showInlineInquiry && course.inquiryHref && course.inquiryLabel ? (
             <InquiryButton
@@ -167,7 +183,7 @@ export function CourseDetailDialog({
         role="link"
         tabIndex={0}
         className={cn(
-          "group overflow-hidden text-left transition duration-500 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+          "group overflow-hidden text-left transition duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
           compact
             ? "premium-card h-full rounded-[1.9rem]"
             : "rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] shadow-[0_22px_70px_rgba(0,0,0,0.2)]",
@@ -196,7 +212,7 @@ export function CourseDetailDialog({
           window.location.href = cardHref;
         }}
       >
-        <CourseCardContent course={course} compact={compact} showInlineInquiry />
+        <CourseCardContent course={course} compact={compact} showInlineInquiry={Boolean(course.inquiryHref)} />
       </div>
     );
   }
@@ -206,14 +222,14 @@ export function CourseDetailDialog({
       <Dialog.Trigger asChild>
         <div
           className={cn(
-            "group overflow-hidden text-left transition duration-500 hover:-translate-y-1.5",
+            "group overflow-hidden text-left transition duration-300 hover:-translate-y-1",
             compact
               ? "premium-card h-full rounded-[1.9rem]"
               : "rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] shadow-[0_22px_70px_rgba(0,0,0,0.2)]",
             className
           )}
         >
-          <CourseCardContent course={course} compact={compact} />
+          <CourseCardContent course={course} compact={compact} showInlineInquiry={Boolean(course.inquiryHref)} />
         </div>
       </Dialog.Trigger>
 

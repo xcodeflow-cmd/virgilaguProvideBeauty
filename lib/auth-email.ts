@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/mail";
-import { hashToken, generateRawToken } from "@/lib/tokens";
+import { generateRawToken } from "@/lib/tokens";
 
 const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 60 * 24;
 const PASSWORD_RESET_TTL_MS = 1000 * 60 * 30;
@@ -48,20 +48,19 @@ function buildEmailLayout({
   return html;
 }
 
-export async function createEmailVerificationToken(userId: string) {
+export async function createEmailVerificationToken(email: string) {
   const rawToken = generateRawToken();
-  const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS);
 
-  await prisma.emailVerificationToken.deleteMany({
-    where: { userId }
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: email }
   });
 
-  await prisma.emailVerificationToken.create({
+  await prisma.verificationToken.create({
     data: {
-      userId,
-      tokenHash,
-      expiresAt
+      identifier: email,
+      token: rawToken,
+      expires: expiresAt
     }
   });
 
@@ -69,15 +68,13 @@ export async function createEmailVerificationToken(userId: string) {
 }
 
 export async function sendVerificationEmail({
-  userId,
   email,
   name
 }: {
-  userId: string;
   email: string;
   name?: string | null;
 }) {
-  const rawToken = await createEmailVerificationToken(userId);
+  const rawToken = await createEmailVerificationToken(email);
   const actionUrl = `${getBaseUrl()}/auth/verify-email?token=${encodeURIComponent(rawToken)}`;
   const displayName = getUserDisplayName(name, email);
 
@@ -97,32 +94,23 @@ export async function sendVerificationEmail({
 }
 
 export async function verifyEmailToken(token: string) {
-  const tokenHash = hashToken(token);
-  const verificationToken = await prisma.emailVerificationToken.findUnique({
-    where: { tokenHash },
-    include: {
-      user: {
-        select: {
-          id: true,
-          emailVerified: true
-        }
-      }
-    }
+  const verificationToken = await prisma.verificationToken.findUnique({
+    where: { token }
   });
 
-  if (!verificationToken || verificationToken.expiresAt <= new Date()) {
+  if (!verificationToken || verificationToken.expires <= new Date()) {
     return { ok: false as const, error: "Linkul de confirmare este invalid sau expirat." };
   }
 
   await prisma.$transaction([
     prisma.user.update({
-      where: { id: verificationToken.userId },
+      where: { email: verificationToken.identifier },
       data: {
-        emailVerified: verificationToken.user.emailVerified || new Date()
+        emailVerified: new Date()
       }
     }),
-    prisma.emailVerificationToken.deleteMany({
-      where: { userId: verificationToken.userId }
+    prisma.verificationToken.deleteMany({
+      where: { identifier: verificationToken.identifier }
     })
   ]);
 
@@ -133,7 +121,6 @@ export async function resendVerificationEmail(email: string) {
   const user = await prisma.user.findUnique({
     where: { email },
     select: {
-      id: true,
       name: true,
       email: true,
       emailVerified: true
@@ -145,29 +132,25 @@ export async function resendVerificationEmail(email: string) {
   }
 
   await sendVerificationEmail({
-    userId: user.id,
     email: user.email,
     name: user.name
   });
 }
 
-export async function createPasswordResetToken(userId: string) {
+export async function createPasswordResetToken(email: string) {
   const rawToken = generateRawToken();
-  const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+  const identifier = `password-reset:${email}`;
 
-  await prisma.passwordResetToken.deleteMany({
-    where: {
-      userId,
-      usedAt: null
-    }
+  await prisma.verificationToken.deleteMany({
+    where: { identifier }
   });
 
-  await prisma.passwordResetToken.create({
+  await prisma.verificationToken.create({
     data: {
-      userId,
-      tokenHash,
-      expiresAt
+      identifier,
+      token: rawToken,
+      expires: expiresAt
     }
   });
 
@@ -175,15 +158,13 @@ export async function createPasswordResetToken(userId: string) {
 }
 
 export async function sendPasswordResetEmail({
-  userId,
   email,
   name
 }: {
-  userId: string;
   email: string;
   name?: string | null;
 }) {
-  const rawToken = await createPasswordResetToken(userId);
+  const rawToken = await createPasswordResetToken(email);
   const actionUrl = `${getBaseUrl()}/auth/reset-password?token=${encodeURIComponent(rawToken)}`;
   const displayName = getUserDisplayName(name, email);
 

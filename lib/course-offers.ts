@@ -36,6 +36,8 @@ export type CourseOffer = {
   inquiryHref?: string;
   cardHref?: string;
   cardTarget?: "_blank" | "_self";
+  cardActionLabel?: string;
+  hidePriceInCard?: boolean;
   purchaseDisabled?: boolean;
 };
 
@@ -86,6 +88,7 @@ const baseCourseOffers: BaseCourseOffer[] = [
     inquiryHref: siteConfig.socials.whatsapp,
     cardHref: defaultCourses.beginner.externalLinkUrl,
     cardTarget: "_blank",
+    cardActionLabel: "Vezi cursul",
     purchaseDisabled: true
   },
   {
@@ -157,7 +160,10 @@ const baseCourseOffers: BaseCourseOffer[] = [
     ],
     advantage:
       "Poti invata din confortul casei tale, fara presiune, urmarind exact cum se construieste o tunsoare corecta, de la zero pana la final.",
-    purchaseLabel: "Cumpara accesul LIVE"
+    purchaseLabel: "Cumpara accesul LIVE",
+    cardHref: "/live",
+    cardActionLabel: "Vezi live",
+    hidePriceInCard: true
   }
 ];
 

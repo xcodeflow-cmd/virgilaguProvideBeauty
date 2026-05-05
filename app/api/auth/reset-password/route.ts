@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
-import { hashToken } from "@/lib/tokens";
 
 const resetPasswordSchema = z.object({
   token: z.string().trim().min(1),
@@ -17,41 +16,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Date invalide pentru resetare." }, { status: 400 });
   }
 
-  const tokenHash = hashToken(payload.data.token);
-
   try {
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash },
-      select: {
-        id: true,
-        userId: true,
-        expiresAt: true,
-        usedAt: true
-      }
+    const resetToken = await prisma.verificationToken.findUnique({
+      where: { token: payload.data.token }
     });
 
-    if (!resetToken || resetToken.usedAt || resetToken.expiresAt <= new Date()) {
+    if (!resetToken || resetToken.expires <= new Date() || !resetToken.identifier.startsWith("password-reset:")) {
       return NextResponse.json({ error: "Linkul de resetare este invalid sau expirat." }, { status: 400 });
     }
 
+    const email = resetToken.identifier.replace("password-reset:", "");
+
     await prisma.$transaction([
       prisma.user.update({
-        where: { id: resetToken.userId },
+        where: { email },
         data: {
           passwordHash: hashPassword(payload.data.password)
         }
       }),
-      prisma.passwordResetToken.update({
-        where: { id: resetToken.id },
-        data: {
-          usedAt: new Date()
-        }
-      }),
-      prisma.passwordResetToken.deleteMany({
-        where: {
-          userId: resetToken.userId,
-          id: { not: resetToken.id }
-        }
+      prisma.verificationToken.deleteMany({
+        where: { identifier: resetToken.identifier }
       })
     ]);
 

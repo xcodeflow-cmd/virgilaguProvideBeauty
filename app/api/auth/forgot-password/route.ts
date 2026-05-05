@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
-        id: true,
         name: true,
         email: true,
         emailVerified: true
@@ -30,7 +29,6 @@ export async function POST(request: Request) {
 
     if (user?.email && user.emailVerified) {
       await sendPasswordResetEmail({
-        userId: user.id,
         email: user.email,
         name: user.name
       });

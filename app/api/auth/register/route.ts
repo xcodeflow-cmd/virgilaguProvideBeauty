@@ -46,7 +46,6 @@ export async function POST(request: Request) {
     });
 
     await sendVerificationEmail({
-      userId: user.id,
       email,
       name: user.name
     });
