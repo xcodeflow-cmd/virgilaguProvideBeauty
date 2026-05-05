@@ -404,6 +404,7 @@ export async function updateSiteSettings(formData: FormData) {
   const currentSettings = await prisma.siteSettings.findUnique({
     where: { id: "main" }
   });
+  const currentCourses = (currentSettings?.courses as typeof courses | null) || courses;
 
   const nextSubscriptionPlans = [
     {
@@ -422,11 +423,20 @@ export async function updateSiteSettings(formData: FormData) {
 
   const nextCourses = {
     beginner: {
+      ...currentCourses.beginner,
+      label: String(formData.get("beginner_label") || currentCourses.beginner.label || ""),
       title: String(formData.get("beginner_title") || courses.beginner.title),
+      shortTitle: String(formData.get("beginner_short_title") || currentCourses.beginner.shortTitle || ""),
+      note: String(formData.get("beginner_note") || currentCourses.beginner.note || ""),
       shortDescription: String(formData.get("beginner_short_description") || courses.beginner.shortDescription),
       dialogBody: String(formData.get("beginner_dialog_body") || courses.beginner.dialogBody),
       externalLinkLabel: String(formData.get("beginner_link_label") || courses.beginner.externalLinkLabel),
       externalLinkUrl: String(formData.get("beginner_link_url") || courses.beginner.externalLinkUrl),
+      includeTitle: String(formData.get("beginner_include_title") || currentCourses.beginner.includeTitle || ""),
+      learnTitle: String(formData.get("beginner_learn_title") || currentCourses.beginner.learnTitle || ""),
+      purchaseLabel: String(formData.get("beginner_purchase_label") || currentCourses.beginner.purchaseLabel || ""),
+      inquiryLabel: String(formData.get("beginner_inquiry_label") || currentCourses.beginner.inquiryLabel || ""),
+      cardActionLabel: String(formData.get("beginner_card_action_label") || currentCourses.beginner.cardActionLabel || ""),
       imageUrl:
         String(formData.get("beginner_image_url") || "").trim() ||
         (await extractUploadedImageDataUrl(formData.get("beginner_image_file"))) ||
@@ -437,9 +447,19 @@ export async function updateSiteSettings(formData: FormData) {
       pricing: (currentSettings?.courses as typeof courses | null)?.beginner?.pricing || courses.beginner.pricing
     },
     advanced: {
+      ...currentCourses.advanced,
+      label: String(formData.get("advanced_label") || currentCourses.advanced.label || ""),
       title: String(formData.get("advanced_title") || courses.advanced.title),
+      shortTitle: String(formData.get("advanced_short_title") || currentCourses.advanced.shortTitle || ""),
+      note: String(formData.get("advanced_note") || currentCourses.advanced.note || ""),
       shortDescription: String(formData.get("advanced_short_description") || courses.advanced.shortDescription),
       dialogBody: String(formData.get("advanced_dialog_body") || courses.advanced.dialogBody),
+      includeTitle: String(formData.get("advanced_include_title") || currentCourses.advanced.includeTitle || ""),
+      learnTitle: String(formData.get("advanced_learn_title") || currentCourses.advanced.learnTitle || ""),
+      advantage: String(formData.get("advanced_advantage") || currentCourses.advanced.advantage || ""),
+      purchaseLabel: String(formData.get("advanced_purchase_label") || currentCourses.advanced.purchaseLabel || ""),
+      inquiryLabel: String(formData.get("advanced_inquiry_label") || currentCourses.advanced.inquiryLabel || ""),
+      cardActionLabel: String(formData.get("advanced_card_action_label") || currentCourses.advanced.cardActionLabel || ""),
       imageUrl:
         String(formData.get("advanced_image_url") || "").trim() ||
         (await extractUploadedImageDataUrl(formData.get("advanced_image_file"))) ||
@@ -450,9 +470,19 @@ export async function updateSiteSettings(formData: FormData) {
       pricing: (currentSettings?.courses as typeof courses | null)?.advanced?.pricing || courses.advanced.pricing
     },
     liveExperience: {
+      ...currentCourses.liveExperience,
+      label: String(formData.get("live_label") || currentCourses.liveExperience.label || ""),
       title: String(formData.get("live_title") || courses.liveExperience.title),
+      shortTitle: String(formData.get("live_short_title") || currentCourses.liveExperience.shortTitle || ""),
+      note: String(formData.get("live_note") || currentCourses.liveExperience.note || ""),
       shortDescription: String(formData.get("live_short_description") || courses.liveExperience.shortDescription),
       dialogBody: String(formData.get("live_dialog_body") || courses.liveExperience.dialogBody),
+      includeTitle: String(formData.get("live_include_title") || currentCourses.liveExperience.includeTitle || ""),
+      learnTitle: String(formData.get("live_learn_title") || currentCourses.liveExperience.learnTitle || ""),
+      advantage: String(formData.get("live_advantage") || currentCourses.liveExperience.advantage || ""),
+      purchaseLabel: String(formData.get("live_purchase_label") || currentCourses.liveExperience.purchaseLabel || ""),
+      inquiryLabel: String(formData.get("live_inquiry_label") || currentCourses.liveExperience.inquiryLabel || ""),
+      cardActionLabel: String(formData.get("live_card_action_label") || currentCourses.liveExperience.cardActionLabel || ""),
       imageUrl:
         String(formData.get("live_image_url") || "").trim() ||
         (await extractUploadedImageDataUrl(formData.get("live_image_file"))) ||

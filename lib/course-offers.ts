@@ -211,13 +211,17 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
 
     return {
       ...course,
+      label: managedCourse?.label || course.label,
       title: managedCourse?.title || course.title,
+      shortTitle: managedCourse?.shortTitle || course.shortTitle,
+      note: managedCourse?.note || course.note,
       description:
         (typeof managedCourse?.description === "string" ? managedCourse.description : managedCourse?.shortDescription) || course.description,
       dialogBody: managedCourse?.dialogBody || course.dialogBody,
       imageUrl: managedCourse?.imageUrl || null,
       externalLinkLabel: managedCourse?.externalLinkLabel || undefined,
       externalLinkUrl: managedCourse?.externalLinkUrl || undefined,
+      includeTitle: managedCourse?.includeTitle || course.includeTitle,
       include:
         course.pricingKey === "beginner"
           ? managedCourse?.description && Array.isArray(managedCourse.description)
@@ -226,6 +230,7 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
           : managedCourse?.includes?.length
             ? managedCourse.includes
             : course.include,
+      learnTitle: managedCourse?.learnTitle || course.learnTitle,
       learn:
         course.pricingKey === "beginner"
           ? managedCourse?.achievements?.length
@@ -239,9 +244,14 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
           ? managedCourse?.details?.length
             ? managedCourse.details.join(" • ")
             : course.advantage
-          : typeof managedCourse?.description === "string" && managedCourse.description.trim()
+          : managedCourse?.advantage?.trim()
+            ? managedCourse.advantage
+            : typeof managedCourse?.description === "string" && managedCourse.description.trim()
             ? managedCourse.description
             : course.advantage,
+      purchaseLabel: managedCourse?.purchaseLabel || course.purchaseLabel,
+      inquiryLabel: managedCourse?.inquiryLabel || course.inquiryLabel,
+      cardActionLabel: managedCourse?.cardActionLabel || course.cardActionLabel,
       cardHref:
         course.pricingKey === "beginner"
           ? coursesContent?.beginner?.externalLinkUrl || course.cardHref

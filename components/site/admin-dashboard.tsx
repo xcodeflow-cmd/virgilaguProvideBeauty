@@ -40,12 +40,21 @@ type AdminUser = {
 };
 
 type AdminCourse = {
+  label?: string;
   title: string;
+  shortTitle?: string;
+  note?: string;
   shortDescription?: string;
   dialogBody?: string;
   imageUrl?: string;
   externalLinkLabel?: string;
   externalLinkUrl?: string;
+  includeTitle?: string;
+  learnTitle?: string;
+  advantage?: string;
+  purchaseLabel?: string;
+  inquiryLabel?: string;
+  cardActionLabel?: string;
   description?: string[] | string;
   achievements?: string[];
   details?: string[];
@@ -139,13 +148,21 @@ export function AdminDashboard({
   const courseCards = [
     {
       key: "beginner",
+      labelName: "beginner_label",
       titleName: "beginner_title",
+      shortTitleName: "beginner_short_title",
+      noteName: "beginner_note",
       shortName: "beginner_short_description",
       dialogName: "beginner_dialog_body",
       imageUrlName: "beginner_image_url",
       imageFileName: "beginner_image_file",
       linkLabelName: "beginner_link_label",
       linkUrlName: "beginner_link_url",
+      includeTitleName: "beginner_include_title",
+      learnTitleName: "beginner_learn_title",
+      purchaseLabelName: "beginner_purchase_label",
+      inquiryLabelName: "beginner_inquiry_label",
+      cardActionLabelName: "beginner_card_action_label",
       extra: [
         { label: "Puncte descriere", name: "beginner_description", rows: 5, value: toTextarea(courseSettings.beginner.description) },
         { label: "Achievements", name: "beginner_achievements", rows: 4, value: toTextarea(courseSettings.beginner.achievements) },
@@ -155,11 +172,20 @@ export function AdminDashboard({
     },
     {
       key: "advanced",
+      labelName: "advanced_label",
       titleName: "advanced_title",
+      shortTitleName: "advanced_short_title",
+      noteName: "advanced_note",
       shortName: "advanced_short_description",
       dialogName: "advanced_dialog_body",
       imageUrlName: "advanced_image_url",
       imageFileName: "advanced_image_file",
+      includeTitleName: "advanced_include_title",
+      learnTitleName: "advanced_learn_title",
+      advantageName: "advanced_advantage",
+      purchaseLabelName: "advanced_purchase_label",
+      inquiryLabelName: "advanced_inquiry_label",
+      cardActionLabelName: "advanced_card_action_label",
       extra: [
         { label: "Descriere lunga", name: "advanced_description", rows: 4, value: toTextarea(courseSettings.advanced.description) },
         { label: "Include", name: "advanced_includes", rows: 6, value: toTextarea(courseSettings.advanced.includes) },
@@ -169,11 +195,20 @@ export function AdminDashboard({
     },
     {
       key: "live",
+      labelName: "live_label",
       titleName: "live_title",
+      shortTitleName: "live_short_title",
+      noteName: "live_note",
       shortName: "live_short_description",
       dialogName: "live_dialog_body",
       imageUrlName: "live_image_url",
       imageFileName: "live_image_file",
+      includeTitleName: "live_include_title",
+      learnTitleName: "live_learn_title",
+      advantageName: "live_advantage",
+      purchaseLabelName: "live_purchase_label",
+      inquiryLabelName: "live_inquiry_label",
+      cardActionLabelName: "live_card_action_label",
       extra: [
         { label: "Descriere lunga", name: "live_description", rows: 4, value: toTextarea(courseSettings.liveExperience.description) },
         { label: "Include", name: "live_includes", rows: 6, value: toTextarea(courseSettings.liveExperience.includes) },
@@ -616,9 +651,23 @@ export function AdminDashboard({
                   <div key={course.key} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
                     <p className="text-lg text-white">{course.data.title}</p>
                     <div className="mt-4 space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="space-y-2">
+                          <span className="text-sm text-white/60">Eticheta</span>
+                          <input name={course.labelName} defaultValue={course.data.label || ""} className="premium-input" />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-sm text-white/60">Subtitlu scurt</span>
+                          <input name={course.shortTitleName} defaultValue={course.data.shortTitle || ""} className="premium-input" />
+                        </label>
+                      </div>
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Titlu</span>
                         <input name={course.titleName} defaultValue={course.data.title} className="premium-input" />
+                      </label>
+                      <label className="space-y-2">
+                        <span className="text-sm text-white/60">Nota card</span>
+                        <input name={course.noteName} defaultValue={course.data.note || ""} className="premium-input" />
                       </label>
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">Descriere scurta</span>
@@ -639,6 +688,16 @@ export function AdminDashboard({
                       </label>
                       {course.key === "beginner" ? (
                         <>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Titlu sectiune 1</span>
+                              <input name={course.includeTitleName} defaultValue={course.data.includeTitle || ""} className="premium-input" />
+                            </label>
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Titlu sectiune 2</span>
+                              <input name={course.learnTitleName} defaultValue={course.data.learnTitle || ""} className="premium-input" />
+                            </label>
+                          </div>
                           <label className="space-y-2">
                             <span className="text-sm text-white/60">Eticheta link</span>
                             <input name="beginner_link_label" defaultValue={course.data.externalLinkLabel || ""} className="premium-input" />
@@ -646,6 +705,48 @@ export function AdminDashboard({
                           <label className="space-y-2">
                             <span className="text-sm text-white/60">Link descriere</span>
                             <input name="beginner_link_url" defaultValue={course.data.externalLinkUrl || ""} className="premium-input" />
+                          </label>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Text buton principal</span>
+                              <input name={course.cardActionLabelName} defaultValue={course.data.cardActionLabel || ""} className="premium-input" />
+                            </label>
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Text cere info</span>
+                              <input name={course.inquiryLabelName} defaultValue={course.data.inquiryLabel || ""} className="premium-input" />
+                            </label>
+                          </div>
+                        </>
+                      ) : null}
+                      {course.key !== "beginner" ? (
+                        <>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Titlu sectiune 1</span>
+                              <input name={course.includeTitleName} defaultValue={course.data.includeTitle || ""} className="premium-input" />
+                            </label>
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Titlu sectiune 2</span>
+                              <input name={course.learnTitleName} defaultValue={course.data.learnTitle || ""} className="premium-input" />
+                            </label>
+                          </div>
+                          <label className="space-y-2">
+                            <span className="text-sm text-white/60">Bloc avantaj</span>
+                            <textarea name={course.advantageName} rows={4} defaultValue={course.data.advantage || ""} className="premium-input" />
+                          </label>
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Text buton cumparare</span>
+                              <input name={course.purchaseLabelName} defaultValue={course.data.purchaseLabel || ""} className="premium-input" />
+                            </label>
+                            <label className="space-y-2">
+                              <span className="text-sm text-white/60">Text cere info</span>
+                              <input name={course.inquiryLabelName} defaultValue={course.data.inquiryLabel || ""} className="premium-input" />
+                            </label>
+                          </div>
+                          <label className="space-y-2">
+                            <span className="text-sm text-white/60">Text buton card</span>
+                            <input name={course.cardActionLabelName} defaultValue={course.data.cardActionLabel || ""} className="premium-input" />
                           </label>
                         </>
                       ) : null}

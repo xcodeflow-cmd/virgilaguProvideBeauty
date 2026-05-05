@@ -157,7 +157,10 @@ export const aboutMeAchievements = [
 
 export const courses = {
   beginner: {
+    label: "Incepatori",
     title: "Curs de frizerie pentru incepatori (de la 0)",
+    shortTitle: "De la 0",
+    note: "max 6 cursanti",
     shortDescription:
       "Format dedicat celor care vor sa intre corect in industrie, cu baza clara, ritm de lucru si suport practic real.",
     dialogBody:
@@ -165,6 +168,11 @@ export const courses = {
     imageUrl: "",
     externalLinkLabel: "Detalii complete curs",
     externalLinkUrl: "https://scoalacomerciala.ro/cursuri/cursuri-beauty/cursfrizer-roman/",
+    includeTitle: "Structura zilelor",
+    learnTitle: "Directia de progres",
+    purchaseLabel: "Achizitioneaza cursul",
+    inquiryLabel: "Cere informatii despre curs",
+    cardActionLabel: "Vezi cursul",
     description: [
       "Organizat cu Scoala Comerciala si de Servicii Bacau",
       "Trainer: Virgil Agu",
@@ -186,7 +194,10 @@ export const courses = {
     }
   },
   advanced: {
+    label: "Perfectionare",
     title: "Curs de perfectionare 1 la 1",
+    shortTitle: "1 la 1",
+    note: "1 zi intensiva",
     shortDescription:
       "Experienta intensiva alaturi de Virgil Agu, cu practica directa, corectii in timp real si focus complet pe progres.",
     dialogBody:
@@ -194,6 +205,12 @@ export const courses = {
     imageUrl: "",
     externalLinkLabel: "",
     externalLinkUrl: "",
+    includeTitle: "Ce include cursul",
+    learnTitle: "Ce vei invata",
+    advantage:
+      "Ai acces la informatie nelimitata, intr-un cadru dedicat exclusiv tie, unde poti intreba si aprofunda orice detaliu.",
+    purchaseLabel: "Rezerva ziua de curs",
+    inquiryLabel: "Cere informatii despre curs",
     description:
       "Experienta intensiva de o zi, personalizata in functie de nivelul, ritmul si obiectivele cursantului.",
     includes: [
@@ -216,7 +233,10 @@ export const courses = {
     }
   },
   liveExperience: {
+    label: "LIVE",
     title: "LIVE Barber Experience",
+    shortTitle: "LIVE",
+    note: "LIVE",
     shortDescription:
       "Inveti in timp real alaturi de Virgil Agu, urmarind clienti reali, explicatii clare si ritm autentic de salon.",
     dialogBody:
@@ -224,6 +244,12 @@ export const courses = {
     imageUrl: "",
     externalLinkLabel: "",
     externalLinkUrl: "",
+    includeTitle: "Ce primesti in LIVE",
+    learnTitle: "Ce vei invata concret",
+    advantage:
+      "Poti invata din confortul casei tale, fara presiune, urmarind exact cum se construieste o tunsoare corecta, de la zero pana la final.",
+    purchaseLabel: "Cumpara accesul LIVE",
+    cardActionLabel: "Vezi live",
     description: "Sesiuni lunare de tuns live, cu explicatii clare si context real de salon.",
     includes: [
       "Tunsori in timp real",
