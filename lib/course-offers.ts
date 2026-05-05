@@ -203,6 +203,7 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
   const pricingMap = getCoursePricingMap(coursesContent);
 
   return baseCourseOffers.map((course) => {
+    const managedCourse = coursesContent?.[course.pricingKey];
     const override = pricingMap[course.pricingKey] as CoursePricingOverride;
     const priceValue = override.priceValue && override.priceValue > 0 ? override.priceValue : course.defaultPriceValue;
     const compareAtPriceValue =
@@ -210,12 +211,37 @@ export function getManagedCourseOffers(coursesContent?: typeof defaultCourses) {
 
     return {
       ...course,
-      title: coursesContent?.[course.pricingKey]?.title || course.title,
-      description: coursesContent?.[course.pricingKey]?.shortDescription || course.description,
-      dialogBody: coursesContent?.[course.pricingKey]?.dialogBody || course.dialogBody,
-      imageUrl: coursesContent?.[course.pricingKey]?.imageUrl || null,
-      externalLinkLabel: coursesContent?.[course.pricingKey]?.externalLinkLabel || undefined,
-      externalLinkUrl: coursesContent?.[course.pricingKey]?.externalLinkUrl || undefined,
+      title: managedCourse?.title || course.title,
+      description:
+        (typeof managedCourse?.description === "string" ? managedCourse.description : managedCourse?.shortDescription) || course.description,
+      dialogBody: managedCourse?.dialogBody || course.dialogBody,
+      imageUrl: managedCourse?.imageUrl || null,
+      externalLinkLabel: managedCourse?.externalLinkLabel || undefined,
+      externalLinkUrl: managedCourse?.externalLinkUrl || undefined,
+      include:
+        course.pricingKey === "beginner"
+          ? managedCourse?.description && Array.isArray(managedCourse.description)
+            ? managedCourse.description
+            : course.include
+          : managedCourse?.includes?.length
+            ? managedCourse.includes
+            : course.include,
+      learn:
+        course.pricingKey === "beginner"
+          ? managedCourse?.achievements?.length
+            ? managedCourse.achievements
+            : course.learn
+          : managedCourse?.outcomes?.length
+            ? managedCourse.outcomes
+            : course.learn,
+      advantage:
+        course.pricingKey === "beginner"
+          ? managedCourse?.details?.length
+            ? managedCourse.details.join(" • ")
+            : course.advantage
+          : typeof managedCourse?.description === "string" && managedCourse.description.trim()
+            ? managedCourse.description
+            : course.advantage,
       cardHref:
         course.pricingKey === "beginner"
           ? coursesContent?.beginner?.externalLinkUrl || course.cardHref
