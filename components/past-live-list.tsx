@@ -51,7 +51,7 @@ export function PastLiveList({
       <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 2xl:grid-cols-3">
         {sessions.length ? (
           sessions.map((session) => {
-            const hasAccess = isAdmin || (session.visibility === "PUBLIC" && isAuthenticated) || accessibleLiveIds.includes(session.id);
+            const hasAccess = isAdmin || session.visibility === "PUBLIC" || accessibleLiveIds.includes(session.id);
             const hasDiscount = Boolean(session.compareAtPrice && session.price && session.compareAtPrice > session.price);
             const discountPercent = hasDiscount
               ? Math.round((((session.compareAtPrice || 0) - (session.price || 0)) / (session.compareAtPrice || 1)) * 100)

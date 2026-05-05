@@ -1,4 +1,4 @@
-import { SessionVisibility, type LiveSession } from "@prisma/client";
+import type { LiveSession } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 
 import { asDate } from "@/lib/date";
@@ -78,8 +78,7 @@ async function fetchPastLiveSessions() {
       where: {
         hasStarted: true,
         isLive: false,
-        recordingUrl: { not: null },
-        visibility: SessionVisibility.PUBLIC
+        recordingUrl: { not: null }
       },
       orderBy: { scheduledFor: "desc" },
       select: liveSessionListSelect

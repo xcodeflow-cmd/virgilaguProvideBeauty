@@ -429,7 +429,7 @@ export function LivePageContent({
   const restartInFlightRef = useRef<Set<string>>(new Set());
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
   const recordingMimeTypeRef = useRef("video/webm");
-  const visibleMessages = messages.slice(-6);
+  const shouldStickChatToBottomRef = useRef(true);
   const searchParams = useSearchParams();
   const checkoutSessionId = searchParams.get("session_id") || "";
   const checkoutLiveId = searchParams.get("livePurchased") || "";
@@ -444,7 +444,7 @@ export function LivePageContent({
     }
 
     if (session.visibility === "PUBLIC") {
-      return isAuthenticated;
+      return true;
     }
 
     return Boolean(initialSession?.id === session.id && canAccessCurrentSession);
@@ -529,8 +529,12 @@ export function LivePageContent({
       return;
     }
 
+    if (!shouldStickChatToBottomRef.current) {
+      return;
+    }
+
     chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-  }, [visibleMessages]);
+  }, [messages]);
 
   useEffect(() => {
     if (!remoteVideoRef.current) {
@@ -1892,7 +1896,7 @@ export function LivePageContent({
   }
 
   async function moderateMessage(action: "disableChat" | "blockUser" | "deleteMessage", message: ChatMessage) {
-    if (!currentSession || !isAdmin || !message.userId) {
+    if (!currentSession || !isAdmin || !message.userId || message.userId === currentUserId || message.role === "ADMIN") {
       return;
     }
 
@@ -1994,9 +1998,7 @@ export function LivePageContent({
         ? streamStatus === "live"
           ? ""
           : "Se face conectarea la sesiunea live."
-        : currentSession?.visibility === "PUBLIC" && !isAuthenticated
-          ? "Autentifica-te pentru acces la aceasta sesiune."
-          : "Este obligatoriu accesul la aceasta sesiune."
+        : "Este obligatoriu accesul la aceasta sesiune."
     : countdownParts
       ? "Sesiunea va incepe cand timerul de mai sus expira sau cand adminul porneste live-ul."
       : currentSession
@@ -2018,9 +2020,17 @@ export function LivePageContent({
       <div className="min-h-0 px-3 py-3 sm:px-4">
         {canUseChat ? (
           <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
-            <div ref={chatScrollRef} className="min-h-0 max-h-[18.5rem] space-y-2.5 overflow-y-auto pr-1 pb-2 sm:max-h-[20rem]">
-              {visibleMessages.length ? (
-                visibleMessages.map((item) => {
+            <div
+              ref={chatScrollRef}
+              className="min-h-0 max-h-[18.5rem] space-y-2.5 overflow-y-auto pr-1 pb-2 sm:max-h-[20rem]"
+              onScroll={(event) => {
+                const target = event.currentTarget;
+                shouldStickChatToBottomRef.current =
+                  target.scrollHeight - target.scrollTop - target.clientHeight < 40;
+              }}
+            >
+              {messages.length ? (
+                messages.map((item) => {
                   const isOwnMessage = Boolean(currentUserId && item.userId === currentUserId);
                   const isAdminMessage = item.role === "ADMIN";
                   const alignment = isOwnMessage ? "justify-end" : "justify-start";
@@ -2042,7 +2052,7 @@ export function LivePageContent({
 
                   return (
                     <div key={item.id} className={`flex ${alignment}`}>
-                      {isAdmin ? (
+                      {isAdmin && item.userId !== currentUserId && item.role !== "ADMIN" ? (
                         <div className="relative mr-2 self-start">
                           <button
                             type="button"
@@ -2226,7 +2236,7 @@ export function LivePageContent({
                 {countdownParts.map((item) => (
                   <div
                     key={item.label}
-                    className="countdown-tile"
+                    className="countdown-tile border border-red-500/35 bg-[linear-gradient(180deg,rgba(127,29,29,0.4),rgba(69,10,10,0.32))] shadow-[0_18px_42px_rgba(127,29,29,0.2)]"
                     style={{ animation: "countdownPulse 2.8s ease-in-out infinite" }}
                   >
                     <div className="text-[1.85rem] leading-none text-white sm:text-[2.4rem]">{item.value}</div>
@@ -2245,7 +2255,7 @@ export function LivePageContent({
                 <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-[linear-gradient(180deg,rgba(0,0,0,0.45),transparent)]" />
               {isAdmin && localStream ? (
                 <video ref={localVideoRef} autoPlay muted playsInline className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
-              ) : currentSession?.isLive ? (
+              ) : currentSession?.isLive && canViewCurrentSession ? (
                 <video ref={remoteVideoRef} autoPlay playsInline controls className={`${isFullscreen ? "h-full w-full object-contain" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 w-full bg-black object-contain sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`} />
               ) : currentSession?.thumbnailUrl ? (
                 <div className={`relative bg-black ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
@@ -2348,10 +2358,6 @@ export function LivePageContent({
                       )}
                     </div>
                   </div>
-                ) : !canViewCurrentSession && !isAdmin && currentSession?.visibility === "PUBLIC" && !isAuthenticated ? (
-                  <Button asChild className="min-h-11">
-                    <a href="/auth/signin">Autentifica-te pentru acces</a>
-                  </Button>
                 ) : currentSessionSoldOut ? (
                   <div className="rounded-full border border-red-500/30 bg-red-500/12 px-4 py-3 text-sm text-red-100">
                     {currentSession?.visibility === "ONE_TIME"

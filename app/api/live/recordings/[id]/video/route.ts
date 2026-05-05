@@ -2,9 +2,10 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import { Readable } from "node:stream";
 
+import { auth } from "@/auth";
 import { getLiveRecordingExtension, getLiveRecordingFilePath } from "@/lib/live-recordings";
+import { canAccessLiveSession } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
-import { requireLiveSessionAccess } from "@/lib/live-access";
 
 export const runtime = "nodejs";
 
@@ -13,22 +14,31 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const authResult = await requireLiveSessionAccess(id);
-
-  if ("error" in authResult) {
-    return Response.json({ error: authResult.error }, { status: authResult.status });
-  }
+  const session = await auth();
   const recording = await prisma.liveSession.findUnique({
     where: { id },
     select: {
+      id: true,
       visibility: true,
       recordingData: true,
       recordingMimeType: true,
+      recordingUrl: true,
       title: true
     }
   });
 
-  if (recording?.visibility === "ONE_TIME" && authResult.session.user.role !== "ADMIN") {
+  if (!recording?.recordingData && !recording?.recordingUrl) {
+    return Response.json({ error: "Recording not found." }, { status: 404 });
+  }
+
+  const hasAccess = await canAccessLiveSession({
+    userId: session?.user?.id,
+    role: session?.user?.role,
+    liveSessionId: recording.id,
+    visibility: recording.visibility
+  });
+
+  if (!hasAccess) {
     return Response.json({ error: "Recording not found." }, { status: 404 });
   }
 

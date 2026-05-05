@@ -63,7 +63,7 @@ export default async function CheckoutPage({
     notFound();
   }
 
-  if (liveSession.recordingUrl || (liveSession.hasStarted && !liveSession.isLive)) {
+  if (liveSession.hasStarted && !liveSession.isLive && !liveSession.recordingUrl) {
     notFound();
   }
 

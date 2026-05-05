@@ -27,8 +27,7 @@ export async function GET(
 
   const messages = await prisma.liveChatMessage.findMany({
     where: { liveSessionId: liveId },
-    orderBy: { createdAt: "desc" },
-    take: 100,
+    orderBy: { createdAt: "asc" },
     include: {
       user: {
         select: {
@@ -43,7 +42,7 @@ export async function GET(
   });
 
   return NextResponse.json({
-    messages: messages.reverse().map((item) => ({
+    messages: messages.map((item) => ({
       id: item.id,
       text: item.content,
       timestamp: item.createdAt.toISOString(),
@@ -148,6 +147,26 @@ export async function PATCH(
 
   if (!userId) {
     return NextResponse.json({ error: "User id is required for this action." }, { status: 400 });
+  }
+
+  if (userId === admin.session.user.id) {
+    return NextResponse.json({ error: "Nu iti poti modifica propriul acces din moderare." }, { status: 400 });
+  }
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true
+    }
+  });
+
+  if (!targetUser) {
+    return NextResponse.json({ error: "Utilizatorul nu exista." }, { status: 404 });
+  }
+
+  if (targetUser.role === "ADMIN") {
+    return NextResponse.json({ error: "Nu poti modera un alt admin din acest meniu." }, { status: 403 });
   }
 
   if (action === "disableChat") {

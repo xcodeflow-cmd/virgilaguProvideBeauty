@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 import { NextResponse } from "next/server";
 
 import { createLiveToken } from "@/lib/live-token";
@@ -21,18 +23,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "liveId and role are required." }, { status: 400 });
   }
 
-  const authResult = role === "broadcaster"
-    ? await requireAdmin()
-    : await requireLiveSessionAccess(liveId, { requireActive: true });
-
-  if ("error" in authResult) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-  }
-
   const liveSession = await prisma.liveSession.findUnique({
     where: { id: liveId },
     select: {
       id: true,
+      visibility: true,
       isLive: true,
       updatedAt: true
     }
@@ -42,12 +37,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Live session is not active." }, { status: 409 });
   }
 
+  const authResult = role === "broadcaster"
+    ? await requireAdmin()
+    : await requireLiveSessionAccess(liveId, { requireActive: true });
+
+  const isAnonymousPublicViewer =
+    role === "viewer" &&
+    "error" in authResult &&
+    authResult.status === 401 &&
+    liveSession.visibility === "PUBLIC";
+
+  if ("error" in authResult && !isAnonymousPublicViewer) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
+  const viewerId = isAnonymousPublicViewer ? `guest-${randomUUID().slice(0, 8)}` : authResult.session.user.id;
+
   const response: LiveBootstrapResponse = {
     liveId,
     role,
     websocketUrl: getLiveWebSocketUrl(),
     token: createLiveToken({
-      userId: authResult.session.user.id,
+      userId: role === "broadcaster" ? authResult.session.user.id : viewerId,
       liveId,
       role
     }),

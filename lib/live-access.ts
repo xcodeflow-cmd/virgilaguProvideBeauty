@@ -111,7 +111,7 @@ export async function canAccessLiveSession({
   }
 
   if (resolvedVisibility === SessionVisibility.PUBLIC) {
-    return Boolean(userId);
+    return true;
   }
 
   if (!userId) {

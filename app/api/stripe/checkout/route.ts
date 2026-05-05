@@ -66,8 +66,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Selected live session is not available for one-time purchase." }, { status: 400 });
       }
 
-      if (liveSession.recordingUrl || (liveSession.hasStarted && !liveSession.isLive)) {
-        return NextResponse.json({ error: "Aceasta sesiune one-time nu mai poate fi achizitionata dupa incheierea live-ului." }, { status: 409 });
+      if (liveSession.hasStarted && !liveSession.isLive && !liveSession.recordingUrl) {
+        return NextResponse.json({ error: "Aceasta sesiune nu mai poate fi achizitionata pana nu exista replay-ul." }, { status: 409 });
       }
 
       const alreadyHasAccess = await canAccessLiveSession({

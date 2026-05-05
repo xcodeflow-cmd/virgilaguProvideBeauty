@@ -1,4 +1,3 @@
-import { SessionVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { toIsoDateString } from "@/lib/date";
@@ -9,8 +8,7 @@ export async function GET() {
     where: {
       isLive: false,
       hasStarted: true,
-      recordingUrl: { not: null },
-      visibility: SessionVisibility.PUBLIC
+      recordingUrl: { not: null }
     },
     orderBy: { scheduledFor: "desc" },
     select: {
