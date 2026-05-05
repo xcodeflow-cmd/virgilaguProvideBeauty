@@ -54,7 +54,9 @@ export async function GET(request: Request) {
             price: true,
             compareAtPrice: true,
             visibility: true,
-            recordingUrl: true
+            recordingUrl: true,
+            isLive: true,
+            hasStarted: true
           }
         })
       : null;
@@ -62,6 +64,10 @@ export async function GET(request: Request) {
     if (mode === "payment" && liveSessionId) {
       if (!liveSession || liveSession.visibility !== "ONE_TIME" || !liveSession.price) {
         return NextResponse.json({ error: "Selected live session is not available for one-time purchase." }, { status: 400 });
+      }
+
+      if (liveSession.recordingUrl || (liveSession.hasStarted && !liveSession.isLive)) {
+        return NextResponse.json({ error: "Aceasta sesiune one-time nu mai poate fi achizitionata dupa incheierea live-ului." }, { status: 409 });
       }
 
       const alreadyHasAccess = await canAccessLiveSession({
@@ -72,7 +78,7 @@ export async function GET(request: Request) {
       });
 
       if (alreadyHasAccess) {
-        return NextResponse.redirect(new URL(`/live${liveSession.recordingUrl ? `#replay-${liveSession.id}` : ""}`, request.url));
+        return NextResponse.redirect(new URL("/live", request.url));
       }
 
       if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {

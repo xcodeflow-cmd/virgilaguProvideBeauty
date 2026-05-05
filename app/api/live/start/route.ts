@@ -38,7 +38,6 @@ export async function POST(request: Request) {
       data: {
         isLive: true,
         hasStarted: true,
-        scheduledFor: new Date(),
         streamUrl: owncastServerUrl,
         recordingUrl: null,
         recordingMimeType: null,

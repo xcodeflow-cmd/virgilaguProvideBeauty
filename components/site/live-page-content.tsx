@@ -429,7 +429,7 @@ export function LivePageContent({
   const restartInFlightRef = useRef<Set<string>>(new Set());
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
   const recordingMimeTypeRef = useRef("video/webm");
-  const visibleMessages = messages.slice(-5);
+  const visibleMessages = messages.slice(-6);
   const searchParams = useSearchParams();
   const checkoutSessionId = searchParams.get("session_id") || "";
   const checkoutLiveId = searchParams.get("livePurchased") || "";
@@ -477,10 +477,13 @@ export function LivePageContent({
   useEffect(() => {
     localStreamRef.current = localStream;
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream;
+    if (!localVideoRef.current) {
+      return;
     }
-  }, [localStream]);
+
+    localVideoRef.current.srcObject = localStream;
+    void localVideoRef.current.play().catch(() => undefined);
+  }, [localStream, currentSession?.isLive]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -527,7 +530,16 @@ export function LivePageContent({
     }
 
     chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-  }, [messages]);
+  }, [visibleMessages]);
+
+  useEffect(() => {
+    if (!remoteVideoRef.current) {
+      return;
+    }
+
+    remoteVideoRef.current.srcObject = remoteStreamRef.current;
+    void remoteVideoRef.current.play().catch(() => undefined);
+  }, [currentSession?.isLive, streamStatus]);
 
   useEffect(() => {
     if (!checkoutSessionId) {
@@ -678,6 +690,7 @@ export function LivePageContent({
   function setRemoteVideoStream() {
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStreamRef.current;
+      void remoteVideoRef.current.play().catch(() => undefined);
     }
   }
 
@@ -2245,12 +2258,20 @@ export function LivePageContent({
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.65))]" />
                   <div className="absolute inset-x-0 bottom-0 px-6 pb-6 text-center text-sm text-white/78 sm:text-base">
-                    {currentSessionSoldOut ? "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare." : stageMessage}
+                    {currentSessionSoldOut
+                      ? currentSession?.visibility === "ONE_TIME"
+                        ? "Sesiunea este completa. Accesul one time ramane valabil doar cat timp live-ul este activ."
+                        : "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare."
+                      : stageMessage}
                   </div>
                 </div>
               ) : (
                 <div className={`flex items-center justify-center bg-black px-6 text-center text-white/60 ${isFullscreen ? "h-full w-full" : "aspect-video max-h-[calc(100svh-18rem)] min-h-0 sm:max-h-none sm:min-h-[18rem] xl:min-h-[20rem]"}`}>
-                  {currentSessionSoldOut ? "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare." : stageMessage}
+                  {currentSessionSoldOut
+                    ? currentSession?.visibility === "ONE_TIME"
+                      ? "Sesiunea este completa. Accesul one time ramane valabil doar cat timp live-ul este activ."
+                      : "Sesiunea este completa. Replay-ul ramane disponibil dupa salvare."
+                    : stageMessage}
                 </div>
               )}
 
@@ -2333,7 +2354,9 @@ export function LivePageContent({
                   </Button>
                 ) : currentSessionSoldOut ? (
                   <div className="rounded-full border border-red-500/30 bg-red-500/12 px-4 py-3 text-sm text-red-100">
-                    Locurile live sunt ocupate. Replay-ul poate fi cumparat dupa salvare.
+                    {currentSession?.visibility === "ONE_TIME"
+                      ? "Locurile live sunt ocupate pentru aceasta sesiune."
+                      : "Locurile live sunt ocupate. Replay-ul ramane disponibil dupa salvare."}
                   </div>
                 ) : null}
               </div>

@@ -171,7 +171,10 @@ export async function PATCH(
   if (action === "blockUser") {
     await prisma.user.update({
       where: { id: userId },
-      data: { isChatBlocked: true }
+      data: {
+        isBlocked: true,
+        isChatBlocked: true
+      }
     });
 
     return NextResponse.json({ ok: true });

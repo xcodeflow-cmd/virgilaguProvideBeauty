@@ -1,3 +1,4 @@
+import { SessionVisibility } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { toIsoDateString } from "@/lib/date";
@@ -7,7 +8,9 @@ export async function GET() {
   const recordings = await prisma.liveSession.findMany({
     where: {
       isLive: false,
-      hasStarted: true
+      hasStarted: true,
+      recordingUrl: { not: null },
+      visibility: SessionVisibility.PUBLIC
     },
     orderBy: { scheduledFor: "desc" },
     select: {

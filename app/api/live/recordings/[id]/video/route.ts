@@ -21,11 +21,16 @@ export async function GET(
   const recording = await prisma.liveSession.findUnique({
     where: { id },
     select: {
+      visibility: true,
       recordingData: true,
       recordingMimeType: true,
       title: true
     }
   });
+
+  if (recording?.visibility === "ONE_TIME" && authResult.session.user.role !== "ADMIN") {
+    return Response.json({ error: "Recording not found." }, { status: 404 });
+  }
 
   const extension = getLiveRecordingExtension(recording?.recordingMimeType);
   const recordingPath = getLiveRecordingFilePath(id, extension);

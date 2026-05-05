@@ -57,15 +57,25 @@ function getScheduledValue(formData: FormData) {
   return `${scheduleDate}T${scheduleTime}`;
 }
 
-function getSafeLiveSchedule(startMode: string, scheduledValue: string, fallbackDate: Date) {
+function parseLiveVisibility(formData: FormData) {
+  const rawVisibility = String(formData.get("visibility") || SessionVisibility.PUBLIC).trim();
+
+  return rawVisibility === SessionVisibility.ONE_TIME ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC;
+}
+
+function getSafeLiveSchedule(startMode: string, scheduledValue: string) {
   if (startMode !== "SCHEDULE") {
     return new Date();
   }
 
-  const parsedDate = scheduledValue ? parseRomaniaDateTimeLocal(scheduledValue) : new Date(Number.NaN);
+  if (!scheduledValue) {
+    throw new Error("Data si ora live-ului sunt obligatorii.");
+  }
+
+  const parsedDate = parseRomaniaDateTimeLocal(scheduledValue);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return fallbackDate;
+    throw new Error("Data sau ora live-ului sunt invalide.");
   }
 
   return parsedDate;
@@ -163,10 +173,10 @@ export async function addLiveSession(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const startMode = String(formData.get("startMode") || "NOW");
   const scheduledValue = getScheduledValue(formData);
-  const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
+  const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue);
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
-  const visibilityValue = price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC;
+  const visibilityValue = parseLiveVisibility(formData);
   const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || "";
 
   if (!title) {
@@ -177,8 +187,8 @@ export async function addLiveSession(formData: FormData) {
     throw new Error("Live description is required.");
   }
 
-  if (!Object.values(SessionVisibility).includes(visibilityValue as SessionVisibility)) {
-    throw new Error("Invalid live visibility.");
+  if (visibilityValue === SessionVisibility.ONE_TIME && !price) {
+    throw new Error("Live-ul one time trebuie sa aiba pret.");
   }
 
   await prisma.liveSession.create({
@@ -190,7 +200,7 @@ export async function addLiveSession(formData: FormData) {
       thumbnailUrl,
       streamUrl: null,
       recordingUrl: null,
-      visibility: visibilityValue as SessionVisibility,
+      visibility: visibilityValue,
       isLive: false,
       isFeatured: false,
       hasStarted: false,
@@ -231,7 +241,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const scheduledValue = getScheduledValue(formData);
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
-  const visibilityValue = price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC;
+  const visibilityValue = parseLiveVisibility(formData);
   const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || null;
   if (!id) {
     throw new Error("Missing live session id.");
@@ -240,7 +250,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const scheduledFor =
     mode === "RESET"
       ? new Date()
-      : getSafeLiveSchedule("SCHEDULE", scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
+      : getSafeLiveSchedule("SCHEDULE", scheduledValue);
 
   if (!title) {
     throw new Error("Title is required.");
@@ -248,6 +258,10 @@ export async function updateLiveSessionSchedule(formData: FormData) {
 
   if (!description) {
     throw new Error("Description is required.");
+  }
+
+  if (visibilityValue === SessionVisibility.ONE_TIME && !price) {
+    throw new Error("Live-ul one time trebuie sa aiba pret.");
   }
 
   const existingSession = await prisma.liveSession.findUnique({

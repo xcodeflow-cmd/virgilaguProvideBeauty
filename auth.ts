@@ -49,6 +49,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        if (user.isBlocked) {
+          return null;
+        }
+
         const isValid = verifyPassword(parsed.data.password, user.passwordHash);
 
         if (!isValid || !user.email) {
@@ -80,15 +84,28 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role
+          role: user.role,
+          isBlocked: user.isBlocked
         };
       }
     })
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = (user as typeof user & { role?: "USER" | "ADMIN" }).role || "USER";
+        token.isBlocked = Boolean((user as typeof user & { isBlocked?: boolean }).isBlocked);
+      } else if (token.sub) {
+        const currentUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: {
+            role: true,
+            isBlocked: true
+          }
+        });
+
+        token.role = currentUser?.role || "USER";
+        token.isBlocked = Boolean(currentUser?.isBlocked);
       }
 
       return token;
@@ -97,6 +114,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.sub || "";
         session.user.role = (token.role as "USER" | "ADMIN") || "USER";
+        session.user.isBlocked = Boolean(token.isBlocked);
       }
 
       return session;
@@ -104,6 +122,12 @@ export const authOptions: NextAuthOptions = {
   }
 };
 
-export function auth() {
-  return getServerSession(authOptions);
+export async function auth() {
+  const session = await getServerSession(authOptions);
+
+  if (session?.user?.isBlocked) {
+    return null;
+  }
+
+  return session;
 }

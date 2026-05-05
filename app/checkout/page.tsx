@@ -53,11 +53,17 @@ export default async function CheckoutPage({
       price: true,
       compareAtPrice: true,
       visibility: true,
-      recordingUrl: true
+      recordingUrl: true,
+      isLive: true,
+      hasStarted: true
     }
   });
 
   if (!liveSession || liveSession.visibility !== "ONE_TIME" || !liveSession.price) {
+    notFound();
+  }
+
+  if (liveSession.recordingUrl || (liveSession.hasStarted && !liveSession.isLive)) {
     notFound();
   }
 
