@@ -166,7 +166,7 @@ export async function addLiveSession(formData: FormData) {
   const scheduledFor = getSafeLiveSchedule(startMode, scheduledValue, new Date(Date.now() + 1000 * 60 * 60 * 2));
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
-  const visibilityValue = String(formData.get("visibility") || (price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC));
+  const visibilityValue = price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC;
   const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || "";
 
   if (!title) {
@@ -231,7 +231,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
   const scheduledValue = getScheduledValue(formData);
   const price = parseOptionalPrice(formData.get("price"));
   const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
-  const visibilityValue = String(formData.get("visibility") || SessionVisibility.ONE_TIME);
+  const visibilityValue = price ? SessionVisibility.ONE_TIME : SessionVisibility.PUBLIC;
   const thumbnailUrl = String(formData.get("thumbnailUrl") || "").trim() || (await extractUploadedImageDataUrl(formData.get("thumbnailFile"))) || null;
   if (!id) {
     throw new Error("Missing live session id.");
@@ -248,10 +248,6 @@ export async function updateLiveSessionSchedule(formData: FormData) {
 
   if (!description) {
     throw new Error("Description is required.");
-  }
-
-  if (!Object.values(SessionVisibility).includes(visibilityValue as SessionVisibility)) {
-    throw new Error("Invalid live visibility.");
   }
 
   const existingSession = await prisma.liveSession.findUnique({
@@ -280,7 +276,7 @@ export async function updateLiveSessionSchedule(formData: FormData) {
       scheduledFor,
       price,
       compareAtPrice,
-      visibility: visibilityValue as SessionVisibility,
+      visibility: visibilityValue,
       maxParticipants,
       ...(thumbnailUrl ? { thumbnailUrl } : {})
     }

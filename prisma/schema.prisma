@@ -38,6 +38,7 @@ model User {
   image          String?
   role           UserRole       @default(USER)
   isSubscribed   Boolean        @default(false)
+  isChatBlocked  Boolean        @default(false)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   accounts       Account[]
@@ -46,6 +47,7 @@ model User {
   subscriptions  Subscription[]
   purchases      Purchase[]
   liveChatMessages LiveChatMessage[]
+  liveChatRestrictions LiveChatRestriction[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
 }
@@ -169,6 +171,7 @@ model LiveSession {
   updatedAt       DateTime          @updatedAt
   purchases       Purchase[]
   chatMessages    LiveChatMessage[]
+  chatRestrictions LiveChatRestriction[]
   signals         LiveSignal[]
 }
 
@@ -182,6 +185,18 @@ model LiveChatMessage {
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([liveSessionId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model LiveChatRestriction {
+  id            String      @id @default(cuid())
+  liveSessionId String
+  userId        String
+  createdAt     DateTime    @default(now())
+  liveSession   LiveSession @relation(fields: [liveSessionId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([liveSessionId, userId])
   @@index([userId, createdAt])
 }
 

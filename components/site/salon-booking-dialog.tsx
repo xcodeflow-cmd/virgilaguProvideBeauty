@@ -79,7 +79,7 @@ export function SalonBookingDialog() {
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
-        <Button className="w-full sm:w-auto">Programeaza-te</Button>
+        <Button className="w-full px-7 sm:w-auto">Programeaza-te</Button>
       </Dialog.Trigger>
 
       <Dialog.Portal>

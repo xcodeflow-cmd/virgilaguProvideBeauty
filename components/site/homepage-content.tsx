@@ -112,16 +112,20 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
+                <SalonBookingDialog />
                 <Button
                   asChild
                   variant="secondary"
-                  className="w-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-7 text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] hover:-translate-y-1 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)] sm:w-auto"
+                  className="group relative w-full overflow-hidden border border-[#ff6b6b]/50 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-8 text-white shadow-[0_24px_70px_rgba(193,18,31,0.52)] ring-1 ring-[#ffb0b0]/20 transition hover:-translate-y-1 hover:border-[#ffd0d0]/65 hover:bg-[linear-gradient(180deg,#ff6a6a,#a30f1a)] hover:shadow-[0_30px_90px_rgba(193,18,31,0.62)] sm:w-auto"
                 >
                   <Link href="/live" prefetch onClick={(event) => event.stopPropagation()}>
-                    Vezi live
+                    <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.24),transparent_48%)] opacity-80" />
+                    <span className="relative inline-flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.95)]" />
+                      Vezi live
+                    </span>
                   </Link>
                 </Button>
-                <SalonBookingDialog />
               </div>
 
               <div className="mt-16 grid max-w-3xl gap-8 sm:grid-cols-3">

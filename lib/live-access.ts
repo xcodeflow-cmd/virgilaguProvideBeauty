@@ -62,6 +62,26 @@ export async function getPurchasedLiveSessionIds(userId?: string, role?: string 
   return Array.from(new Set(purchases.map((item) => item.liveSessionId).filter(Boolean) as string[]));
 }
 
+export async function hasLiveChatRestriction(liveSessionId: string, userId: string) {
+  const [user, restriction] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { isChatBlocked: true }
+    }).catch(() => null),
+    prisma.liveChatRestriction.findUnique({
+      where: {
+        liveSessionId_userId: {
+          liveSessionId,
+          userId
+        }
+      },
+      select: { id: true }
+    }).catch(() => null)
+  ]);
+
+  return Boolean(user?.isChatBlocked || restriction);
+}
+
 export async function canAccessLiveSession({
   userId,
   role,
@@ -91,7 +111,7 @@ export async function canAccessLiveSession({
   }
 
   if (resolvedVisibility === SessionVisibility.PUBLIC) {
-    return true;
+    return Boolean(userId);
   }
 
   if (!userId) {

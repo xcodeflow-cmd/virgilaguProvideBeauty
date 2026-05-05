@@ -121,8 +121,8 @@ function CourseCardContent({
 
         <div className="space-y-3">
           {variant === "live" ? null : isBeginnerCourse ? (
-            <div className="space-y-3">
-              <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-red-500/35 bg-red-500/15 px-5 text-base font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+            <div className="flex flex-col items-start gap-3">
+              <div className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-4 text-sm font-semibold text-[#f4dfbe] shadow-[0_16px_30px_rgba(214,185,140,0.18)] sm:w-[8.75rem]">
                 {course.price}
               </div>
               {course.cardHref ? (
@@ -130,7 +130,7 @@ function CourseCardContent({
                   href={course.cardHref}
                   target={course.cardTarget || "_self"}
                   rel={course.cardTarget === "_blank" ? "noreferrer" : undefined}
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#d6b98c]/35 bg-[linear-gradient(180deg,#ecd4ac,#c99f62)] px-5 text-sm font-semibold text-[#3a2810] shadow-[0_20px_42px_rgba(214,185,140,0.26)] transition hover:-translate-y-0.5 hover:border-[#e6c992]/55 hover:bg-[linear-gradient(180deg,#f1dbb9,#d0a66e)] hover:shadow-[0_26px_60px_rgba(214,185,140,0.34)] sm:w-[11.75rem]"
                 >
                   {actionLabel}
                 </Link>
@@ -450,8 +450,8 @@ export function CourseDetailDialog({
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 {isBeginnerCourse ? (
-                  <div className="flex w-full flex-col gap-3 sm:ml-auto sm:w-auto sm:min-w-[18rem]">
-                    <div className="inline-flex min-h-12 items-center justify-center rounded-full border border-red-500/35 bg-red-500/15 px-5 text-base font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                  <div className="flex w-full flex-col items-start gap-3 sm:w-auto">
+                    <div className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-4 text-sm font-semibold text-[#f4dfbe] shadow-[0_16px_30px_rgba(214,185,140,0.18)] sm:w-[8.75rem]">
                       {course.price}
                     </div>
                     {course.cardHref ? (
@@ -459,12 +459,14 @@ export function CourseDetailDialog({
                         href={course.cardHref}
                         target={course.cardTarget || "_self"}
                         rel={course.cardTarget === "_blank" ? "noreferrer" : undefined}
-                        className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                        className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#d6b98c]/35 bg-[linear-gradient(180deg,#ecd4ac,#c99f62)] px-5 text-sm font-semibold text-[#3a2810] shadow-[0_20px_42px_rgba(214,185,140,0.26)] transition hover:-translate-y-0.5 hover:border-[#e6c992]/55 hover:bg-[linear-gradient(180deg,#f1dbb9,#d0a66e)] hover:shadow-[0_26px_60px_rgba(214,185,140,0.34)] sm:w-[11.75rem]"
                       >
                         {course.cardActionLabel || "Vezi cursul"}
                       </Link>
                     ) : null}
-                    <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
+                    <div className="w-full sm:w-[16.5rem]">
+                      <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
+                    </div>
                   </div>
                 ) : (
                   <>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getStripe } from "@/lib/stripe";
-import { isLiveSessionSoldOut } from "@/lib/live-access";
+import { canAccessLiveSession, isLiveSessionSoldOut } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 import { findCourseOfferById } from "@/lib/course-offers";
 import { getSiteSettings } from "@/lib/site-content";
@@ -47,13 +47,32 @@ export async function GET(request: Request) {
     const liveSession = mode === "payment" && liveSessionId
       ? await prisma.liveSession.findUnique({
           where: { id: liveSessionId },
-          select: { id: true, title: true, description: true, price: true, visibility: true, recordingUrl: true }
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            price: true,
+            compareAtPrice: true,
+            visibility: true,
+            recordingUrl: true
+          }
         })
       : null;
 
     if (mode === "payment" && liveSessionId) {
       if (!liveSession || liveSession.visibility !== "ONE_TIME" || !liveSession.price) {
         return NextResponse.json({ error: "Selected live session is not available for one-time purchase." }, { status: 400 });
+      }
+
+      const alreadyHasAccess = await canAccessLiveSession({
+        userId: session.user.id,
+        role: session.user.role,
+        liveSessionId: liveSession.id,
+        visibility: liveSession.visibility
+      });
+
+      if (alreadyHasAccess) {
+        return NextResponse.redirect(new URL(`/live${liveSession.recordingUrl ? `#replay-${liveSession.id}` : ""}`, request.url));
       }
 
       if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {
@@ -106,7 +125,9 @@ export async function GET(request: Request) {
         courseId: courseOffer?.id || ""
       },
       line_items: lineItems,
-      success_url: `${baseUrl}/dashboard?checkout=success`,
+      success_url: liveSessionId
+        ? `${baseUrl}/live?checkout=success&livePurchased=${liveSessionId}&session_id={CHECKOUT_SESSION_ID}`
+        : `${baseUrl}/dashboard?checkout=success`,
       cancel_url: `${baseUrl}${courseOffer ? "/courses" : "/live"}?checkout=cancelled`,
       subscription_data: mode === "subscription"
         ? {

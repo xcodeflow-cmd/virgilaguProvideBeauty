@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
-import { Lock, Maximize2, Minimize2, Radio } from "lucide-react";
+import { Lock, Maximize2, Minimize2, MoreHorizontal, Radio } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
+import { CheckoutTermsDialog } from "@/components/site/checkout-terms-dialog";
 import { Button } from "@/components/ui/button";
 import { formatLei } from "@/lib/utils";
 import type {
@@ -54,6 +56,8 @@ type ChatMessage = {
   timestamp: string;
   userId?: string;
   role?: "USER" | "ADMIN";
+  chatBlockedGlobally?: boolean;
+  chatRestrictedInLive?: boolean;
 };
 
 type LiveRecording = {
@@ -378,6 +382,8 @@ export function LivePageContent({
   const [streamStatus, setStreamStatus] = useState<StreamStatus>(initialSession?.isLive ? "connecting" : "offline");
   const [countdownNow, setCountdownNow] = useState(() => Date.now());
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [openMessageMenuId, setOpenMessageMenuId] = useState<string | null>(null);
+  const [moderationMessageId, setModerationMessageId] = useState<string | null>(null);
   const [cameraFacingMode, setCameraFacingMode] = useState<"user" | "environment">("user");
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [debug, setDebug] = useState<LiveDebugState>({
@@ -424,14 +430,21 @@ export function LivePageContent({
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
   const recordingMimeTypeRef = useRef("video/webm");
   const visibleMessages = messages.slice(-5);
+  const searchParams = useSearchParams();
+  const checkoutSessionId = searchParams.get("session_id") || "";
+  const checkoutLiveId = searchParams.get("livePurchased") || "";
 
   function hasSessionAccess(session: LiveSessionSummary | null | undefined) {
     if (!session) {
       return false;
     }
 
-    if (isAdmin || session.visibility === "PUBLIC" || accessibleLiveIds.includes(session.id)) {
+    if (isAdmin || accessibleLiveIds.includes(session.id)) {
       return true;
+    }
+
+    if (session.visibility === "PUBLIC") {
+      return isAuthenticated;
     }
 
     return Boolean(initialSession?.id === session.id && canAccessCurrentSession);
@@ -515,6 +528,48 @@ export function LivePageContent({
 
     chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (!checkoutSessionId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function finalizeCheckout() {
+      try {
+        await api<{ ok: boolean }>("/api/stripe/complete", {
+          method: "POST",
+          body: JSON.stringify({ sessionId: checkoutSessionId })
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete("session_id");
+        nextUrl.searchParams.set("checkout", "success");
+
+        if (checkoutLiveId) {
+          nextUrl.searchParams.set("livePurchased", checkoutLiveId);
+        }
+
+        window.location.replace(`${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+      } catch (checkoutError) {
+        if (!cancelled) {
+          setError(checkoutError instanceof Error ? checkoutError.message : "Plata a fost finalizata, dar accesul nu a putut fi sincronizat.");
+        }
+      }
+    }
+
+    void finalizeCheckout();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkoutSessionId, checkoutLiveId]);
 
   function updateDebug(patch: Partial<LiveDebugState>) {
     setDebug((current) => {
@@ -1409,8 +1464,7 @@ export function LivePageContent({
     }
 
     const data = await api<{ messages: ChatMessage[] }>(`/api/chat/${currentSession.id}`);
-    const nextMessages = data.messages.slice(-5);
-    setMessages((current) => (areMessagesEqual(current, nextMessages) ? current : nextMessages));
+    setMessages((current) => (areMessagesEqual(current, data.messages) ? current : data.messages));
   }
 
   async function loadRecordings() {
@@ -1810,13 +1864,43 @@ export function LivePageContent({
       return;
     }
 
-    await api(`/api/chat/${currentSession.id}`, {
-      method: "POST",
-      body: JSON.stringify({ text: chatText.trim() })
-    });
+    try {
+      await api(`/api/chat/${currentSession.id}`, {
+        method: "POST",
+        body: JSON.stringify({ text: chatText.trim() })
+      });
 
-    setChatText("");
-    await loadMessages();
+      setChatText("");
+      setError(null);
+      await loadMessages();
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : "Mesajul nu a putut fi trimis.");
+    }
+  }
+
+  async function moderateMessage(action: "disableChat" | "blockUser" | "deleteMessage", message: ChatMessage) {
+    if (!currentSession || !isAdmin || !message.userId) {
+      return;
+    }
+
+    try {
+      setModerationMessageId(message.id);
+      await api(`/api/chat/${currentSession.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          action,
+          messageId: message.id,
+          userId: message.userId
+        })
+      });
+      setOpenMessageMenuId(null);
+      setError(null);
+      await loadMessages();
+    } catch (moderationError) {
+      setError(moderationError instanceof Error ? moderationError.message : "Actiunea de moderare a esuat.");
+    } finally {
+      setModerationMessageId(null);
+    }
   }
 
   async function toggleFullscreen() {
@@ -1897,29 +1981,31 @@ export function LivePageContent({
         ? streamStatus === "live"
           ? ""
           : "Se face conectarea la sesiunea live."
-        : "Este obligatoriu accesul la aceasta sesiune."
+        : currentSession?.visibility === "PUBLIC" && !isAuthenticated
+          ? "Autentifica-te pentru acces la aceasta sesiune."
+          : "Este obligatoriu accesul la aceasta sesiune."
     : countdownParts
       ? "Sesiunea va incepe cand timerul de mai sus expira sau cand adminul porneste live-ul."
       : currentSession
         ? "Sesiunea nu a inceput."
         : "Nu exista o sesiune live curenta.";
   const chatPanel = (
-    <div className="flex h-full flex-col">
+    <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)]">
       <div className="border-b border-white/10 px-4 py-4 sm:px-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-[#d6b98c]">Live Chat</p>
           </div>
           <div className="rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.45]">
-            {visibleMessages.length} mesaje
+            {messages.length} mesaje
           </div>
         </div>
       </div>
 
-      <div className="flex-1 px-3 py-3 sm:px-4">
+      <div className="min-h-0 px-3 py-3 sm:px-4">
         {canUseChat ? (
-          <div className="flex h-full flex-col">
-            <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 pb-2">
+          <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
+            <div ref={chatScrollRef} className="min-h-0 max-h-[18.5rem] space-y-2.5 overflow-y-auto pr-1 pb-2 sm:max-h-[20rem]">
               {visibleMessages.length ? (
                 visibleMessages.map((item) => {
                   const isOwnMessage = Boolean(currentUserId && item.userId === currentUserId);
@@ -1943,10 +2029,54 @@ export function LivePageContent({
 
                   return (
                     <div key={item.id} className={`flex ${alignment}`}>
+                      {isAdmin ? (
+                        <div className="relative mr-2 self-start">
+                          <button
+                            type="button"
+                            onClick={() => setOpenMessageMenuId((current) => current === item.id ? null : item.id)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition hover:bg-white/[0.08] hover:text-white"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                          {openMessageMenuId === item.id ? (
+                            <div className="absolute left-0 top-10 z-20 grid min-w-[14rem] gap-1 rounded-[1rem] border border-white/10 bg-[#111111] p-2 shadow-[0_24px_50px_rgba(0,0,0,0.4)]">
+                              <button
+                                type="button"
+                                onClick={() => void moderateMessage("disableChat", item)}
+                                disabled={moderationMessageId === item.id}
+                                className="rounded-[0.85rem] px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+                              >
+                                Opreste accesul la chat
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void moderateMessage("blockUser", item)}
+                                disabled={moderationMessageId === item.id}
+                                className="rounded-[0.85rem] px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+                              >
+                                Blocheaza utilizatorul
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void moderateMessage("deleteMessage", item)}
+                                disabled={moderationMessageId === item.id}
+                                className="rounded-[0.85rem] px-3 py-2 text-left text-sm text-red-200 transition hover:bg-red-500/10 hover:text-red-100 disabled:opacity-50"
+                              >
+                                Sterge mesajul
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
                       <div className={`max-w-[88%] rounded-[1.2rem] px-3.5 py-2.5 sm:max-w-[84%] ${bubbleClass}`}>
                         <p className={`text-[11px] font-medium leading-5 ${metaClass}`}>
                           {item.user} : <span className="font-normal">{item.text}</span>
                         </p>
+                        {isAdmin && (item.chatRestrictedInLive || item.chatBlockedGlobally) ? (
+                          <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-red-100/70">
+                            {item.chatBlockedGlobally ? "Utilizator blocat global" : "Chat oprit pentru acest live"}
+                          </p>
+                        ) : null}
                         <p className={`mt-1 text-[10px] uppercase tracking-[0.22em] ${timeClass}`}>
                           {new Date(item.timestamp).toLocaleTimeString("ro-RO", {
                             timeZone: "Europe/Bucharest",
@@ -1965,7 +2095,7 @@ export function LivePageContent({
               )}
             </div>
 
-            <div className="sticky bottom-0 z-10 mt-3 -mx-3 flex shrink-0 gap-2 border-t border-white/10 bg-[linear-gradient(180deg,rgba(10,10,10,0.76),rgba(7,7,7,0.96))] px-3 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:backdrop-blur-none">
+            <div className="mt-3 flex shrink-0 gap-2 border-t border-white/10 pt-3 pb-[calc(0.4rem+env(safe-area-inset-bottom))] sm:pb-0">
               <input
                 value={chatText}
                 onChange={(event) => setChatText(event.target.value)}
@@ -2160,7 +2290,7 @@ export function LivePageContent({
 
               {currentSession?.isLive ? (
                 <div className="border-t border-white/10 xl:hidden">
-                <div className="flex h-[22rem] min-h-0 flex-col">
+                <div className="flex h-[20rem] min-h-0 flex-col">
                   {chatPanel}
                 </div>
               </div>
@@ -2172,11 +2302,17 @@ export function LivePageContent({
                 </div>
                 {!canViewCurrentSession && !isAdmin && currentSession?.price && !currentSessionSoldOut ? (
                   <div className="flex flex-col items-start gap-2">
-                    <Button asChild className="min-h-11">
-                      <a href={`/checkout?mode=payment&liveSessionId=${currentSession.id}`}>
-                        Cumpara live-ul {formatLei(currentSession.price)}
-                      </a>
-                    </Button>
+                    <CheckoutTermsDialog
+                      title={currentSession.title}
+                      description={currentSession.description}
+                      priceLabel={formatLei(currentSession.price)}
+                      compareAtPriceLabel={
+                        currentSessionHasDiscount ? formatLei(currentSession.compareAtPrice || 0) : null
+                      }
+                      checkoutPath={`/api/stripe/checkout?mode=payment&liveSessionId=${currentSession.id}`}
+                      triggerLabel={`Achizitioneaza ${formatLei(currentSession.price)}`}
+                      triggerClassName="min-h-11"
+                    />
                     <div className="flex flex-wrap items-center gap-2 text-sm text-white/60">
                       {currentSessionHasDiscount ? (
                         <>
@@ -2191,6 +2327,10 @@ export function LivePageContent({
                       )}
                     </div>
                   </div>
+                ) : !canViewCurrentSession && !isAdmin && currentSession?.visibility === "PUBLIC" && !isAuthenticated ? (
+                  <Button asChild className="min-h-11">
+                    <a href="/auth/signin">Autentifica-te pentru acces</a>
+                  </Button>
                 ) : currentSessionSoldOut ? (
                   <div className="rounded-full border border-red-500/30 bg-red-500/12 px-4 py-3 text-sm text-red-100">
                     Locurile live sunt ocupate. Replay-ul poate fi cumparat dupa salvare.
@@ -2224,7 +2364,7 @@ export function LivePageContent({
         </div>
 
         <div className="hidden xl:block xl:sticky xl:top-24">
-          <div className="panel-edge flex min-h-[38rem] flex-col overflow-hidden rounded-[2rem]">
+          <div className="panel-edge flex h-[30rem] min-h-0 flex-col overflow-hidden rounded-[2rem]">
             {chatPanel}
           </div>
         </div>
