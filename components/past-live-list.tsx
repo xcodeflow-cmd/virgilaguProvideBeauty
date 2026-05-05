@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Lock } from "lucide-react";
@@ -21,13 +23,19 @@ type PastLiveSession = {
 
 export function PastLiveList({
   accessibleLiveIds,
+  isAuthenticated = false,
   isAdmin = false,
   sessions
 }: {
   accessibleLiveIds: string[];
+  isAuthenticated?: boolean;
   isAdmin?: boolean;
   sessions: PastLiveSession[];
 }) {
+  function handleUnauthenticatedReplayClick() {
+    window.alert("Trebuie sa fii autentificat pentru a vedea replay-ul.");
+  }
+
   return (
     <div className="premium-card rounded-[1.7rem] p-4 sm:rounded-[2rem] sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -109,6 +117,10 @@ export function PastLiveList({
                     <div className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
                       Replay in curs de salvare
                     </div>
+                  ) : !isAuthenticated ? (
+                    <Button type="button" className="min-h-11" onClick={handleUnauthenticatedReplayClick}>
+                      Vezi replay
+                    </Button>
                   ) : (
                     <>
                       {session.visibility === "ONE_TIME" && session.price ? (

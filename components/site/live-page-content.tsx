@@ -341,6 +341,7 @@ function getCountdownParts(targetDate: string | null, now: number) {
 export function LivePageContent({
   accessibleLiveIds,
   canAccessCurrentSession,
+  isAuthenticated,
   isAdmin,
   initialSession,
   pastSessions,
@@ -348,6 +349,7 @@ export function LivePageContent({
 }: {
   accessibleLiveIds: string[];
   canAccessCurrentSession: boolean;
+  isAuthenticated: boolean;
   isAdmin: boolean;
   initialSession: LiveSessionSummary | null;
   pastSessions: PastLiveSession[];
@@ -421,6 +423,7 @@ export function LivePageContent({
   const restartInFlightRef = useRef<Set<string>>(new Set());
   const lastBootstrapRef = useRef<LiveBootstrapResponse | null>(null);
   const recordingMimeTypeRef = useRef("video/webm");
+  const visibleMessages = messages.slice(-5);
 
   function hasSessionAccess(session: LiveSessionSummary | null | undefined) {
     if (!session) {
@@ -465,6 +468,21 @@ export function LivePageContent({
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const webkitFullscreenElement = (document as Document & { webkitFullscreenElement?: Element | null }).webkitFullscreenElement;
+      setIsFullscreen(Boolean(document.fullscreenElement || webkitFullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = isFullscreen ? "hidden" : "";
@@ -1391,7 +1409,8 @@ export function LivePageContent({
     }
 
     const data = await api<{ messages: ChatMessage[] }>(`/api/chat/${currentSession.id}`);
-    setMessages((current) => (areMessagesEqual(current, data.messages) ? current : data.messages));
+    const nextMessages = data.messages.slice(-5);
+    setMessages((current) => (areMessagesEqual(current, nextMessages) ? current : nextMessages));
   }
 
   async function loadRecordings() {
@@ -1801,6 +1820,35 @@ export function LivePageContent({
   }
 
   async function toggleFullscreen() {
+    const stage = videoStageRef.current as (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> | void }) | null;
+    const fullscreenDocument = document as Document & {
+      webkitExitFullscreen?: () => Promise<void> | void;
+      webkitFullscreenElement?: Element | null;
+    };
+    const activeFullscreenElement = document.fullscreenElement || fullscreenDocument.webkitFullscreenElement;
+
+    if (activeFullscreenElement) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen().catch(() => undefined);
+        return;
+      }
+
+      if (fullscreenDocument.webkitExitFullscreen) {
+        await Promise.resolve(fullscreenDocument.webkitExitFullscreen()).catch(() => undefined);
+        return;
+      }
+    }
+
+    if (stage?.requestFullscreen) {
+      await stage.requestFullscreen().catch(() => undefined);
+      return;
+    }
+
+    if (stage?.webkitRequestFullscreen) {
+      await Promise.resolve(stage.webkitRequestFullscreen()).catch(() => undefined);
+      return;
+    }
+
     setIsFullscreen((current) => !current);
   }
 
@@ -1863,7 +1911,7 @@ export function LivePageContent({
             <p className="text-[11px] uppercase tracking-[0.35em] text-[#d6b98c]">Live Chat</p>
           </div>
           <div className="rounded-full bg-white/[0.04] px-3 py-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.45]">
-            {messages.length} mesaje
+            {visibleMessages.length} mesaje
           </div>
         </div>
       </div>
@@ -1872,8 +1920,8 @@ export function LivePageContent({
         {canUseChat ? (
           <div className="flex h-full flex-col">
             <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1 pb-2">
-              {messages.length ? (
-                messages.map((item) => {
+              {visibleMessages.length ? (
+                visibleMessages.map((item) => {
                   const isOwnMessage = Boolean(currentUserId && item.userId === currentUserId);
                   const isAdminMessage = item.role === "ADMIN";
                   const alignment = isOwnMessage ? "justify-end" : "justify-start";
@@ -2156,6 +2204,7 @@ export function LivePageContent({
           <div className="hidden xl:block">
             <PastLiveList
               accessibleLiveIds={accessibleLiveIds}
+              isAuthenticated={isAuthenticated}
               isAdmin={isAdmin}
               sessions={recordings.map((item) => ({
                 id: item.id,
@@ -2184,6 +2233,7 @@ export function LivePageContent({
       <div className="xl:hidden">
         <PastLiveList
           accessibleLiveIds={accessibleLiveIds}
+          isAuthenticated={isAuthenticated}
           isAdmin={isAdmin}
           sessions={recordings.map((item) => ({
             id: item.id,

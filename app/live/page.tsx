@@ -27,11 +27,12 @@ export default async function LivePage() {
 
   return (
     <section className="section-shell py-4 sm:py-8 lg:py-10">
-      <LivePageContent
-        accessibleLiveIds={purchasedLiveIds}
-        canAccessCurrentSession={isAdmin || currentSessionAccess}
-        isAdmin={isAdmin}
-        currentUserId={session?.user?.id}
+        <LivePageContent
+          accessibleLiveIds={purchasedLiveIds}
+          canAccessCurrentSession={isAdmin || currentSessionAccess}
+          isAuthenticated={Boolean(session?.user?.id)}
+          isAdmin={isAdmin}
+          currentUserId={session?.user?.id}
         initialSession={liveSession
           ? {
               id: liveSession.id,

@@ -84,6 +84,7 @@ function CourseCardContent({
     ? Math.round((((course.compareAtPriceValue || 0) - course.priceValue) / (course.compareAtPriceValue || 1)) * 100)
     : 0;
   const actionLabel = course.cardActionLabel || (course.cardHref ? "Deschide" : "Detalii");
+  const isBeginnerCourse = course.pricingKey === "beginner";
   return (
     <>
       <div className={cn("relative overflow-hidden", compact ? "aspect-[16/12]" : "aspect-[16/11]")}>
@@ -119,7 +120,23 @@ function CourseCardContent({
         </div>
 
         <div className="space-y-3">
-          {variant === "live" ? null : course.hidePriceInCard ? null : (
+          {variant === "live" ? null : isBeginnerCourse ? (
+            <div className="space-y-3">
+              <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-red-500/35 bg-red-500/15 px-5 text-base font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                {course.price}
+              </div>
+              {course.cardHref ? (
+                <Link
+                  href={course.cardHref}
+                  target={course.cardTarget || "_self"}
+                  rel={course.cardTarget === "_blank" ? "noreferrer" : undefined}
+                  className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                >
+                  {actionLabel}
+                </Link>
+              ) : null}
+            </div>
+          ) : course.hidePriceInCard ? null : (
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
@@ -197,6 +214,7 @@ export function CourseDetailDialog({
 }) {
   const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
   const cardHref = course.cardHref;
+  const isBeginnerCourse = course.pricingKey === "beginner";
 
   if (course.label === "LIVE") {
     return (
@@ -431,25 +449,46 @@ export function CourseDetailDialog({
               ) : null}
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret final</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    {hasDiscount && course.compareAtPrice ? (
-                      <p className="text-lg text-white/35 line-through">{course.compareAtPrice}</p>
-                    ) : null}
-                    <p className="rounded-full border border-red-500/35 bg-red-500/15 px-5 py-3 text-3xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                {isBeginnerCourse ? (
+                  <div className="flex w-full flex-col gap-3 sm:ml-auto sm:w-auto sm:min-w-[18rem]">
+                    <div className="inline-flex min-h-12 items-center justify-center rounded-full border border-red-500/35 bg-red-500/15 px-5 text-base font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
                       {course.price}
-                    </p>
+                    </div>
+                    {course.cardHref ? (
+                      <Link
+                        href={course.cardHref}
+                        target={course.cardTarget || "_self"}
+                        rel={course.cardTarget === "_blank" ? "noreferrer" : undefined}
+                        className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)]"
+                      >
+                        {course.cardActionLabel || "Vezi cursul"}
+                      </Link>
+                    ) : null}
+                    <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
                   </div>
-                </div>
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
-                  <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
-                  {!course.purchaseDisabled ? (
-                    <Button asChild className="w-full px-7 sm:w-auto">
-                      <Link href={ctaHref}>{course.purchaseLabel}</Link>
-                    </Button>
-                  ) : null}
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret final</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        {hasDiscount && course.compareAtPrice ? (
+                          <p className="text-lg text-white/35 line-through">{course.compareAtPrice}</p>
+                        ) : null}
+                        <p className="rounded-full border border-red-500/35 bg-red-500/15 px-5 py-3 text-3xl font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                          {course.price}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
+                      <InquiryButton href={course.inquiryHref} label={course.inquiryLabel} />
+                      {!course.purchaseDisabled ? (
+                        <Button asChild className="w-full px-7 sm:w-auto">
+                          <Link href={ctaHref}>{course.purchaseLabel}</Link>
+                        </Button>
+                      ) : null}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

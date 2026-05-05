@@ -48,34 +48,49 @@ export async function GET(
 
   try {
     const contentType = getContentType(file);
+    const fileStats = await stat(resolvedPath);
+    const fileSize = fileStats.size;
     const range = request.headers.get("range");
 
-    if (contentType === "video/mp4" && range) {
-      const fileStats = await stat(resolvedPath);
-      const fileSize = fileStats.size;
-      const matches = /bytes=(\d+)-(\d*)/.exec(range);
+    if (contentType === "video/mp4") {
+      const baseHeaders = {
+        "Content-Type": contentType,
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000, immutable"
+      };
 
-      if (!matches) {
-        return new NextResponse("Invalid range", { status: 416 });
+      if (range) {
+        const matches = /bytes=(\d+)-(\d*)/.exec(range);
+
+        if (!matches) {
+          return new NextResponse("Invalid range", { status: 416 });
+        }
+
+        const start = Number(matches[1]);
+        const end = matches[2] ? Number(matches[2]) : fileSize - 1;
+
+        if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end >= fileSize || start > end) {
+          return new NextResponse("Invalid range", { status: 416 });
+        }
+
+        const stream = createReadStream(resolvedPath, { start, end });
+
+        return new NextResponse(Readable.toWeb(stream) as ReadableStream, {
+          status: 206,
+          headers: {
+            ...baseHeaders,
+            "Content-Length": String(end - start + 1),
+            "Content-Range": `bytes ${start}-${end}/${fileSize}`
+          }
+        });
       }
 
-      const start = Number(matches[1]);
-      const end = matches[2] ? Number(matches[2]) : fileSize - 1;
-
-      if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end >= fileSize || start > end) {
-        return new NextResponse("Invalid range", { status: 416 });
-      }
-
-      const stream = createReadStream(resolvedPath, { start, end });
+      const stream = createReadStream(resolvedPath);
 
       return new NextResponse(Readable.toWeb(stream) as ReadableStream, {
-        status: 206,
         headers: {
-          "Content-Type": contentType,
-          "Content-Length": String(end - start + 1),
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Cache-Control": "public, max-age=31536000, immutable"
+          ...baseHeaders,
+          "Content-Length": String(fileSize)
         }
       });
     }

@@ -29,7 +29,7 @@ export function VideoGalleryGrid({
               controls
               playsInline
               preload="metadata"
-              className="aspect-[4/5] w-full bg-black object-cover"
+              className="aspect-[4/5] w-full bg-black object-contain"
                 style={{ backgroundColor: "#000" }}
               />
             </div>

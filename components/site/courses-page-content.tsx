@@ -119,7 +119,7 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
                   controls
                   preload="metadata"
                   playsInline
-                  className="aspect-[4/5] w-full bg-black object-cover"
+                  className="aspect-[4/5] w-full bg-black object-contain"
                 />
               </div>
             </FadeIn>
@@ -139,7 +139,7 @@ export function CoursesPageContent({ offers = courseOffers }: { offers?: CourseO
                   controls
                   preload="metadata"
                   playsInline
-                  className="aspect-[4/5] w-full bg-black object-cover"
+                  className="aspect-[4/5] w-full bg-black object-contain"
                 />
               </div>
             ))}
