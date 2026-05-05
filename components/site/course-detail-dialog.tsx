@@ -119,7 +119,7 @@ function CourseCardContent({
         </div>
 
         <div className="space-y-3">
-          {course.hidePriceInCard ? null : (
+          {variant === "live" ? null : course.hidePriceInCard ? null : (
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.34em] text-white/[0.38]">Pret</p>
@@ -223,9 +223,6 @@ export function CourseDetailDialog({
                 <div className="absolute inset-x-0 bottom-0 p-6">
                   <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
                   <p className="mt-3 text-4xl leading-[0.92] text-white">{course.title}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-7 text-white/[0.82]">
-                    <span>{course.cardActionLabel || "Vezi live"}</span>
-                  </div>
                 </div>
               </div>
 
