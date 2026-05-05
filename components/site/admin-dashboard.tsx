@@ -153,7 +153,9 @@ export function AdminDashboard({
       shortTitleName: "beginner_short_title",
       noteName: "beginner_note",
       shortName: "beginner_short_description",
-      dialogName: "beginner_dialog_body",
+      detailName: "beginner_dialog_body",
+      detailLabel: "Descriere detaliata",
+      detailValue: courseSettings.beginner.dialogBody || "",
       imageUrlName: "beginner_image_url",
       imageFileName: "beginner_image_file",
       linkLabelName: "beginner_link_label",
@@ -165,8 +167,7 @@ export function AdminDashboard({
       cardActionLabelName: "beginner_card_action_label",
       extra: [
         { label: "Puncte descriere", name: "beginner_description", rows: 5, value: toTextarea(courseSettings.beginner.description) },
-        { label: "Achievements", name: "beginner_achievements", rows: 4, value: toTextarea(courseSettings.beginner.achievements) },
-        { label: "Detalii", name: "beginner_details", rows: 3, value: toTextarea(courseSettings.beginner.details) }
+        { label: "Achievements", name: "beginner_achievements", rows: 4, value: toTextarea(courseSettings.beginner.achievements) }
       ],
       data: courseSettings.beginner
     },
@@ -177,7 +178,9 @@ export function AdminDashboard({
       shortTitleName: "advanced_short_title",
       noteName: "advanced_note",
       shortName: "advanced_short_description",
-      dialogName: "advanced_dialog_body",
+      detailName: "advanced_description",
+      detailLabel: "Descriere detaliata",
+      detailValue: toTextarea(courseSettings.advanced.description),
       imageUrlName: "advanced_image_url",
       imageFileName: "advanced_image_file",
       includeTitleName: "advanced_include_title",
@@ -187,7 +190,7 @@ export function AdminDashboard({
       inquiryLabelName: "advanced_inquiry_label",
       cardActionLabelName: "advanced_card_action_label",
       extra: [
-        { label: "Descriere lunga", name: "advanced_description", rows: 4, value: toTextarea(courseSettings.advanced.description) },
+        { label: "Descriere lunga", name: "advanced_dialog_body", rows: 4, value: courseSettings.advanced.dialogBody || "" },
         { label: "Include", name: "advanced_includes", rows: 6, value: toTextarea(courseSettings.advanced.includes) },
         { label: "Rezultate", name: "advanced_outcomes", rows: 5, value: toTextarea(courseSettings.advanced.outcomes) }
       ],
@@ -200,7 +203,9 @@ export function AdminDashboard({
       shortTitleName: "live_short_title",
       noteName: "live_note",
       shortName: "live_short_description",
-      dialogName: "live_dialog_body",
+      detailName: "live_description",
+      detailLabel: "Descriere detaliata",
+      detailValue: toTextarea(courseSettings.liveExperience.description),
       imageUrlName: "live_image_url",
       imageFileName: "live_image_file",
       includeTitleName: "live_include_title",
@@ -210,10 +215,9 @@ export function AdminDashboard({
       inquiryLabelName: "live_inquiry_label",
       cardActionLabelName: "live_card_action_label",
       extra: [
-        { label: "Descriere lunga", name: "live_description", rows: 4, value: toTextarea(courseSettings.liveExperience.description) },
+        { label: "Descriere lunga", name: "live_dialog_body", rows: 4, value: courseSettings.liveExperience.dialogBody || "" },
         { label: "Include", name: "live_includes", rows: 6, value: toTextarea(courseSettings.liveExperience.includes) },
-        { label: "Rezultate", name: "live_outcomes", rows: 4, value: toTextarea(courseSettings.liveExperience.outcomes) },
-        { label: "Detalii", name: "live_details", rows: 3, value: toTextarea(courseSettings.liveExperience.details) }
+        { label: "Rezultate", name: "live_outcomes", rows: 4, value: toTextarea(courseSettings.liveExperience.outcomes) }
       ],
       data: courseSettings.liveExperience
     }
@@ -674,8 +678,8 @@ export function AdminDashboard({
                         <textarea name={course.shortName} rows={4} defaultValue={course.data.shortDescription || ""} className="premium-input" />
                       </label>
                       <label className="space-y-2">
-                        <span className="text-sm text-white/60">Descriere detaliata</span>
-                        <textarea name={course.dialogName} rows={6} defaultValue={course.data.dialogBody || ""} className="premium-input" />
+                        <span className="text-sm text-white/60">{course.detailLabel}</span>
+                        <textarea name={course.detailName} rows={6} defaultValue={course.detailValue} className="premium-input" />
                       </label>
                       <label className="space-y-2">
                         <span className="text-sm text-white/60">URL poza</span>

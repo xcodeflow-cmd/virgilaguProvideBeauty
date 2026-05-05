@@ -122,7 +122,7 @@ function CourseCardContent({
         <div className="space-y-3">
           {variant === "live" ? null : isBeginnerCourse ? (
             <div className="flex flex-col items-start gap-3">
-              <div className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-4 text-sm font-semibold text-[#f4dfbe] shadow-[0_16px_30px_rgba(214,185,140,0.18)] sm:w-[8.75rem]">
+              <div className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-red-500/35 bg-red-500/15 px-4 text-sm font-semibold text-red-100 shadow-[0_18px_38px_rgba(185,28,28,0.22)] sm:w-[8.75rem]">
                 {course.price}
               </div>
               {course.cardHref ? (
@@ -154,7 +154,11 @@ function CourseCardContent({
                   {actionLabel}
                   <ArrowUpRight className="h-3.5 w-3.5" />
                 </span>
-              ) : null}
+              ) : (
+                <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)]">
+                  Vezi detalii
+                </span>
+              )}
             </div>
           )}
 
