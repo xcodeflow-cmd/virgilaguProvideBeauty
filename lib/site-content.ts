@@ -22,6 +22,23 @@ export type LiveSessionContent = {
   price: number | null;
 };
 
+function mergeCoursesContent(value: CoursesContent | null | undefined): CoursesContent {
+  return {
+    beginner: {
+      ...courses.beginner,
+      ...(value?.beginner || {})
+    },
+    advanced: {
+      ...courses.advanced,
+      ...(value?.advanced || {})
+    },
+    liveExperience: {
+      ...courses.liveExperience,
+      ...(value?.liveExperience || {})
+    }
+  };
+}
+
 async function fetchSiteSettings() {
   try {
     const settings = await prisma.siteSettings.findUnique({
@@ -38,7 +55,7 @@ async function fetchSiteSettings() {
 
     return {
       subscriptionPlans: settings.subscriptionPlans as SubscriptionPlan[],
-      courses: settings.courses as CoursesContent,
+      courses: mergeCoursesContent(settings.courses as CoursesContent),
       pages: (settings.pages as PagesContent | null) || sitePages
     };
   } catch {
