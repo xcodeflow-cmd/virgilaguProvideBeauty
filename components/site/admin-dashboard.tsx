@@ -750,10 +750,6 @@ export function AdminDashboard({
                                 <span className="text-sm text-white/60">Text cere info</span>
                                 <input name={course.inquiryLabelName} defaultValue={course.data.inquiryLabel || ""} className="premium-input" />
                               </label>
-                              <label className="space-y-2">
-                                <span className="text-sm text-white/60">Text buton card</span>
-                                <input name={course.cardActionLabelName} defaultValue={course.data.cardActionLabel || ""} className="premium-input" />
-                              </label>
                             </>
                           ) : null}
                         </>
