@@ -8,11 +8,12 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion-shell";
 import { Button } from "@/components/ui/button";
+import { SalonBookingDialog } from "@/components/site/salon-booking-dialog";
 import siteLogo from "@/assets/logo.png";
 import provibeLogo from "@/assets/provibe.png";
 import type { CourseOffer } from "@/lib/course-offers";
 import { courseOffers, getCourseCheckoutHref } from "@/lib/course-offers";
-import { brandImages, compactReviews, siteConfig } from "@/lib/data";
+import { brandImages, compactReviews } from "@/lib/data";
 
 const HeroOverlayEffect = dynamic(
   () => import("@/components/site/hero-overlay-effect").then((module) => module.HeroOverlayEffect),
@@ -120,15 +121,7 @@ export function HomepageContent({ offers = courseOffers }: { offers?: CourseOffe
                     Vezi live
                   </Link>
                 </Button>
-                <Button
-                  asChild
-                  variant="secondary"
-                  className="w-full border border-[#d6b98c]/30 bg-[#d6b98c]/10 px-7 text-[#f2ddbb] hover:-translate-y-1 hover:border-[#d6b98c]/55 hover:bg-[#d6b98c]/16 sm:w-auto"
-                >
-                  <Link href={siteConfig.socials.mero} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>
-                    Programeaza-te
-                  </Link>
-                </Button>
+                <SalonBookingDialog />
               </div>
 
               <div className="mt-16 grid max-w-3xl gap-8 sm:grid-cols-3">

@@ -161,9 +161,7 @@ const baseCourseOffers: BaseCourseOffer[] = [
     advantage:
       "Poti invata din confortul casei tale, fara presiune, urmarind exact cum se construieste o tunsoare corecta, de la zero pana la final.",
     purchaseLabel: "Cumpara accesul LIVE",
-    cardHref: "/live",
-    cardActionLabel: "Vezi live",
-    hidePriceInCard: true
+    cardActionLabel: "Vezi live"
   }
 ];
 

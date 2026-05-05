@@ -4,6 +4,7 @@ import { PlayCircle, Scissors, Sparkles } from "lucide-react";
 
 import { FadeIn } from "@/components/motion-shell";
 import { Button } from "@/components/ui/button";
+import { SalonBookingDialog } from "@/components/site/salon-booking-dialog";
 import { brandImages, homeGalleryPreview, homepageStats, siteConfig } from "@/lib/data";
 
 export function HeroSection() {
@@ -28,9 +29,7 @@ export function HeroSection() {
               </p>
             </div>
             <div className="flex flex-wrap gap-4">
-              <Button asChild className="min-w-36">
-                <Link href="/contact#booking">Programeaza-te</Link>
-              </Button>
+              <SalonBookingDialog />
               <Button asChild variant="secondary" className="min-w-36">
                 <Link href="/courses">
                   <PlayCircle className="h-4 w-4" />

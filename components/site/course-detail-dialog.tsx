@@ -71,11 +71,13 @@ function InquiryButton({
 function CourseCardContent({
   course,
   compact = false,
-  showInlineInquiry = false
+  showInlineInquiry = false,
+  variant = "default"
 }: {
   course: CourseOffer;
   compact?: boolean;
   showInlineInquiry?: boolean;
+  variant?: "default" | "live";
 }) {
   const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
   const discountPercent = hasDiscount
@@ -139,7 +141,27 @@ function CourseCardContent({
             </div>
           )}
 
-          {course.cardHref && course.hidePriceInCard ? (
+          {variant === "live" ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-3">
+                <Dialog.Trigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-medium text-white/80 transition hover:bg-white/[0.08] hover:text-white sm:flex-none"
+                  >
+                    Vezi detalii
+                  </button>
+                </Dialog.Trigger>
+                <Link
+                  href="/live"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[#ff6b6b]/40 bg-[linear-gradient(180deg,#ff4d4d,#c1121f)] px-5 text-sm font-semibold text-white shadow-[0_20px_55px_rgba(193,18,31,0.42)] transition hover:-translate-y-0.5 hover:border-[#ff9a9a]/60 hover:bg-[linear-gradient(180deg,#ff6666,#a30f1a)] hover:shadow-[0_26px_70px_rgba(193,18,31,0.55)] sm:flex-none"
+                >
+                  Vezi live
+                </Link>
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.34em] text-white/40">Acces lunar</p>
+            </div>
+          ) : course.cardHref && course.hidePriceInCard ? (
             <Link
               href={course.cardHref}
               target={course.cardTarget || "_self"}
@@ -176,6 +198,106 @@ export function CourseDetailDialog({
 }) {
   const hasDiscount = Boolean(course.compareAtPriceValue && course.compareAtPriceValue > course.priceValue);
   const cardHref = course.cardHref;
+
+  if (course.label === "LIVE") {
+    return (
+      <Dialog.Root>
+        <div
+          className={cn(
+            "group overflow-hidden text-left transition duration-300 hover:-translate-y-1",
+            compact
+              ? "premium-card h-full rounded-[1.9rem]"
+              : "rounded-[2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008))] shadow-[0_22px_70px_rgba(0,0,0,0.2)]",
+            className
+          )}
+        >
+          <CourseCardContent course={course} compact={compact} showInlineInquiry={Boolean(course.inquiryHref)} variant="live" />
+        </div>
+
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/[0.82] backdrop-blur-[12px]" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-[70] max-h-[90vh] w-[94vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-[2.3rem] border border-white/10 bg-[#070707] p-5 shadow-[0_44px_140px_rgba(0,0,0,0.5)] sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
+              <div className="relative min-h-[24rem] overflow-hidden rounded-[1.9rem]">
+                <CourseVisual course={course} title={course.title} />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.82))]" />
+                <div className="absolute inset-x-0 bottom-0 p-6">
+                  <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.label}</p>
+                  <p className="mt-3 text-4xl leading-[0.92] text-white">{course.title}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-7 text-white/[0.82]">
+                    <span>{course.price}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.34em] text-[#d6b98c]">{course.note}</p>
+                    <Dialog.Title className="mt-3 text-3xl leading-tight text-white sm:text-4xl">
+                      {course.title}
+                    </Dialog.Title>
+                  </div>
+                  <Dialog.Close className="rounded-full border border-white/10 bg-white/[0.04] p-3 text-white/70 transition hover:bg-white/[0.1] hover:text-white">
+                    <X className="h-5 w-5" />
+                  </Dialog.Close>
+                </div>
+
+                <p className="mt-6 text-base leading-8 text-white/[0.68]">{course.dialogBody}</p>
+
+                <div className="mt-8 grid gap-5 md:grid-cols-2">
+                  {course.include?.length ? (
+                    <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.025] p-5">
+                      <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">{course.includeTitle}</p>
+                      <div className="mt-4 space-y-3">
+                        {course.include.map((item) => (
+                          <p key={item} className="border-l border-[#d6b98c]/25 pl-4 text-sm leading-7 text-white/[0.76]">
+                            {item}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {course.learn?.length ? (
+                    <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.025] p-5">
+                      <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">{course.learnTitle}</p>
+                      <div className="mt-4 space-y-3">
+                        {course.learn.map((item) => (
+                          <p key={item} className="border-l border-white/[0.12] pl-4 text-sm leading-7 text-white/[0.76]">
+                            {item}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {course.advantage ? (
+                  <div className="mt-5 rounded-[1.8rem] bg-[linear-gradient(180deg,rgba(214,185,140,0.09),rgba(214,185,140,0.03))] p-5">
+                    <p className="text-xs uppercase tracking-[0.35em] text-[#d6b98c]">De ce sa participi</p>
+                    <p className="mt-4 text-sm leading-7 text-white/[0.76]">{course.advantage}</p>
+                  </div>
+                ) : null}
+
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="rounded-[1.6rem] border border-red-500/35 bg-red-500/15 px-5 py-4 text-white shadow-[0_18px_38px_rgba(185,28,28,0.22)]">
+                    <p className="text-[10px] uppercase tracking-[0.34em] text-white/70">Acces</p>
+                    <p className="mt-2 text-xl font-semibold text-white">{course.price}</p>
+                  </div>
+                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
+                    <Button asChild className="w-full px-7 sm:w-auto">
+                      <Link href="/live">Vezi live</Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    );
+  }
 
   if (cardHref) {
     return (
