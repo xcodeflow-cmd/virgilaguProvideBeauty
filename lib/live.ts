@@ -105,6 +105,10 @@ export async function getPrimaryLiveSession() {
   return getCachedPrimaryLiveSession();
 }
 
+export async function getPrimaryLiveSessionFresh() {
+  return fetchPrimaryLiveSession();
+}
+
 export async function getPastLiveSessions() {
   const sessions = await getCachedPastLiveSessions();
 

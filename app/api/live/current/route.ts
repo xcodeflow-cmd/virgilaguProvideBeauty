@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { toIsoDateString } from "@/lib/date";
-import { getPrimaryLiveSession, isLiveSessionActive } from "@/lib/live";
+import { getPrimaryLiveSessionFresh, isLiveSessionActive } from "@/lib/live";
 
 export async function GET() {
-  const session = await getPrimaryLiveSession();
+  const session = await getPrimaryLiveSessionFresh();
 
   if (!session) {
     return NextResponse.json({ live: null });

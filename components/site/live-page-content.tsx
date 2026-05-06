@@ -1470,8 +1470,7 @@ export function LivePageContent({
         };
       });
     } catch {
-      setCurrentSession(null);
-      setStreamStatus("offline");
+      updateDebug({ lastEvent: "live poll failed" });
     }
   }
 
