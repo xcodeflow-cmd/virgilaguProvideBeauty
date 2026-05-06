@@ -76,9 +76,6 @@ export function PastLiveList({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-lg text-white sm:text-xl">{session.title}</p>
-                    {session.description ? (
-                      <p className="mt-1 hidden max-w-2xl text-sm leading-6 text-white/60 sm:block">{session.description}</p>
-                    ) : null}
                   </div>
                   <div className="flex max-w-full flex-wrap items-center justify-end gap-2">
                     {!hasAccess ? (
