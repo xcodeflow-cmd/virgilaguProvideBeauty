@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/live-access";
-import { getLiveRecordingExtension, getLiveRecordingFilePath, getLiveRecordingsDir } from "@/lib/live-recordings";
+import { getLiveRecordingExtension, getLiveRecordingFilePath, getLiveRecordingUrl, getLiveRecordingsDir } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const recordingMimeType = file.type || "video/webm";
   const recordingExtension = getLiveRecordingExtension(recordingMimeType);
   const recordingPath = getLiveRecordingFilePath(liveId, recordingExtension);
-  const recordingUrl = `/api/live/recordings/${liveId}/video`;
+  const recordingUrl = getLiveRecordingUrl(liveId);
 
   await fs.mkdir(getLiveRecordingsDir(), { recursive: true });
   await fs.writeFile(recordingPath, bytes);

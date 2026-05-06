@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 
 import { asDate } from "@/lib/date";
 import { getLiveSessionStaleAfterMs } from "@/lib/live-config";
+import { getLiveRecordingUrl } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 
 const liveSessionListSelect = {
@@ -105,5 +106,10 @@ export async function getPrimaryLiveSession() {
 }
 
 export async function getPastLiveSessions() {
-  return getCachedPastLiveSessions();
+  const sessions = await getCachedPastLiveSessions();
+
+  return sessions.map((session) => ({
+    ...session,
+    recordingUrl: getLiveRecordingUrl(session.id)
+  }));
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isInternalLiveRecordingUrl } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 import { normalizeOwncastUrl } from "@/lib/owncast";
 
@@ -114,7 +115,9 @@ export async function POST(request: Request) {
       data: {
         isLive: false,
         streamUrl: serverUrl,
-        recordingUrl: getRecordingUrl(payload) || currentSession.recordingUrl
+        recordingUrl: isInternalLiveRecordingUrl(currentSession.recordingUrl, currentSession.id)
+          ? currentSession.recordingUrl
+          : getRecordingUrl(payload) || currentSession.recordingUrl
       }
     });
 

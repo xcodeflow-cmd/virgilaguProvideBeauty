@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { toIsoDateString } from "@/lib/date";
+import { getLiveRecordingUrl } from "@/lib/live-recordings";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -39,7 +40,7 @@ export async function GET() {
       description: item.description,
       createdAt: toIsoDateString(item.scheduledFor),
       thumbnailUrl: item.thumbnailUrl,
-      videoUrl: item.recordingUrl || "",
+      videoUrl: getLiveRecordingUrl(item.id),
       price: item.price,
       compareAtPrice: item.compareAtPrice,
       visibility: item.visibility,

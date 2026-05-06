@@ -35,3 +35,23 @@ export function getLiveRecordingsDir() {
 export function getLiveRecordingFilePath(liveId: string, extension: string) {
   return path.join(getLiveRecordingsDir(), `${liveId}.${ensureExtension(extension)}`);
 }
+
+export function getLiveRecordingUrl(liveId: string) {
+  return `/api/live/recordings/${liveId}/video`;
+}
+
+export function isInternalLiveRecordingUrl(url?: string | null, liveId?: string) {
+  if (!url) {
+    return false;
+  }
+
+  const normalized = url.trim();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return liveId
+    ? normalized === getLiveRecordingUrl(liveId)
+    : normalized.startsWith("/api/live/recordings/") && normalized.endsWith("/video");
+}

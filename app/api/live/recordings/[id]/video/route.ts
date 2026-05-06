@@ -3,7 +3,7 @@ import fsp from "node:fs/promises";
 import { Readable } from "node:stream";
 
 import { auth } from "@/auth";
-import { getLiveRecordingExtension, getLiveRecordingFilePath } from "@/lib/live-recordings";
+import { getLiveRecordingExtension, getLiveRecordingFilePath, isInternalLiveRecordingUrl } from "@/lib/live-recordings";
 import { canAccessLiveSession } from "@/lib/live-access";
 import { prisma } from "@/lib/prisma";
 
@@ -99,6 +99,10 @@ export async function GET(
   }
 
   if (!recording?.recordingData) {
+    if (recording.recordingUrl && !isInternalLiveRecordingUrl(recording.recordingUrl, recording.id)) {
+      return Response.redirect(recording.recordingUrl, 307);
+    }
+
     return Response.json({ error: "Recording not found." }, { status: 404 });
   }
 
