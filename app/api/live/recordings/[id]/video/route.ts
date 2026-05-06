@@ -5,6 +5,7 @@ import { Readable } from "node:stream";
 import { auth } from "@/auth";
 import { getLiveRecordingExtension, getLiveRecordingFilePath, isInternalLiveRecordingUrl } from "@/lib/live-recordings";
 import { canAccessLiveSession } from "@/lib/live-access";
+import { normalizeOwncastUrl } from "@/lib/owncast";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -23,6 +24,7 @@ export async function GET(
       recordingData: true,
       recordingMimeType: true,
       recordingUrl: true,
+      streamUrl: true,
       title: true
     }
   });
@@ -100,7 +102,13 @@ export async function GET(
 
   if (!recording?.recordingData) {
     if (recording.recordingUrl && !isInternalLiveRecordingUrl(recording.recordingUrl, recording.id)) {
-      return Response.redirect(recording.recordingUrl, 307);
+      try {
+        const owncastBaseUrl = normalizeOwncastUrl(recording.streamUrl || process.env.OWNCAST_SERVER_URL || null);
+        const redirectUrl = new URL(recording.recordingUrl, owncastBaseUrl ? `${owncastBaseUrl}/` : request.url).toString();
+        return Response.redirect(redirectUrl, 307);
+      } catch {
+        return Response.json({ error: "Recording URL is invalid." }, { status: 500 });
+      }
     }
 
     return Response.json({ error: "Recording not found." }, { status: 404 });

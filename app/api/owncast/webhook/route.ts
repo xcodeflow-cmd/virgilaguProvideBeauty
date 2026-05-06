@@ -48,6 +48,18 @@ function getRecordingUrl(payload: Record<string, unknown>) {
   return null;
 }
 
+function resolveRecordingUrl(recordingUrl: string | null, serverUrl: string) {
+  if (!recordingUrl) {
+    return null;
+  }
+
+  try {
+    return new URL(recordingUrl, `${serverUrl}/`).toString();
+  } catch {
+    return recordingUrl;
+  }
+}
+
 async function findSessionByServerUrl(serverUrl: string, now: Date) {
   const exactMatch = await prisma.liveSession.findFirst({
     where: { streamUrl: serverUrl },
@@ -117,7 +129,7 @@ export async function POST(request: Request) {
         streamUrl: serverUrl,
         recordingUrl: isInternalLiveRecordingUrl(currentSession.recordingUrl, currentSession.id)
           ? currentSession.recordingUrl
-          : getRecordingUrl(payload) || currentSession.recordingUrl
+          : resolveRecordingUrl(getRecordingUrl(payload), serverUrl) || currentSession.recordingUrl
       }
     });
 
