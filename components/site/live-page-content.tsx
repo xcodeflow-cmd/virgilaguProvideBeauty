@@ -2239,7 +2239,7 @@ export function LivePageContent({
                     style={{ animation: "countdownPulse 2.8s ease-in-out infinite" }}
                   >
                     <div className="text-[1.85rem] leading-none text-white sm:text-[2.4rem]">{item.value}</div>
-                    <div className="mt-2 text-[11px] uppercase tracking-[0.28em] text-white/[0.42]">{item.label}</div>
+                    <div className="mt-2 px-1 text-[9px] leading-tight uppercase tracking-[0.12em] text-white/[0.42] sm:text-[11px] sm:tracking-[0.28em]">{item.label}</div>
                   </div>
                 ))}
               </div>
