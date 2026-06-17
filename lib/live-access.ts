@@ -145,7 +145,7 @@ export async function isLiveSessionSoldOut(liveSessionId: string) {
     }
   }).catch(() => null);
 
-  if (!liveSession?.maxParticipants || !liveSession.isLive || liveSession.recordingUrl) {
+  if (!liveSession?.maxParticipants) {
     return false;
   }
 

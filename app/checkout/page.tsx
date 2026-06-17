@@ -67,7 +67,7 @@ export default async function CheckoutPage({
     notFound();
   }
 
-  if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {
+  if (await isLiveSessionSoldOut(liveSession.id)) {
     notFound();
   }
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
-import { Lock, Maximize2, Minimize2, MoreHorizontal, Radio } from "lucide-react";
+import { Lock, Maximize2, Minimize2, MoreHorizontal, Radio, SwitchCamera } from "lucide-react";
 
 import { PastLiveList } from "@/components/past-live-list";
 import { CheckoutTermsDialog } from "@/components/site/checkout-terms-dialog";
@@ -1632,8 +1632,6 @@ export function LivePageContent({
 
       const currentStream = localStreamRef.current;
       const currentVideoTrack = currentStream.getVideoTracks()[0] || null;
-      const audioTracks = currentStream.getAudioTracks();
-      const replacementStream = new MediaStream([...audioTracks, nextVideoTrack]);
 
       const room = liveKitRoomRef.current;
 
@@ -1655,8 +1653,19 @@ export function LivePageContent({
         });
       }
 
-      currentVideoTrack?.stop();
-      setLocalStream(replacementStream);
+      if (currentVideoTrack) {
+        currentStream.removeTrack(currentVideoTrack);
+        currentVideoTrack.stop();
+      }
+
+      currentStream.addTrack(nextVideoTrack);
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = currentStream;
+        await localVideoRef.current.play().catch(() => undefined);
+      }
+
+      setLocalStream(currentStream);
       setCameraFacingMode(nextFacingMode);
       updateDebug({ lastEvent: `camera switched to ${nextFacingMode}` });
     } catch (error) {
@@ -2221,6 +2230,16 @@ export function LivePageContent({
                   <>
                     <Button type="button" className="min-h-11" onClick={() => void startLive()} disabled={!currentSession || currentSession.isLive}>
                       Go Live
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="min-h-11"
+                      onClick={() => void switchCamera()}
+                      disabled={!currentSession?.isLive || !localStream || isSwitchingCamera}
+                    >
+                      <SwitchCamera className="h-4 w-4" />
+                      {cameraFacingMode === "user" ? "Camera spate" : "Camera fata"}
                     </Button>
                     <Button type="button" variant="secondary" className="min-h-11" onClick={() => void stopLive()} disabled={!currentSession?.isLive}>
                       Stop Live

@@ -81,7 +81,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(new URL("/live", request.url));
       }
 
-      if (!liveSession.recordingUrl && await isLiveSessionSoldOut(liveSession.id)) {
+      if (await isLiveSessionSoldOut(liveSession.id)) {
         return NextResponse.json({ error: "Live session reached the maximum number of participants." }, { status: 409 });
       }
     }

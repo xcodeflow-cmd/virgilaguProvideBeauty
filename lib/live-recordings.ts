@@ -19,6 +19,10 @@ export function getLiveRecordingExtension(mimeType?: string | null) {
     return "mp4";
   }
 
+  if (mimeType.includes("quicktime") || mimeType.includes("mov")) {
+    return "mov";
+  }
+
   return "webm";
 }
 

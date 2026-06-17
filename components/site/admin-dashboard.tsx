@@ -371,6 +371,44 @@ export function AdminDashboard({
               </form>
             </div>
 
+            <div className="premium-card p-5 sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="dashboard-label">Upload live</p>
+                  <h2 className="mt-3 text-2xl text-white sm:text-3xl">Incarca un live din telefon.</h2>
+                </div>
+              </div>
+
+              <form action="/api/live/uploaded-session" method="post" encType="multipart/form-data" className="mt-6 space-y-4">
+                <input name="title" required placeholder="Titlu clip" className="premium-input" />
+                <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input name="scheduleDate" type="date" className="premium-input min-h-[3.5rem]" />
+                  <input name="scheduleTime" type="time" step="60" className="premium-input min-h-[3.5rem]" />
+                </div>
+                <select name="visibility" defaultValue="ONE_TIME" className="premium-input">
+                  <option value="ONE_TIME">One time</option>
+                  <option value="PUBLIC">Public</option>
+                </select>
+                <input name="price" type="number" min="1" step="1" placeholder="Pret in lei" className="premium-input" />
+                <input name="maxParticipants" type="number" min="1" step="1" placeholder="Utilizatori care pot achizitiona" className="premium-input" />
+                <input name="thumbnailUrl" placeholder="URL thumbnail optional" className="premium-input" />
+                <label className="flex min-h-[7rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
+                  <Upload className="h-5 w-5" />
+                  Adauga poza optionala
+                  <input type="file" name="thumbnailFile" accept="image/*" className="hidden" />
+                </label>
+                <label className="flex min-h-[9rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.25rem] border border-dashed border-white/[0.15] bg-black/20 px-4 py-5 text-center text-sm text-white/75 transition hover:border-white/25 hover:text-white">
+                  <Upload className="h-5 w-5" />
+                  Incarca video din telefon
+                  <input type="file" name="videoFile" accept="video/*" className="hidden" required />
+                </label>
+                <Button type="submit" className="min-h-12 w-full sm:w-auto">
+                  Adauga live uploadat
+                </Button>
+              </form>
+            </div>
+
             <div className="space-y-6">
               <div ref={liveEditorRef} className="premium-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
