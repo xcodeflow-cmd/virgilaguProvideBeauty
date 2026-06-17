@@ -1574,6 +1574,41 @@ export function LivePageContent({
     throw lastError instanceof Error ? lastError : new Error("Could not access camera or microphone.");
   }
 
+  function startLocalRecording(stream: MediaStream) {
+    const recordingMimeType = getMediaRecorderMimeType();
+    recordingMimeTypeRef.current = recordingMimeType || "video/webm";
+    const mediaRecorder = recordingMimeType
+      ? new MediaRecorder(stream, { mimeType: recordingMimeType })
+      : new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+    mediaRecorder.start(2000);
+    mediaRecorderRef.current = mediaRecorder;
+  }
+
+  async function restartLocalRecording(stream: MediaStream) {
+    const recorder = mediaRecorderRef.current;
+
+    if (!recorder || recorder.state === "inactive") {
+      startLocalRecording(stream);
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      recorder.addEventListener("stop", () => resolve(), { once: true });
+      try {
+        recorder.requestData();
+      } catch {}
+      recorder.stop();
+    });
+
+    startLocalRecording(stream);
+  }
+
   async function switchCamera() {
     if (!isAdmin || isSwitchingCamera || !localStreamRef.current) {
       return;
@@ -1666,6 +1701,7 @@ export function LivePageContent({
       }
 
       setLocalStream(currentStream);
+      await restartLocalRecording(currentStream);
       setCameraFacingMode(nextFacingMode);
       updateDebug({ lastEvent: `camera switched to ${nextFacingMode}` });
     } catch (error) {
@@ -1692,18 +1728,7 @@ export function LivePageContent({
       setLocalStream(stream);
 
       recordedChunksRef.current = [];
-      const recordingMimeType = getMediaRecorderMimeType();
-      recordingMimeTypeRef.current = recordingMimeType || "video/webm";
-      const mediaRecorder = recordingMimeType
-        ? new MediaRecorder(stream, { mimeType: recordingMimeType })
-        : new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
-      mediaRecorder.start(2000);
-      mediaRecorderRef.current = mediaRecorder;
+      startLocalRecording(stream);
 
       await api("/api/live/start", {
         method: "POST",

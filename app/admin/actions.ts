@@ -1,5 +1,6 @@
 "use server";
 
+import fs from "node:fs/promises";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { SessionVisibility } from "@prisma/client";
@@ -7,6 +8,7 @@ import { SessionVisibility } from "@prisma/client";
 import { auth } from "@/auth";
 import { courses, sitePages, subscriptionPlans } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
+import { getLiveRecordingExtension, getLiveRecordingFilePath } from "@/lib/live-recordings";
 import { parseRomaniaDateTimeLocal } from "@/lib/romania-time";
 
 async function requireAdmin() {
@@ -222,11 +224,37 @@ export async function deleteLiveSession(formData: FormData) {
 
   const id = String(formData.get("id") || "");
 
-  await prisma.liveSession.delete({
-    where: {
-      id
+  if (!id) {
+    throw new Error("Missing live session id.");
+  }
+
+  const liveSession = await prisma.liveSession.findUnique({
+    where: { id },
+    select: {
+      recordingMimeType: true
     }
   });
+
+  await prisma.$transaction([
+    prisma.liveSignal.deleteMany({ where: { liveSessionId: id } }),
+    prisma.liveChatMessage.deleteMany({ where: { liveSessionId: id } }),
+    prisma.liveChatRestriction.deleteMany({ where: { liveSessionId: id } }),
+    prisma.purchase.updateMany({
+      where: { liveSessionId: id },
+      data: { liveSessionId: null }
+    }),
+    prisma.liveSession.delete({ where: { id } })
+  ]);
+
+  const extension = getLiveRecordingExtension(liveSession?.recordingMimeType);
+  const filePaths = new Set([
+    getLiveRecordingFilePath(id, extension),
+    getLiveRecordingFilePath(id, "webm"),
+    getLiveRecordingFilePath(id, "mp4"),
+    getLiveRecordingFilePath(id, "mov")
+  ]);
+
+  await Promise.all(Array.from(filePaths).map((filePath) => fs.unlink(filePath).catch(() => undefined)));
 
   revalidatePath("/");
   revalidatePath("/live");

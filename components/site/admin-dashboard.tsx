@@ -382,10 +382,6 @@ export function AdminDashboard({
               <form action="/api/live/uploaded-session" method="post" encType="multipart/form-data" className="mt-6 space-y-4">
                 <input name="title" required placeholder="Titlu clip" className="premium-input" />
                 <textarea name="description" required rows={4} placeholder="Descriere" className="premium-input" />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input name="scheduleDate" type="date" className="premium-input min-h-[3.5rem]" />
-                  <input name="scheduleTime" type="time" step="60" className="premium-input min-h-[3.5rem]" />
-                </div>
                 <select name="visibility" defaultValue="ONE_TIME" className="premium-input">
                   <option value="ONE_TIME">One time</option>
                   <option value="PUBLIC">Public</option>

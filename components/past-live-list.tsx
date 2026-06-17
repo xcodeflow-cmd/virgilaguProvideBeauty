@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Lock, Trash2 } from "lucide-react";
 
+import { deleteLiveSession } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { formatLei } from "@/lib/utils";
 
@@ -156,6 +157,15 @@ export function PastLiveList({
                       </p>
                     </>
                   )}
+                  {isAdmin ? (
+                    <form action={deleteLiveSession}>
+                      <input type="hidden" name="id" value={session.id} />
+                      <Button type="submit" variant="secondary" className="min-h-11">
+                        <Trash2 className="h-4 w-4" />
+                        Sterge
+                      </Button>
+                    </form>
+                  ) : null}
                 </div>
               </div>
             );

@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     const description = String(formData.get("description") || "").trim();
     const video = formData.get("videoFile");
     const visibility = parseLiveVisibility(formData);
-    const price = parseOptionalPrice(formData.get("price"));
+    const rawPrice = parseOptionalPrice(formData.get("price"));
     const maxParticipants = parseOptionalPositiveInt(formData.get("maxParticipants"));
     const scheduledFor = getScheduledFor(formData);
     const thumbnailUrl =
@@ -123,9 +123,11 @@ export async function POST(request: Request) {
       throw new Error("Clipul video este obligatoriu.");
     }
 
-    if (visibility === SessionVisibility.ONE_TIME && !price) {
+    if (visibility === SessionVisibility.ONE_TIME && !rawPrice) {
       throw new Error("Clipul one time trebuie sa aiba pret.");
     }
+
+    const price = visibility === SessionVisibility.ONE_TIME ? rawPrice : null;
 
     const recordingMimeType = video.type || "video/mp4";
     const recordingExtension = getLiveRecordingExtension(recordingMimeType);
