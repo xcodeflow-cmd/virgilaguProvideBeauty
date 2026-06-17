@@ -1574,6 +1574,50 @@ export function LivePageContent({
     throw lastError instanceof Error ? lastError : new Error("Could not access camera or microphone.");
   }
 
+  async function getSafeCameraStream(facingMode: "user" | "environment") {
+    ensureMediaDevicesAvailable();
+
+    const constraintsList = [
+      {
+        video: {
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1920, max: 1920 },
+          height: { ideal: 1080, max: 1080 },
+          frameRate: { ideal: 30, max: 30 },
+          aspectRatio: { ideal: 16 / 9 }
+        },
+        audio: false
+      },
+      {
+        video: {
+          facingMode: { exact: facingMode },
+          width: { ideal: 1280, max: 1280 },
+          height: { ideal: 720, max: 720 },
+          frameRate: { ideal: 30, max: 30 },
+          aspectRatio: { ideal: 16 / 9 }
+        },
+        audio: false
+      },
+      {
+        video: {
+          facingMode: { ideal: facingMode }
+        },
+        audio: false
+      }
+    ] satisfies MediaStreamConstraints[];
+    let lastError: unknown;
+
+    for (const constraints of constraintsList) {
+      try {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error("Camera nu a putut fi schimbata.");
+  }
+
   function startLocalRecording(stream: MediaStream) {
     const recordingMimeType = getMediaRecorderMimeType();
     recordingMimeTypeRef.current = recordingMimeType || "video/webm";
@@ -1610,87 +1654,52 @@ export function LivePageContent({
   }
 
   async function switchCamera() {
-    if (!isAdmin || isSwitchingCamera || !localStreamRef.current) {
+    const currentStream = localStreamRef.current;
+
+    if (!isAdmin || isSwitchingCamera || !currentStream) {
       return;
     }
 
-    const nextFacingMode = cameraFacingMode === "user" ? "environment" : "user";
+    const previousFacingMode = cameraFacingMode;
+    const nextFacingMode = previousFacingMode === "user" ? "environment" : "user";
+    const currentVideoTrack = currentStream.getVideoTracks()[0] || null;
+    const room = liveKitRoomRef.current;
+    const publishedVideoTrack = room
+      ? (
+          Array.from(room.localParticipant.videoTrackPublications.values()) as Array<{
+            track?: { mediaStreamTrack: MediaStreamTrack } | null;
+          }>
+        ).find((publication) => publication?.track)?.track || undefined
+      : undefined;
+    let nextCameraStream: MediaStream | null = null;
+    let nextVideoTrack: MediaStreamTrack | null = null;
 
     try {
       setIsSwitchingCamera(true);
       setError(null);
-      const currentDeviceId = localStreamRef.current.getVideoTracks()[0]?.getSettings().deviceId || "";
-      const videoInputs = typeof navigator.mediaDevices.enumerateDevices === "function"
-        ? (await navigator.mediaDevices.enumerateDevices()).filter((device) => device.kind === "videoinput")
-        : [];
-      const currentIndex = videoInputs.findIndex((device) => device.deviceId === currentDeviceId);
-      const nextDeviceId = videoInputs.length > 1 ? videoInputs[(currentIndex + 1 + videoInputs.length) % videoInputs.length]?.deviceId || "" : "";
-      let nextStream: MediaStream | null = null;
 
-      try {
-        if (nextDeviceId) {
-          nextStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              deviceId: { exact: nextDeviceId },
-              width: { ideal: 1920, max: 1920 },
-              height: { ideal: 1080, max: 1080 },
-              frameRate: { ideal: 30, max: 30 },
-              aspectRatio: { ideal: 16 / 9 }
-            },
-            audio: false
-          });
-        } else {
-          throw new Error("No alternate device id");
-        }
-      } catch {
-        try {
-          nextStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { exact: nextFacingMode },
-              width: { ideal: 1920, max: 1920 },
-              height: { ideal: 1080, max: 1080 },
-              frameRate: { ideal: 30, max: 30 },
-              aspectRatio: { ideal: 16 / 9 }
-            },
-            audio: false
-          });
-        } catch {
-          nextStream = await getSafeBroadcastStream(nextFacingMode, false);
-        }
-      }
-
-      const nextVideoTrack = nextStream.getVideoTracks()[0];
-
-      if (!nextVideoTrack) {
-        throw new Error("Camera noua nu este disponibila.");
-      }
-
-      const currentStream = localStreamRef.current;
-      const currentVideoTrack = currentStream.getVideoTracks()[0] || null;
-
-      const room = liveKitRoomRef.current;
-
-      if (room) {
-        const publishedVideoTrack = (
-          Array.from(room.localParticipant.videoTrackPublications.values()) as Array<{
-            track?: { mediaStreamTrack: MediaStreamTrack } | null;
-          }>
-        ).find((publication) => publication?.track)?.track || undefined;
-
-        if (publishedVideoTrack) {
-          await room.localParticipant.unpublishTrack(publishedVideoTrack.mediaStreamTrack, false);
-        }
-
-        await room.localParticipant.publishTrack(nextVideoTrack, {
-          source: Track.Source.Camera,
-          videoCodec: "h264",
-          videoEncoding: LIVEKIT_VIDEO_ENCODING
-        });
+      if (publishedVideoTrack) {
+        await room?.localParticipant.unpublishTrack(publishedVideoTrack.mediaStreamTrack, false);
       }
 
       if (currentVideoTrack) {
         currentStream.removeTrack(currentVideoTrack);
         currentVideoTrack.stop();
+      }
+
+      nextCameraStream = await getSafeCameraStream(nextFacingMode);
+      nextVideoTrack = nextCameraStream.getVideoTracks()[0] || null;
+
+      if (!nextVideoTrack) {
+        throw new Error("Camera noua nu este disponibila.");
+      }
+
+      if (room) {
+        await room.localParticipant.publishTrack(nextVideoTrack, {
+          source: Track.Source.Camera,
+          videoCodec: "h264",
+          videoEncoding: LIVEKIT_VIDEO_ENCODING
+        });
       }
 
       currentStream.addTrack(nextVideoTrack);
@@ -1700,11 +1709,50 @@ export function LivePageContent({
         await localVideoRef.current.play().catch(() => undefined);
       }
 
-      setLocalStream(currentStream);
+      setLocalStream(new MediaStream(currentStream.getTracks()));
       await restartLocalRecording(currentStream);
       setCameraFacingMode(nextFacingMode);
       updateDebug({ lastEvent: `camera switched to ${nextFacingMode}` });
     } catch (error) {
+      nextCameraStream?.getTracks().forEach((track) => {
+        if (track !== nextVideoTrack) {
+          track.stop();
+        }
+      });
+
+      if (!currentStream.getVideoTracks().length) {
+        try {
+          const fallbackStream = await getSafeCameraStream(previousFacingMode);
+          const fallbackVideoTrack = fallbackStream.getVideoTracks()[0] || null;
+
+          if (fallbackVideoTrack) {
+            if (room) {
+              await room.localParticipant.publishTrack(fallbackVideoTrack, {
+                source: Track.Source.Camera,
+                videoCodec: "h264",
+                videoEncoding: LIVEKIT_VIDEO_ENCODING
+              });
+            }
+
+            currentStream.addTrack(fallbackVideoTrack);
+
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = currentStream;
+              await localVideoRef.current.play().catch(() => undefined);
+            }
+
+            setLocalStream(new MediaStream(currentStream.getTracks()));
+            await restartLocalRecording(currentStream);
+          }
+
+          fallbackStream.getTracks().forEach((track) => {
+            if (track !== fallbackVideoTrack) {
+              track.stop();
+            }
+          });
+        } catch {}
+      }
+
       setError(error instanceof Error ? error.message : "Camera nu a putut fi schimbata.");
     } finally {
       setIsSwitchingCamera(false);
