@@ -3,9 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Lock, Trash2 } from "lucide-react";
+import { Lock } from "lucide-react";
 
-import { deleteLiveSession } from "@/app/admin/actions";
+import { DeleteLiveForm } from "@/components/delete-live-form";
 import { Button } from "@/components/ui/button";
 import { formatLei } from "@/lib/utils";
 
@@ -27,11 +27,13 @@ export function PastLiveList({
   accessibleLiveIds,
   isAuthenticated = false,
   isAdmin = false,
+  onDeleted,
   sessions
 }: {
   accessibleLiveIds: string[];
   isAuthenticated?: boolean;
   isAdmin?: boolean;
+  onDeleted: (id: string) => void;
   sessions: PastLiveSession[];
 }) {
   const [notice, setNotice] = useState<string | null>(null);
@@ -158,13 +160,7 @@ export function PastLiveList({
                     </>
                   )}
                   {isAdmin ? (
-                    <form action={deleteLiveSession}>
-                      <input type="hidden" name="id" value={session.id} />
-                      <Button type="submit" variant="secondary" className="min-h-11">
-                        <Trash2 className="h-4 w-4" />
-                        Sterge
-                      </Button>
-                    </form>
+                    <DeleteLiveForm id={session.id} onDeleted={onDeleted} />
                   ) : null}
                 </div>
               </div>

@@ -8,12 +8,12 @@ import {
   addGalleryItem,
   addLiveSession,
   deleteGalleryItem,
-  deleteLiveSession,
   updateCoursePricing,
   updateLiveSessionSchedule,
   updateSiteSettings
 } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
+import { DeleteLiveForm } from "@/components/delete-live-form";
 import { formatRomaniaDateTimeLocal } from "@/lib/romania-time";
 import { formatLei } from "@/lib/utils";
 
@@ -598,13 +598,7 @@ export function AdminDashboard({
                                 <CalendarDays className="h-4 w-4" />
                                 Editeaza live
                               </Button>
-                              <form action={deleteLiveSession}>
-                                <input type="hidden" name="id" value={session.id} />
-                                <Button type="submit" variant="secondary" className="min-h-11 w-full">
-                                  <Trash2 className="h-4 w-4" />
-                                  Sterge
-                                </Button>
-                              </form>
+                              <DeleteLiveForm id={session.id} buttonClassName="min-h-11 w-full" />
                             </div>
                           </div>
                         </div>

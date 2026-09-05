@@ -243,7 +243,7 @@ export async function deleteLiveSession(formData: FormData) {
       where: { liveSessionId: id },
       data: { liveSessionId: null }
     }),
-    prisma.liveSession.delete({ where: { id } })
+    prisma.liveSession.deleteMany({ where: { id } })
   ]);
 
   const extension = getLiveRecordingExtension(liveSession?.recordingMimeType);
@@ -259,6 +259,7 @@ export async function deleteLiveSession(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/live");
   revalidatePath("/admin");
+  revalidatePath("/dashboard");
 }
 
 export async function updateLiveSessionSchedule(formData: FormData) {

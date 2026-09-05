@@ -397,6 +397,7 @@ export function LivePageContent({
   });
 
   const currentSessionRef = useRef<LiveSessionSummary | null>(initialSession);
+  const deletedRecordingIdsRef = useRef(new Set<string>());
   const localStreamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1483,9 +1484,15 @@ export function LivePageContent({
     setMessages((current) => (areMessagesEqual(current, data.messages) ? current : data.messages));
   }
 
+  function handleRecordingDeleted(id: string) {
+    deletedRecordingIdsRef.current.add(id);
+    setRecordings((current) => current.filter((recording) => recording.id !== id));
+  }
+
   async function loadRecordings() {
     const data = await api<{ recordings: LiveRecording[] }>("/api/live/recordings");
-    setRecordings((current) => (areRecordingsEqual(current, data.recordings) ? current : data.recordings));
+    const nextRecordings = data.recordings.filter((recording) => !deletedRecordingIdsRef.current.has(recording.id));
+    setRecordings((current) => (areRecordingsEqual(current, nextRecordings) ? current : nextRecordings));
   }
 
   function buildCaptureProfiles(facingMode?: "user" | "environment", includeAudio = true) {
@@ -2463,6 +2470,7 @@ export function LivePageContent({
 
           <div className="hidden xl:block">
             <PastLiveList
+              onDeleted={handleRecordingDeleted}
               accessibleLiveIds={accessibleLiveIds}
               isAuthenticated={isAuthenticated}
               isAdmin={isAdmin}
@@ -2492,6 +2500,7 @@ export function LivePageContent({
 
       <div className="xl:hidden">
         <PastLiveList
+          onDeleted={handleRecordingDeleted}
           accessibleLiveIds={accessibleLiveIds}
           isAuthenticated={isAuthenticated}
           isAdmin={isAdmin}
